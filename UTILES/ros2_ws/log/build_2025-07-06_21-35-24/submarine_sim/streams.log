@@ -1,0 +1,19 @@
+[1.579s] Invoking command in '/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim': PYTHONPATH=/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/build --no-deps symlink_data --force
+[2.207s] running develop
+[2.469s] running egg_info
+[2.470s] writing submarine_sim.egg-info/PKG-INFO
+[2.475s] writing dependency_links to submarine_sim.egg-info/dependency_links.txt
+[2.475s] writing entry points to submarine_sim.egg-info/entry_points.txt
+[2.475s] writing requirements to submarine_sim.egg-info/requires.txt
+[2.475s] writing top-level names to submarine_sim.egg-info/top_level.txt
+[2.476s] reading manifest file 'submarine_sim.egg-info/SOURCES.txt'
+[2.479s] writing manifest file 'submarine_sim.egg-info/SOURCES.txt'
+[2.485s] running build_ext
+[2.486s] Creating /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine-sim.egg-link (link to .)
+[2.488s] Installing gui_sensor_display script to /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/submarine_sim
+[2.489s] Installing sensor_publisher script to /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/submarine_sim
+[2.489s] 
+[2.489s] Installed /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim
+[2.489s] running symlink_data
+[2.489s] symbolically linking /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/package.xml -> /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/share/submarine_sim
+[2.526s] Invoked command in '/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim' returned '0': PYTHONPATH=/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/build --no-deps symlink_data --force

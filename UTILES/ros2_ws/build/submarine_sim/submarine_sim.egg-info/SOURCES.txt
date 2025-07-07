@@ -11,6 +11,10 @@ setup.py
 submarine_sim/__init__.py
 submarine_sim/gui_sensor_display.py
 submarine_sim/sensor_publisher.py
-test/test_copyright.py
-test/test_flake8.py
-test/test_pep257.py
+submarine_sim.egg-info/PKG-INFO
+submarine_sim.egg-info/SOURCES.txt
+submarine_sim.egg-info/dependency_links.txt
+submarine_sim.egg-info/entry_points.txt
+submarine_sim.egg-info/requires.txt
+submarine_sim.egg-info/top_level.txt
+submarine_sim.egg-info/zip-safe
