@@ -1,0 +1,18 @@
+running develop
+running egg_info
+creating submarine_sim.egg-info
+writing submarine_sim.egg-info/PKG-INFO
+writing dependency_links to submarine_sim.egg-info/dependency_links.txt
+writing entry points to submarine_sim.egg-info/entry_points.txt
+writing requirements to submarine_sim.egg-info/requires.txt
+writing top-level names to submarine_sim.egg-info/top_level.txt
+writing manifest file 'submarine_sim.egg-info/SOURCES.txt'
+reading manifest file 'submarine_sim.egg-info/SOURCES.txt'
+writing manifest file 'submarine_sim.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine-sim.egg-link (link to .)
+Installing sensor_publisher script to /home/xavier/ros2_ws/install/submarine_sim/lib/submarine_sim
+
+Installed /home/xavier/ros2_ws/build/submarine_sim
+running symlink_data
+symbolically linking /home/xavier/ros2_ws/build/submarine_sim/package.xml -> /home/xavier/ros2_ws/install/submarine_sim/share/submarine_sim

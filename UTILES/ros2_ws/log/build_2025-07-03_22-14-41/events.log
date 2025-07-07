@@ -1,0 +1,90 @@
+[0.000000] (-) TimerEvent: {}
+[0.000933] (submarine_sim) JobQueued: {'identifier': 'submarine_sim', 'dependencies': OrderedDict()}
+[0.000979] (submarine_sim) JobStarted: {'identifier': 'submarine_sim'}
+[0.099320] (-) TimerEvent: {}
+[0.201188] (-) TimerEvent: {}
+[0.310584] (-) TimerEvent: {}
+[0.411169] (-) TimerEvent: {}
+[0.513082] (-) TimerEvent: {}
+[0.615833] (-) TimerEvent: {}
+[0.716887] (-) TimerEvent: {}
+[0.820536] (-) TimerEvent: {}
+[0.922918] (-) TimerEvent: {}
+[1.027869] (-) TimerEvent: {}
+[1.129800] (-) TimerEvent: {}
+[1.231910] (-) TimerEvent: {}
+[1.334452] (-) TimerEvent: {}
+[1.435929] (-) TimerEvent: {}
+[1.536829] (-) TimerEvent: {}
+[1.638401] (-) TimerEvent: {}
+[1.740005] (-) TimerEvent: {}
+[1.843559] (-) TimerEvent: {}
+[1.944019] (-) TimerEvent: {}
+[2.045002] (-) TimerEvent: {}
+[2.146426] (-) TimerEvent: {}
+[2.249602] (-) TimerEvent: {}
+[2.280765] (submarine_sim) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'develop', '--uninstall', '--editable', '--build-directory', '/home/xavier/ros2_ws/build/submarine_sim/build'], 'cwd': '/home/xavier/ros2_ws/build/submarine_sim', 'env': {'LESSOPEN': '| /usr/bin/lesspipe %s', 'LANGUAGE': 'en_CA:en', 'USER': 'xavier', 'XDG_SESSION_TYPE': 'wayland', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/xavier', 'OLDPWD': '/home/xavier/Desktop', 'DESKTOP_SESSION': 'ubuntu', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'SYSTEMD_EXEC_PID': '88116', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'IM_CONFIG_PHASE': '1', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/xavier/ros2_ws/install', 'ROS_DISTRO': 'humble', 'LOGNAME': 'xavier', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'xavier', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/xavier-virtual-machine:@/tmp/.ICE-unix/1750,unix/xavier-virtual-machine:/tmp/.ICE-unix/1750', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/091ddbb2_b24c_47ea_aa28_b5217fddfb9e', 'GNOME_SETUP_DISPLAY': ':1', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_CA.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/.mutter-Xwaylandauth.FFCX82', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'GNOME_TERMINAL_SERVICE': ':1.303', 'SSH_AGENT_LAUNCHER': 'gnome-keyring', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'ROS_DOMAIN_ID': '1', 'AMENT_PREFIX_PATH': '/home/xavier/ros2_ws/install/submarine_sim:/opt/ros/humble', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/xavier/ros2_ws/build/submarine_sim', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/xavier/ros2_ws/build/submarine_sim/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages:/home/xavier/ros2_ws/build/submarine_sim:/home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'COLCON': '1', 'VTE_VERSION': '6800'}, 'shell': False}
+[2.350602] (-) TimerEvent: {}
+[2.452505] (-) TimerEvent: {}
+[2.556559] (-) TimerEvent: {}
+[2.657264] (-) TimerEvent: {}
+[2.759947] (-) TimerEvent: {}
+[2.860736] (-) TimerEvent: {}
+[2.967423] (-) TimerEvent: {}
+[3.069711] (-) TimerEvent: {}
+[3.173150] (-) TimerEvent: {}
+[3.275651] (-) TimerEvent: {}
+[3.341099] (submarine_sim) StdoutLine: {'line': b'running develop\n'}
+[3.376036] (-) TimerEvent: {}
+[3.477082] (-) TimerEvent: {}
+[3.579412] (-) TimerEvent: {}
+[3.688154] (-) TimerEvent: {}
+[3.707512] (submarine_sim) StdoutLine: {'line': b'Removing /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine-sim.egg-link (link to .)\n'}
+[3.770530] (submarine_sim) CommandEnded: {'returncode': 0}
+[3.779174] (submarine_sim) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../../build/submarine_sim', 'build', '--build-base', '/home/xavier/ros2_ws/build/submarine_sim/build', 'install', '--record', '/home/xavier/ros2_ws/build/submarine_sim/install.log', '--single-version-externally-managed', 'install_data', '--force'], 'cwd': '/home/xavier/ros2_ws/src/submarine_sim', 'env': {'LESSOPEN': '| /usr/bin/lesspipe %s', 'LANGUAGE': 'en_CA:en', 'USER': 'xavier', 'XDG_SESSION_TYPE': 'wayland', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/xavier', 'OLDPWD': '/home/xavier/Desktop', 'DESKTOP_SESSION': 'ubuntu', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'SYSTEMD_EXEC_PID': '88116', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'IM_CONFIG_PHASE': '1', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/xavier/ros2_ws/install', 'ROS_DISTRO': 'humble', 'LOGNAME': 'xavier', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'xavier', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin', 'SESSION_MANAGER': 'local/xavier-virtual-machine:@/tmp/.ICE-unix/1750,unix/xavier-virtual-machine:/tmp/.ICE-unix/1750', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_TERMINAL_SCREEN': '/org/gnome/Terminal/screen/091ddbb2_b24c_47ea_aa28_b5217fddfb9e', 'GNOME_SETUP_DISPLAY': ':1', 'XDG_RUNTIME_DIR': '/run/user/1000', 'DISPLAY': ':0', 'LANG': 'en_CA.UTF-8', 'XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/.mutter-Xwaylandauth.FFCX82', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'GNOME_TERMINAL_SERVICE': ':1.303', 'SSH_AGENT_LAUNCHER': 'gnome-keyring', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'ROS_DOMAIN_ID': '1', 'AMENT_PREFIX_PATH': '/home/xavier/ros2_ws/install/submarine_sim:/opt/ros/humble', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/xavier/ros2_ws/build/submarine_sim', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/xavier/ros2_ws/build/submarine_sim/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages:/home/xavier/ros2_ws/build/submarine_sim:/home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'COLCON': '1', 'VTE_VERSION': '6800'}, 'shell': False}
+[3.793187] (-) TimerEvent: {}
+[3.894852] (-) TimerEvent: {}
+[4.001124] (-) TimerEvent: {}
+[4.106156] (-) TimerEvent: {}
+[4.211107] (-) TimerEvent: {}
+[4.315294] (-) TimerEvent: {}
+[4.423159] (-) TimerEvent: {}
+[4.525619] (-) TimerEvent: {}
+[4.623506] (submarine_sim) StdoutLine: {'line': b'running egg_info\n'}
+[4.625836] (-) TimerEvent: {}
+[4.626503] (submarine_sim) StdoutLine: {'line': b'writing ../../build/submarine_sim/submarine_sim.egg-info/PKG-INFO\n'}
+[4.630206] (submarine_sim) StdoutLine: {'line': b'writing dependency_links to ../../build/submarine_sim/submarine_sim.egg-info/dependency_links.txt\n'}
+[4.631828] (submarine_sim) StdoutLine: {'line': b'writing entry points to ../../build/submarine_sim/submarine_sim.egg-info/entry_points.txt\n'}
+[4.632233] (submarine_sim) StdoutLine: {'line': b'writing requirements to ../../build/submarine_sim/submarine_sim.egg-info/requires.txt\n'}
+[4.632470] (submarine_sim) StdoutLine: {'line': b'writing top-level names to ../../build/submarine_sim/submarine_sim.egg-info/top_level.txt\n'}
+[4.642299] (submarine_sim) StdoutLine: {'line': b"reading manifest file '../../build/submarine_sim/submarine_sim.egg-info/SOURCES.txt'\n"}
+[4.643903] (submarine_sim) StdoutLine: {'line': b"writing manifest file '../../build/submarine_sim/submarine_sim.egg-info/SOURCES.txt'\n"}
+[4.644294] (submarine_sim) StdoutLine: {'line': b'running build\n'}
+[4.644370] (submarine_sim) StdoutLine: {'line': b'running build_py\n'}
+[4.644430] (submarine_sim) StdoutLine: {'line': b'creating /home/xavier/ros2_ws/build/submarine_sim/build\n'}
+[4.644549] (submarine_sim) StdoutLine: {'line': b'creating /home/xavier/ros2_ws/build/submarine_sim/build/lib\n'}
+[4.644745] (submarine_sim) StdoutLine: {'line': b'creating /home/xavier/ros2_ws/build/submarine_sim/build/lib/submarine_sim\n'}
+[4.646013] (submarine_sim) StdoutLine: {'line': b'copying submarine_sim/gui_sensor_display.py -> /home/xavier/ros2_ws/build/submarine_sim/build/lib/submarine_sim\n'}
+[4.647768] (submarine_sim) StdoutLine: {'line': b'copying submarine_sim/sensor_publisher.py -> /home/xavier/ros2_ws/build/submarine_sim/build/lib/submarine_sim\n'}
+[4.648469] (submarine_sim) StdoutLine: {'line': b'copying submarine_sim/__init__.py -> /home/xavier/ros2_ws/build/submarine_sim/build/lib/submarine_sim\n'}
+[4.649770] (submarine_sim) StdoutLine: {'line': b'running install\n'}
+[4.650137] (submarine_sim) StdoutLine: {'line': b'running install_lib\n'}
+[4.653591] (submarine_sim) StdoutLine: {'line': b'creating /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine_sim\n'}
+[4.654540] (submarine_sim) StdoutLine: {'line': b'copying /home/xavier/ros2_ws/build/submarine_sim/build/lib/submarine_sim/gui_sensor_display.py -> /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine_sim\n'}
+[4.654762] (submarine_sim) StdoutLine: {'line': b'copying /home/xavier/ros2_ws/build/submarine_sim/build/lib/submarine_sim/sensor_publisher.py -> /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine_sim\n'}
+[4.655130] (submarine_sim) StdoutLine: {'line': b'copying /home/xavier/ros2_ws/build/submarine_sim/build/lib/submarine_sim/__init__.py -> /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine_sim\n'}
+[4.660303] (submarine_sim) StdoutLine: {'line': b'byte-compiling /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine_sim/gui_sensor_display.py to gui_sensor_display.cpython-310.pyc\n'}
+[4.663964] (submarine_sim) StdoutLine: {'line': b'byte-compiling /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine_sim/sensor_publisher.py to sensor_publisher.cpython-310.pyc\n'}
+[4.665093] (submarine_sim) StdoutLine: {'line': b'byte-compiling /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine_sim/__init__.py to __init__.cpython-310.pyc\n'}
+[4.670600] (submarine_sim) StdoutLine: {'line': b'running install_data\n'}
+[4.671108] (submarine_sim) StdoutLine: {'line': b'copying package.xml -> /home/xavier/ros2_ws/install/submarine_sim/share/submarine_sim\n'}
+[4.673946] (submarine_sim) StdoutLine: {'line': b'running install_egg_info\n'}
+[4.677084] (submarine_sim) StdoutLine: {'line': b'Copying ../../build/submarine_sim/submarine_sim.egg-info to /home/xavier/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine_sim-0.0.0-py3.10.egg-info\n'}
+[4.680516] (submarine_sim) StdoutLine: {'line': b'running install_scripts\n'}
+[4.735870] (-) TimerEvent: {}
+[4.737924] (submarine_sim) StdoutLine: {'line': b'Installing gui_sensor_display script to /home/xavier/ros2_ws/install/submarine_sim/lib/submarine_sim\n'}
+[4.738789] (submarine_sim) StdoutLine: {'line': b'Installing sensor_publisher script to /home/xavier/ros2_ws/install/submarine_sim/lib/submarine_sim\n'}
+[4.740232] (submarine_sim) StdoutLine: {'line': b"writing list of installed files to '/home/xavier/ros2_ws/build/submarine_sim/install.log'\n"}
+[4.774651] (submarine_sim) CommandEnded: {'returncode': 0}
+[4.830005] (submarine_sim) JobEnded: {'identifier': 'submarine_sim', 'rc': 0}
+[4.830459] (-) EventReactorShutdown: {}
