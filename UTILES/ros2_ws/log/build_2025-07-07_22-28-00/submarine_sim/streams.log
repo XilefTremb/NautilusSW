@@ -1,0 +1,18 @@
+[1.253s] Invoking command in '/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim': PYTHONPATH=/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/build --no-deps symlink_data
+[1.622s] running develop
+[1.855s] running egg_info
+[1.855s] writing submarine_sim.egg-info/PKG-INFO
+[1.855s] writing dependency_links to submarine_sim.egg-info/dependency_links.txt
+[1.855s] writing entry points to submarine_sim.egg-info/entry_points.txt
+[1.855s] writing requirements to submarine_sim.egg-info/requires.txt
+[1.855s] writing top-level names to submarine_sim.egg-info/top_level.txt
+[1.858s] reading manifest file 'submarine_sim.egg-info/SOURCES.txt'
+[1.860s] writing manifest file 'submarine_sim.egg-info/SOURCES.txt'
+[1.860s] running build_ext
+[1.860s] Creating /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/python3.10/site-packages/submarine-sim.egg-link (link to .)
+[1.860s] Installing gui_sensor_display script to /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/submarine_sim
+[1.861s] Installing sensor_publisher script to /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/submarine_sim
+[1.861s] 
+[1.861s] Installed /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim
+[1.861s] running symlink_data
+[1.907s] Invoked command in '/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim' returned '0': PYTHONPATH=/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/install/submarine_sim/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/xavier/Documents/GitHub/NautilusSW/UTILES/ros2_ws/build/submarine_sim/build --no-deps symlink_data

@@ -1,17 +1,29 @@
 import sys
 import threading
 import random
-from PyQt5.QtWidgets import (
+from PySide2.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
-    QGridLayout, QLineEdit, QProgressBar, QGroupBox, QRadioButton, QComboBox
+    QGridLayout, QProgressBar, QGroupBox, QComboBox
 )
-from PyQt5.QtCore import Qt, QTimer
+from PySide2.QtCore import Qt, QTimer, QObject, Signal
 import pyqtgraph as pg
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, Float64MultiArray
 
 
+# ----------------------------
+# Signaux Qt pour communication thread-safe
+# ----------------------------
+class GUISignals(QObject):
+    update_motor = Signal(int, float)
+    update_temp = Signal(float)
+    update_humidity = Signal(float)
+
+
+# ----------------------------
+# GUI ROS Node
+# ----------------------------
 class SubmarineGUI(Node):
     def __init__(self):
         super().__init__('submarine_gui')
@@ -21,24 +33,33 @@ class SubmarineGUI(Node):
         self.create_subscription(Float32, 'humidity', self.humidity_callback, 10)
         self.create_subscription(Float64MultiArray, 'motor_currents', self.motor_callback, 10)
 
-        # PyQt5 App
+        # PySide2 App setup
         self.app = QApplication(sys.argv)
         self.window = QWidget()
         self.window.setWindowTitle('GUI Sous-Marin')
         self.layout = QVBoxLayout(self.window)
-       
 
+        # Signaux Qt
+        self.signals = GUISignals()
+        self.signals.update_motor.connect(self.set_motor_value)
+        self.signals.update_temp.connect(self.set_temp)
+        self.signals.update_humidity.connect(self.set_humidity)
+
+        # Interface GUI
         self.build_top_panel()
         self.build_motors_panel()
-        self.build_video_and_depth_panel()
+        self.build_video_panel()
 
         self.window.setLayout(self.layout)
         self.window.show()
 
+    # ----------------------------
+    # GUI construction
+    # ----------------------------
     def build_top_panel(self):
         hbox = QHBoxLayout()
 
-        # ----- Groupe Panneau de contrôle -----
+        # Contrôle
         group_box = QGroupBox("Panneau de contrôle")
         grid_layout = QGridLayout()
 
@@ -60,7 +81,7 @@ class SubmarineGUI(Node):
 
         group_box.setLayout(grid_layout)
 
-        # ----- Groupe Operation (à droite) -----
+        # Opérations
         operation_box = QGroupBox("Opérations")
         grid_layout_op = QGridLayout()
         self.temp_label = QLabel("Temp: -- °C")
@@ -68,14 +89,13 @@ class SubmarineGUI(Node):
         self.battery_label = QLabel("Batterie:")
         self.batterie_bar = QProgressBar()
 
-        grid_layout_op.addWidget(self.temp_label,2,0,2,1)
-        grid_layout_op.addWidget(self.humidity_label,1,0,2,1)
-        grid_layout_op.addWidget(self.battery_label,0,0,2,1)
-        grid_layout_op.addWidget(self.batterie_bar,0,2,2,1)
+        grid_layout_op.addWidget(self.temp_label, 2, 0)
+        grid_layout_op.addWidget(self.humidity_label, 1, 0)
+        grid_layout_op.addWidget(self.battery_label, 0, 0)
+        grid_layout_op.addWidget(self.batterie_bar, 0, 2)
         
         operation_box.setLayout(grid_layout_op)
 
-        # Ajouter les deux groupes dans le layout horizontal
         hbox.addWidget(group_box)
         hbox.addWidget(operation_box)
 
@@ -91,11 +111,11 @@ class SubmarineGUI(Node):
             amp.setValue(0)
             amp.setFixedSize(80, 200)
             label = QLabel(f"Moteur {i+1}")
-            self.pwm = QLabel(f"PWM:")
+            pwm_label = QLabel("PWM:")
             vbox = QVBoxLayout()
             vbox.addWidget(amp)
             vbox.addWidget(label)
-            vbox.addWidget(self.pwm)
+            vbox.addWidget(pwm_label)
             container = QWidget()
             container.setLayout(vbox)
             grid.addWidget(container, 0, i)
@@ -105,9 +125,8 @@ class SubmarineGUI(Node):
         group.setLayout(grid)
         self.layout.addWidget(group)
 
-    def build_video_and_depth_panel(self):
+    def build_video_panel(self):
         layout = QHBoxLayout()
-
         group_box = QGroupBox("Camera")
         grid_layout = QGridLayout()
 
@@ -115,45 +134,53 @@ class SubmarineGUI(Node):
         self.cam1.setFixedSize(400, 300)
         self.cam1.setStyleSheet("background-color: gray")
 
-        self.camera1_button= QPushButton("Camera 1")
-        self.camera2_button= QPushButton("Camera 2")
-
-        """
-        self.depth_bar = QProgressBar()
-        self.depth_bar.setOrientation(Qt.Vertical)
-        self.depth_bar.setRange(0, 100)
-        self.depth_bar.setValue(30)
-        self.depth_bar.setFormat("Profondeur")
-        """
+        self.camera1_button = QPushButton("Camera 1")
+        self.camera2_button = QPushButton("Camera 2")
 
         grid_layout.addWidget(self.cam1, 0, 0, 1, 4)
         grid_layout.addWidget(self.camera1_button, 1, 0)
         grid_layout.addWidget(self.camera2_button, 1, 1)
 
-        group_box.setLayout(grid_layout)  # <== Ajout manquant
-
+        group_box.setLayout(grid_layout)
         layout.addWidget(group_box)
-
         self.layout.addLayout(layout)
 
-
-    # ROS Callbacks
+    # ----------------------------
+    # Callbacks ROS → signaux Qt
+    # ----------------------------
     def temp_callback(self, msg):
-        self.temp_label.setText(f"Temp: {msg.data:.1f} °C")
+        self.signals.update_temp.emit(msg.data)
 
     def humidity_callback(self, msg):
-        self.humidity_label.setText(f"Hum: {msg.data:.1f} %")
+        self.signals.update_humidity.emit(msg.data)
 
     def motor_callback(self, msg):
         for i in range(min(8, len(msg.data))):
-            self.motor_bars[i].setValue(int(msg.data[i] * 10))
+            self.signals.update_motor.emit(i, msg.data[i])
 
+    # ----------------------------
+    # Slots Qt
+    # ----------------------------
+    def set_temp(self, val):
+        self.temp_label.setText(f"Temp: {val:.1f} °C")
+
+    def set_humidity(self, val):
+        self.humidity_label.setText(f"Hum: {val:.1f} %")
+
+    def set_motor_value(self, index, value):
+        self.motor_bars[index].setValue(int(value * 10))
+
+    # ----------------------------
+    # Application start
+    # ----------------------------
     def run(self):
-        sys.exit(self.app.exec_())
-        
+        sys.exit(self.app.exec_())  # pour PySide2
 
 
-def main():
+# ----------------------------
+# Point d'entrée ROS 2
+# ----------------------------
+def main(args=None):
     rclpy.init()
     gui = SubmarineGUI()
     ros_thread = threading.Thread(target=rclpy.spin, args=(gui,), daemon=True)
