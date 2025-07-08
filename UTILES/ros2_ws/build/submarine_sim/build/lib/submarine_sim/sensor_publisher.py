@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float64MultiArray
+from std_msgs.msg import *
 from sensor_msgs.msg import Imu
 import random
 
@@ -14,13 +14,14 @@ class SensorPublisher(Node):
         self.temp_pub = self.create_publisher(Float32, 'temperature', 10)
         self.humidity_pub = self.create_publisher(Float32, 'humidity', 10)
         self.imu_pub = self.create_publisher(Imu, 'imu', 10)
+        self.depthSensor_pub = self.create_publisher(Int32, 'depthSensor', 10)
         self.motor_current_pub = self.create_publisher(Float64MultiArray, 'motor_currents', 10)
 
         # Timer pour publier toutes les 0.5 secondes
         self.timer = self.create_timer(0.5, self.publish_data)
 
     def publish_data(self):
-        # Température et humidité fictives
+        # Température et humidité fictives et profondeur
         temp = Float32()
         temp.data = random.uniform(10.0, 30.0)
         self.temp_pub.publish(temp)
@@ -28,6 +29,10 @@ class SensorPublisher(Node):
         humidity = Float32()
         humidity.data = random.uniform(40.0, 70.0)
         self.humidity_pub.publish(humidity)
+        
+        depth = Int32()
+        depth = int(random.uniform(1,300))
+        self.depthSensor_pub.publish(depth)
 
         # Données IMU fictives (seulement l'accélération linéaire)
         imu = Imu()

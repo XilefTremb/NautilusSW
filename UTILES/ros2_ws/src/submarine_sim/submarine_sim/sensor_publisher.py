@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Float64MultiArray
+from std_msgs.msg import Float32, Float64MultiArray, Int32
 from sensor_msgs.msg import Imu
 import random
 
@@ -14,7 +14,7 @@ class SensorPublisher(Node):
         self.temp_pub = self.create_publisher(Float32, 'temperature', 10)
         self.humidity_pub = self.create_publisher(Float32, 'humidity', 10)
         self.imu_pub = self.create_publisher(Imu, 'imu', 10)
-        self.depthSensor_pub = self.create_publisher(int, 'depthSensor', 10)
+        self.depthSensor_pub = self.create_publisher(Int32, 'depthSensor', 10)
         self.motor_current_pub = self.create_publisher(Float64MultiArray, 'motor_currents', 10)
 
         # Timer pour publier toutes les 0.5 secondes
@@ -29,8 +29,9 @@ class SensorPublisher(Node):
         humidity = Float32()
         humidity.data = random.uniform(40.0, 70.0)
         self.humidity_pub.publish(humidity)
-
-        depth = random.uniform(1,300)
+        
+        depth = Int32()
+        depth.data = int(random.uniform(1,300))
         self.depthSensor_pub.publish(depth)
 
         # Données IMU fictives (seulement l'accélération linéaire)
@@ -46,7 +47,7 @@ class SensorPublisher(Node):
         self.motor_current_pub.publish(currents)
 
         # Log console (facultatif)
-        #self.get_logger().info(f'Temp: {temp.data:.1f} °C | Humidity: {humidity.data:.1f} % | IMU.z: {imu.linear_acceleration.z:.2f} m/s²')
+        self.get_logger().info(f'Temp: {temp.data:.1f} °C | Humidity: {humidity.data:.1f} % | IMU.z: {imu.linear_acceleration.z:.2f} m/s²')
 
 def main(args=None):
     rclpy.init(args=args)
