@@ -4,7 +4,7 @@ import subprocess
 import time
 from PySide2.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
-    QGridLayout, QProgressBar, QGroupBox, QComboBox
+    QGridLayout, QProgressBar, QGroupBox, QComboBox, QFrame, QVBoxLayout, QWidget
 )
 from PySide2.QtCore import Qt, QTimer, QObject, Signal
 import rclpy
@@ -40,7 +40,7 @@ class SubmarineGUI(Node):
 
         self.build_top_panel()
         self.build_motors_panel()
-        self.build_video_panel()
+        self.build_down_panel()
 
         self.window.setLayout(self.layout)
         self.window.show()
@@ -50,8 +50,10 @@ class SubmarineGUI(Node):
     def build_top_panel(self):
         hbox = QHBoxLayout()
 
+        # Groupe Box pour le panneau de contrôle
         group_box = QGroupBox("Panneau de contrôle")
         grid_layout = QGridLayout()
+
         label = QLabel("Sélectionnez un programme")
         combo = QComboBox()
         combo.addItems(["Option 1", "Option 2", "Option 3", "Option 4"])
@@ -69,18 +71,28 @@ class SubmarineGUI(Node):
 
         group_box.setLayout(grid_layout)
 
+        # GRoupe Box pour les opérations
         operation_box = QGroupBox("Opérations")
         grid_layout_op = QGridLayout()
-        self.temp_label = QLabel("Temp: -- °C")
-        self.humidity_label = QLabel("Hum: -- %")
+
+        line = QFrame()
+        line.setFrameShape(QFrame.VLine)
+        line.setFrameShadow(QFrame.Sunken)
+        line.setStyleSheet("background-color: black; width: 2px;")
+        
+        self.tempboit_label = QLabel("Temperature boite: -- °C")
+        self.tempbatt_label = QLabel("Temperature batterie: -- °C")
+        self.humidity_label = QLabel("Humidite boite: -- %")
         self.battery_label = QLabel("Batterie:")
         self.batterie_bar = QProgressBar()
 
-        grid_layout_op.addWidget(self.temp_label, 2, 0)
-        grid_layout_op.addWidget(self.humidity_label, 1, 0)
-        grid_layout_op.addWidget(self.battery_label, 0, 0)
-        grid_layout_op.addWidget(self.batterie_bar, 0, 2)
-
+        grid_layout_op.addWidget(self.tempboit_label, 2, 0,1,2)
+        grid_layout_op.addWidget(self.humidity_label, 1, 0,1,2)
+        grid_layout_op.addWidget(self.battery_label, 0, 3)
+        grid_layout_op.addWidget(self.batterie_bar, 0, 4)
+        grid_layout_op.addWidget(self.tempbatt_label, 0, 0)
+        grid_layout_op.addWidget(line, 0, 2, 4, 1)
+        
         operation_box.setLayout(grid_layout_op)
 
         hbox.addWidget(group_box)
@@ -97,7 +109,7 @@ class SubmarineGUI(Node):
             amp.setRange(0, 40)
             amp.setValue(0)
             amp.setFixedSize(80, 200)
-            label = QLabel(f"Moteur {i+1}")
+            label = QLabel(f"Moteur {i+1}: -- N")
             pwm_label = QLabel("PWM:")
             vbox = QVBoxLayout()
             vbox.addWidget(amp)
@@ -112,8 +124,10 @@ class SubmarineGUI(Node):
         group.setLayout(grid)
         self.layout.addWidget(group)
 
-    def build_video_panel(self):
+    def build_down_panel(self):
         layout = QHBoxLayout()
+
+        # Groupe Box pour le panneau de caméra
         group_box = QGroupBox("Camera")
         grid_layout = QGridLayout()
 
@@ -132,6 +146,35 @@ class SubmarineGUI(Node):
         layout.addWidget(group_box)
         self.layout.addLayout(layout)
 
+        # Groupe Box pour le panneau de instrumentaion
+        group_box_int = QGroupBox("Instrumentation")
+        grid_layout_int = QGridLayout()
+
+        self.x_label = QLabel("x: -- m")
+        self.y_label = QLabel("y: -- m")
+        self.z_label = QLabel("z: -- m")
+        self.pitch_label = QLabel("Pitch: -- °")
+        self.roll_label = QLabel("Roll: -- °")
+        self.yaw_label = QLabel("Yaw: -- °")
+        self.vitesse_label = QLabel("Vitesse: -- m/s")
+        self.proondeur_label = QLabel("Profondeur: -- m")
+
+        grid_layout_int.addWidget(self.x_label, 0, 0, 1, 1)
+        grid_layout_int.addWidget(self.y_label, 1, 0, 1, 1)
+        grid_layout_int.addWidget(self.z_label, 2, 0, 1, 1)
+        grid_layout_int.addWidget(self.pitch_label, 0, 1, 1, 1)
+        grid_layout_int.addWidget(self.roll_label, 1, 1, 1, 1)
+        grid_layout_int.addWidget(self.yaw_label, 2, 1, 1, 1)
+        grid_layout_int.addWidget(self.vitesse_label, 3, 0, 1, 1)
+        grid_layout_int.addWidget(self.proondeur_label, 4, 0, 1, 1)      
+
+        group_box_int.setLayout(grid_layout_int)
+        layout.addWidget(group_box_int)
+
+
+        self.layout.addLayout(layout)
+
+
     # --- ROS callbacks ---
     def temp_callback(self, msg):
         self.signals.update_temp.emit(msg.data)
@@ -144,7 +187,7 @@ class SubmarineGUI(Node):
             self.signals.update_motor.emit(i, msg.data[i])
 
     def set_temp(self, val):
-        self.temp_label.setText(f"Temp: {val:.1f} °C")
+        self.tempboit_label.setText(f"Temp: {val:.1f} °C")
 
     def set_humidity(self, val):
         self.humidity_label.setText(f"Hum: {val:.1f} %")
