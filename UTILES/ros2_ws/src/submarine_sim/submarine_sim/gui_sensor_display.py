@@ -1,29 +1,23 @@
 import sys
 import threading
-import random
+import subprocess
+import time
 from PySide2.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
     QGridLayout, QProgressBar, QGroupBox, QComboBox
 )
 from PySide2.QtCore import Qt, QTimer, QObject, Signal
-import pyqtgraph as pg
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32, Float64MultiArray
 
 
-# ----------------------------
-# Signaux Qt pour communication thread-safe
-# ----------------------------
 class GUISignals(QObject):
     update_motor = Signal(int, float)
     update_temp = Signal(float)
     update_humidity = Signal(float)
 
 
-# ----------------------------
-# GUI ROS Node
-# ----------------------------
 class SubmarineGUI(Node):
     def __init__(self):
         super().__init__('submarine_gui')
@@ -39,13 +33,11 @@ class SubmarineGUI(Node):
         self.window.setWindowTitle('GUI Sous-Marin')
         self.layout = QVBoxLayout(self.window)
 
-        # Signaux Qt
         self.signals = GUISignals()
         self.signals.update_motor.connect(self.set_motor_value)
         self.signals.update_temp.connect(self.set_temp)
         self.signals.update_humidity.connect(self.set_humidity)
 
-        # Interface GUI
         self.build_top_panel()
         self.build_motors_panel()
         self.build_video_panel()
@@ -53,20 +45,16 @@ class SubmarineGUI(Node):
         self.window.setLayout(self.layout)
         self.window.show()
 
-    # ----------------------------
-    # GUI construction
-    # ----------------------------
+        QTimer.singleShot(3000, self.move_window_right)  # décaler après affichage
+
     def build_top_panel(self):
         hbox = QHBoxLayout()
 
-        # Contrôle
         group_box = QGroupBox("Panneau de contrôle")
         grid_layout = QGridLayout()
-
         label = QLabel("Sélectionnez un programme")
         combo = QComboBox()
         combo.addItems(["Option 1", "Option 2", "Option 3", "Option 4"])
-
         self.go_btn = QPushButton("Go")
         self.stop_btn = QPushButton("Stop")
         self.manuel_btn = QPushButton("Manuel")
@@ -81,7 +69,6 @@ class SubmarineGUI(Node):
 
         group_box.setLayout(grid_layout)
 
-        # Opérations
         operation_box = QGroupBox("Opérations")
         grid_layout_op = QGridLayout()
         self.temp_label = QLabel("Temp: -- °C")
@@ -93,7 +80,7 @@ class SubmarineGUI(Node):
         grid_layout_op.addWidget(self.humidity_label, 1, 0)
         grid_layout_op.addWidget(self.battery_label, 0, 0)
         grid_layout_op.addWidget(self.batterie_bar, 0, 2)
-        
+
         operation_box.setLayout(grid_layout_op)
 
         hbox.addWidget(group_box)
@@ -145,9 +132,7 @@ class SubmarineGUI(Node):
         layout.addWidget(group_box)
         self.layout.addLayout(layout)
 
-    # ----------------------------
-    # Callbacks ROS → signaux Qt
-    # ----------------------------
+    # --- ROS callbacks ---
     def temp_callback(self, msg):
         self.signals.update_temp.emit(msg.data)
 
@@ -158,9 +143,6 @@ class SubmarineGUI(Node):
         for i in range(min(8, len(msg.data))):
             self.signals.update_motor.emit(i, msg.data[i])
 
-    # ----------------------------
-    # Slots Qt
-    # ----------------------------
     def set_temp(self, val):
         self.temp_label.setText(f"Temp: {val:.1f} °C")
 
@@ -170,17 +152,23 @@ class SubmarineGUI(Node):
     def set_motor_value(self, index, value):
         self.motor_bars[index].setValue(int(value * 10))
 
-    # ----------------------------
-    # Application start
-    # ----------------------------
+    def move_window_right(self):
+        # Utilise wmctrl pour déplacer la fenêtre PyQt à droite
+        subprocess.call("wmctrl -r 'GUI Sous-Marin' -e 0,960,0,960,1080", shell=True)
+
     def run(self):
-        sys.exit(self.app.exec_())  # pour PySide2
+        sys.exit(self.app.exec_())
 
 
-# ----------------------------
-# Point d'entrée ROS 2
-# ----------------------------
 def main(args=None):
+    # Lance RViz2 dans une autre fenêtre
+    subprocess.Popen([
+    "gnome-terminal", "--", "bash", "-c",
+    "source /opt/ros/humble/setup.bash && rviz2 -d /home/xavier/Documents/GitHub/NautilusSW/UTILES/NAUTILUS_RVIZ.rviz"])
+
+    # Essaie de déplacer RViz2 à gauche
+    subprocess.call("wmctrl -r 'RViz' -e 0,0,0,960,1080", shell=True)
+
     rclpy.init()
     gui = SubmarineGUI()
     ros_thread = threading.Thread(target=rclpy.spin, args=(gui,), daemon=True)
