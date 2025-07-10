@@ -1,0 +1,188 @@
+<?xml version='2.0'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="BlueRov2">
+    <xacro:include filename="../Part/Thruster/T200.urdf.xacro" />
+    <xacro:include filename="../Part/IMU/IMU.urdf.xacro" />
+    <xacro:include filename="../Part/Camera/Camera.urdf.xacro" />
+    <xacro:include filename="../Part/Camera/CameraDepth.urdf.xacro" />
+    <xacro:include filename="../Part/Camera/CameraStereo.urdf.xacro" />
+
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <!--<mesh filename="package://bluerov_ros_playground/model/BlueRov2.dae"/>-->
+                <box size="0.2 0.2  0.1"/> 
+            </geometry>
+        </visual>
+        <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="100"/>
+        <inertia
+        ixx="1"
+        ixy="0"
+        ixz="0"
+        iyy="1"
+        iyz="0"
+        izz="1"/>
+        </inertial>
+        
+        <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.3 0.3 0.1"/>
+                </geometry>
+        </collision>
+
+    </link> 
+
+    <xacro:IMU name="base_link_imu_sensor" link="base_link" xyz="0 0 0" rpy="0 0 0"  />
+    <!--<xacro:Camera name="camera_front" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />-->
+    <xacro:CameraDepth name="camera" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />
+    <!--<xacro:CameraStero name="camera_stereo" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />-->
+
+    <xacro:T200 name="thruster1" fixTo="base_link" xyz="0.125 -0.105 0.02" RPY="1.5707963 1.5707963 -0.78539815"/>
+    <xacro:T200 name="thruster2" fixTo="base_link" xyz="0.125 0.105 0.02" RPY="1.5707963 1.5707963 3.92699075"/>
+    <xacro:T200 name="thruster3" fixTo="base_link" xyz="-0.125 -0.105 0.02" RPY="1.5707963 1.5707963 0.78540075"/>
+    <xacro:T200 name="thruster4" fixTo="base_link" xyz="-0.125 0.105 0.02" RPY="1.5707963 1.5707963 2.35619445"/>
+    <xacro:T200 name="thruster5" fixTo="base_link" xyz="0 -0.105 0" RPY="3.1415926 0 0"/>
+    <xacro:T200 name="thruster6" fixTo="base_link" xyz="0 0.105 0" RPY="3.1415926 0 0"/>
+
+    <allow_auto_disable>1</allow_auto_disable>
+    <gazebo>
+        
+        <plugin name="ArduPilotPlugin" filename="libArduPilotPlugin.so">
+        <fdm_addr>127.0.0.1</fdm_addr>
+        <fdm_port_in>9002</fdm_port_in>
+        <fdm_port_out>9003</fdm_port_out>
+        <imuName>base_link_imu_sensor</imuName>
+        <connectionTimeoutMaxCount>5</connectionTimeoutMaxCount>
+
+        <!--
+            incoming control command [0, 1]
+            so offset it by -0.5 to get [-0.5, 0.5].
+            multiplier = 102
+            Positive thrust = 51
+            Negative thrust = -41
+        -->
+            
+            <control channel="0">
+            <type>VELOCITY</type>
+            <offset>-0.5</offset>
+            <p_gain>1</p_gain>
+            <i_gain>0</i_gain>
+            <d_gain>0</d_gain>
+            <i_max>0</i_max>
+            <i_min>0</i_min>
+            <cmd_max>0.5</cmd_max>
+            <cmd_min>-0.5</cmd_min>
+            <jointName>thruster1_propeler_joint</jointName>
+            <multiplier>102</multiplier>
+            </control>
+
+            <control channel="1">
+            <type>VELOCITY</type>
+            <offset>-0.5</offset>
+            <p_gain>1</p_gain>
+            <i_gain>0</i_gain>
+            <d_gain>0</d_gain>
+            <i_max>0</i_max>
+            <i_min>0</i_min>
+            <cmd_max>0.5</cmd_max>
+            <cmd_min>-0.5</cmd_min>
+            <jointName>thruster2_propeler_joint</jointName>
+            <multiplier>102</multiplier>
+            </control>
+
+            <control channel="2">
+            <type>VELOCITY</type>
+            <offset>-0.5</offset>
+            <p_gain>1</p_gain>
+            <i_gain>0</i_gain>
+            <d_gain>0</d_gain>
+            <i_max>0</i_max>
+            <i_min>0</i_min>
+            <cmd_max>0.5</cmd_max>
+            <cmd_min>-0.5</cmd_min>
+            <jointName>thruster3_propeler_joint</jointName>
+            <multiplier>102</multiplier>
+            </control>
+
+            <control channel="3">
+            <type>VELOCITY</type>
+            <offset>-0.5</offset>
+            <p_gain>1</p_gain>
+            <i_gain>0</i_gain>
+            <d_gain>0</d_gain>
+            <i_max>0</i_max>
+            <i_min>0</i_min>
+            <cmd_max>0.5</cmd_max>
+            <cmd_min>-0.5</cmd_min>
+            <jointName>thruster4_propeler_joint</jointName>
+            <multiplier>102</multiplier>
+            </control>
+
+
+            <control channel="4">
+            <type>VELOCITY</type>
+            <offset>-0.5</offset>
+            <p_gain>1</p_gain>
+            <i_gain>0</i_gain>
+            <d_gain>0</d_gain>
+            <i_max>0</i_max>
+            <i_min>0</i_min>
+            <cmd_max>0.5</cmd_max>
+            <cmd_min>-0.5</cmd_min>
+            <jointName>thruster5_propeler_joint</jointName>
+            <multiplier>102</multiplier>
+            </control>
+
+            <control channel="5">
+            <type>VELOCITY</type>
+            <offset>-0.5</offset>
+            <p_gain>1</p_gain>
+            <i_gain>0</i_gain>
+            <d_gain>0</d_gain>
+            <i_max>0</i_max>
+            <i_min>0</i_min>
+            <cmd_max>0.5</cmd_max>
+            <cmd_min>-0.5</cmd_min>
+            <jointName>thruster6_propeler_joint</jointName>
+            <multiplier>102</multiplier>
+            </control>
+        </plugin> 
+    </gazebo>
+
+
+
+    <gazebo>
+        <!-- buoyancy plugin -->
+        <plugin name="ignititon::gazebo::systems::Buoyancy" filename="ignition-gazebo-buoyancy-system">
+            
+            <!-- <descriptionParam>robot_description</descriptionParam>
+            <fluidTopic>current</fluidTopic>
+            <alwaysOn>true</alwaysOn>
+            <surface>0 0 0</surface>
+            <updateRate>.001</updateRate>
+
+            <link name="base_link">
+                <buoyancy>
+                <compensation>0.2525</compensation>
+                <origin xyz= "0.12585 0.111 0.1789"/>
+                </buoyancy>
+                <buoyancy>
+                <compensation>0.2525</compensation>
+                <origin xyz= "-0.12585 0.111 0.1789"/>
+                </buoyancy>
+                <buoyancy>
+                <compensation>0.2525</compensation>
+                <origin xyz= "-0.12585 -0.111 0.1789"/>
+                </buoyancy>
+                <buoyancy>
+                <compensation>0.2525</compensation>
+                <origin xyz= "0.12585 -0.111 0.1789"/>
+                </buoyancy>
+            </link> -->
+        </plugin>
+    </gazebo>
+
+</robot>
