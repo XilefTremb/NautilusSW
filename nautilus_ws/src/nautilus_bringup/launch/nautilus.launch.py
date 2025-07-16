@@ -48,7 +48,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     """Generate a launch description for a iris quadcopter."""
-    pkg_project_bringup = get_package_share_directory("ardupilot_gz_bringup")
+    pkg_project_bringup = get_package_share_directory("nautilus_bringup")
     pkg_project_gazebo = get_package_share_directory("ardupilot_gz_gazebo")
     pkg_ros_gz_sim = get_package_share_directory("ros_gz_sim")
 
@@ -58,7 +58,7 @@ def generate_launch_description():
             [
                 PathJoinSubstitution(
                     [
-                        FindPackageShare("ardupilot_gz_bringup"),
+                        FindPackageShare("nautilus_bringup"),
                         "launch",
                         "robots",
                         "nautilus_auv.launch.py",
@@ -84,7 +84,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             "gz_args": "-v4 -s -r "
-            + f'{Path(pkg_project_gazebo) / "worlds" / "pool_corner.world"}'
+            + f'{Path(pkg_project_bringup) / "worlds" / "pool_corner.world"}'
         }.items(),
     )
 
@@ -95,16 +95,16 @@ def generate_launch_description():
         launch_arguments={"gz_args": "-v4 -g"}.items(),
     )
 
-    # RViz.
-    rviz = Node(
-        package="rviz2",
-        executable="rviz2",
-        arguments=[
-            "-d",
-            f'{Path(pkg_project_bringup) / "rviz" / "iris_with_lidar.rviz"}',
-        ],
-        condition=IfCondition(LaunchConfiguration("rviz")),
-    )
+    # # RViz.
+    # rviz = Node(
+    #     package="rviz2",
+    #     executable="rviz2",
+    #     arguments=[
+    #         "-d",
+    #         f'{Path(pkg_project_bringup) / "rviz" / "iris_with_lidar.rviz"}',
+    #     ],
+    #     condition=IfCondition(LaunchConfiguration("rviz")),
+    # )
 
     return LaunchDescription(
         [
@@ -114,6 +114,6 @@ def generate_launch_description():
             gz_sim_server,
             gz_sim_gui,
             iris,
-            rviz,
+            # rviz,
         ]
     )

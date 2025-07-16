@@ -14,7 +14,7 @@
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <mass value="100"/>
+      <mass value="7"/>
       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
     </inertial>
     <collision>
@@ -741,34 +741,29 @@
         <multiplier>102</multiplier>
       </control>
     </plugin>
-  </gazebo>
-  <gazebo>
-    <!-- buoyancy plugin -->
-    <plugin filename="ignition-gazebo-buoyancy-system" name="ignititon::gazebo::systems::Buoyancy">
-      <!-- <descriptionParam>robot_description</descriptionParam>
-            <fluidTopic>current</fluidTopic>
-            <alwaysOn>true</alwaysOn>
-            <surface>0 0 0</surface>
-            <updateRate>.001</updateRate>
-
-            <link name="base_link">
-                <buoyancy>
-                <compensation>0.2525</compensation>
-                <origin xyz= "0.12585 0.111 0.1789"/>
-                </buoyancy>
-                <buoyancy>
-                <compensation>0.2525</compensation>
-                <origin xyz= "-0.12585 0.111 0.1789"/>
-                </buoyancy>
-                <buoyancy>
-                <compensation>0.2525</compensation>
-                <origin xyz= "-0.12585 -0.111 0.1789"/>
-                </buoyancy>
-                <buoyancy>
-                <compensation>0.2525</compensation>
-                <origin xyz= "0.12585 -0.111 0.1789"/>
-                </buoyancy>
-            </link> -->
-    </plugin>
+    <!-- 
+        <plugin
+        filename="gz-sim-hydrodynamics-system"
+        name="gz::sim::systems::Hydrodynamics">
+            <link_name>base_link</link_name>
+            <xDotU>-4.876161</xDotU>
+            <yDotV>-126.324739</yDotV>
+            <zDotW>-126.324739</zDotW>
+            <kDotP>0</kDotP>
+            <mDotQ>-33.46</mDotQ>
+            <nDotR>-33.46</nDotR>
+            <xUabsU>-6.2282</xUabsU>
+            <xU>0</xU>
+            <yVabsV>-601.27</yVabsV>
+            <yV>0</yV>
+            <zWabsW>-601.27</zWabsW>
+            <zW>0</zW>
+            <kPabsP>-0.1916</kPabsP>
+            <kP>0</kP>
+            <mQabsQ>-632.698957</mQabsQ>
+            <mQ>0</mQ>
+            <nRabsR>-632.698957</nRabsR>
+            <nR>0</nR>
+        </plugin> -->
   </gazebo>
 </robot>

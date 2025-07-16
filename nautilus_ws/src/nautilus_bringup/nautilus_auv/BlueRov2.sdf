@@ -2,15 +2,15 @@
   <model name='BlueRov2'>
     <link name='base_link'>
       <inertial>
-        <pose>9.6999883600139639e-09 4.2351596540799151e-24 -3.399995920004893e-09 0 0 0</pose>
-        <mass>100.00012</mass>
+        <pose>1.3856905310194691e-07 6.0501316209886418e-23 -4.8570595932641123e-08 0 0 0</pose>
+        <mass>7.0001200000000008</mass>
         <inertia>
-          <ixx>1.0010213714899989</ixx>
-          <ixy>1.355252716017691e-20</ixy>
-          <ixz>-3.2979960424047461e-15</ixz>
-          <iyy>1.0012013455349891</iyy>
-          <iyz>-1.4399542823871699e-30</iyz>
-          <izz>1.00084262004499</izz>
+          <ixx>1.0010213714899829</ixx>
+          <ixy>1.3552527214755081e-20</ixy>
+          <ixz>-4.7113478054661907e-14</ixz>
+          <iyy>1.001201345534849</iyy>
+          <iyz>-2.0570447511361369e-29</iyz>
+          <izz>1.000842620044865</izz>
         </inertia>
       </inertial>
       <collision name='base_link_collision'>
@@ -674,7 +674,6 @@
         <multiplier>102</multiplier>
       </control>
     </plugin>
-    <plugin name='ignititon::gazebo::systems::Buoyancy' filename='ignition-gazebo-buoyancy-system'/>
     <frame name='thruster1_thruster_joint' attached_to='thruster1_base_link'>
       <pose>0.048500000000000001 0 0 0 0 0</pose>
     </frame>

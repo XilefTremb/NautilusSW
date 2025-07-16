@@ -93,12 +93,12 @@ def launch_state_pub_with_bridge(context):
     # Robot description and ros_gz bridge config chosen based on passed lidar_dimension argument
     # lidar_dim = LaunchConfiguration("lidar_dim").perform(context)
     pkg_ardupilot_gz_description = get_package_share_directory("ardupilot_gz_description")
-    pkg_project_bringup = get_package_share_directory("ardupilot_gz_bringup")
+    pkg_project_bringup = get_package_share_directory("nautilus_bringup")
 
     # print(f'\n\n\n\n\n\n\n\n\n{get_package_share_directory("model")}')
     
     sdf_file = os.path.join(
-        pkg_ardupilot_gz_description, "models", "nautilus_auv", "BlueRov2.sdf"
+        pkg_project_bringup, "nautilus_auv", "BlueRov2.sdf"
     )
 
     with open(sdf_file, "r") as infp:
