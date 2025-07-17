@@ -95,13 +95,16 @@ def launch_state_pub_with_bridge(context):
     pkg_ardupilot_gz_description = get_package_share_directory("ardupilot_gz_description")
     pkg_project_bringup = get_package_share_directory("nautilus_bringup")
 
-    # print(f'\n\n\n\n\n\n\n\n\n{get_package_share_directory("model")}')
-    
-    sdf_file = os.path.join(
-        pkg_project_bringup, "nautilus_auv", "BlueRov2.sdf"
-    )
 
-    with open(sdf_file, "r") as infp:
+    xacroPath = os.path.join(pkg_project_bringup, "nautilus_auv", "BlueRov2.urdf.xacro")
+    urdfPath = os.path.join(pkg_project_bringup,'nautilus_auv','BlueRov2.urdf')
+    sdfPath = os.path.join(pkg_project_bringup, "nautilus_auv", "BlueRov2.sdf")
+
+
+    os.system("xacro "+ str(xacroPath)+ " -o " + str(urdfPath))   
+    os.system("gz sdf -p " + str(urdfPath) + " > " + str(sdfPath))
+
+    with open(sdfPath, "r") as infp:
         robot_desc = infp.read()
         # print(robot_desc)
 
@@ -109,7 +112,7 @@ def launch_state_pub_with_bridge(context):
     # ros_gz_bridge_config = "iris_3Dlidar_bridge.yaml"
     log = LogInfo(msg="using nautilus auv")
 
-    # Publish /tf and /tf_static.
+    # Publish /tf and /tf_static.w
     robot_state_publisher = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
