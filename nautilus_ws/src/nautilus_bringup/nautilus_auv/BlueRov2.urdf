@@ -13,8 +13,8 @@
       </geometry>
     </visual>
     <inertial>
-      <origin rpy="0 0 0" xyz="0 0 0"/>
-      <mass value="7"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.1"/>
+      <mass value="8"/>
       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
     </inertial>
     <collision>
@@ -741,29 +741,26 @@
         <multiplier>102</multiplier>
       </control>
     </plugin>
-    <!-- 
-        <plugin
-        filename="gz-sim-hydrodynamics-system"
-        name="gz::sim::systems::Hydrodynamics">
-            <link_name>base_link</link_name>
-            <xDotU>-4.876161</xDotU>
-            <yDotV>-126.324739</yDotV>
-            <zDotW>-126.324739</zDotW>
-            <kDotP>0</kDotP>
-            <mDotQ>-33.46</mDotQ>
-            <nDotR>-33.46</nDotR>
-            <xUabsU>-6.2282</xUabsU>
-            <xU>0</xU>
-            <yVabsV>-601.27</yVabsV>
-            <yV>0</yV>
-            <zWabsW>-601.27</zWabsW>
-            <zW>0</zW>
-            <kPabsP>-0.1916</kPabsP>
-            <kP>0</kP>
-            <mQabsQ>-632.698957</mQabsQ>
-            <mQ>0</mQ>
-            <nRabsR>-632.698957</nRabsR>
-            <nR>0</nR>
-        </plugin> -->
+    <plugin filename="gz-sim-hydrodynamics-system" name="gz::sim::systems::Hydrodynamics">
+      <link_name>base_link</link_name>
+      <xDotU>1</xDotU>
+      <yDotV>1</yDotV>
+      <zDotW>2.5</zDotW>
+      <kDotP>0.075</kDotP>
+      <mDotQ>0.075</mDotQ>
+      <nDotR>0.135</nDotR>
+      <xUabsU>-20</xUabsU>
+      <xU>-5</xU>
+      <yVabsV>-20</yVabsV>
+      <yV>-5</yV>
+      <zWabsW>-50</zWabsW>
+      <zW>-5</zW>
+      <kPabsP>-0.5</kPabsP>
+      <kP>-0.05</kP>
+      <mQabsQ>-0.5</mQabsQ>
+      <mQ>-0.05</mQ>
+      <nRabsR>-1</nRabsR>
+      <nR>-0.1</nR>
+    </plugin>
   </gazebo>
 </robot>
