@@ -2,15 +2,15 @@
   <model name='BlueRov2'>
     <link name='base_link'>
       <inertial>
-        <pose>1.3856905310194691e-07 6.0501316209886418e-23 -4.8570595932641123e-08 0 0 0</pose>
-        <mass>7.0001200000000008</mass>
+        <pose>1.2124818127728089e-07 0 -0.099998542521862244 0 0 0</pose>
+        <mass>8.0001199999999955</mass>
         <inertia>
-          <ixx>1.0010213714899829</ixx>
-          <ixy>1.3552527214755081e-20</ixy>
-          <ixz>-4.7113478054661907e-14</ixz>
-          <iyy>1.001201345534849</iyy>
-          <iyz>-2.0570447511361369e-29</iyz>
-          <izz>1.000842620044865</izz>
+          <ixx>1.001022503473006</ixx>
+          <ixy>1.3552527156068811e-20</ixy>
+          <ixz>-9.6998586246206393e-08</ixz>
+          <iyy>1.001202477517888</iyy>
+          <iyz>0</iyz>
+          <izz>1.0008426200448819</izz>
         </inertia>
       </inertial>
       <collision name='base_link_collision'>
@@ -673,6 +673,27 @@
         <jointName>thruster6_propeler_joint</jointName>
         <multiplier>102</multiplier>
       </control>
+    </plugin>
+    <plugin name='gz::sim::systems::Hydrodynamics' filename='gz-sim-hydrodynamics-system'>
+      <link_name>base_link</link_name>
+      <xDotU>1</xDotU>
+      <yDotV>1</yDotV>
+      <zDotW>2.5</zDotW>
+      <kDotP>0.075</kDotP>
+      <mDotQ>0.075</mDotQ>
+      <nDotR>0.135</nDotR>
+      <xUabsU>-20</xUabsU>
+      <xU>-5</xU>
+      <yVabsV>-20</yVabsV>
+      <yV>-5</yV>
+      <zWabsW>-50</zWabsW>
+      <zW>-5</zW>
+      <kPabsP>-0.5</kPabsP>
+      <kP>-0.05</kP>
+      <mQabsQ>-0.5</mQabsQ>
+      <mQ>-0.05</mQ>
+      <nRabsR>-1</nRabsR>
+      <nR>-0.1</nR>
     </plugin>
     <frame name='thruster1_thruster_joint' attached_to='thruster1_base_link'>
       <pose>0.048500000000000001 0 0 0 0 0</pose>
