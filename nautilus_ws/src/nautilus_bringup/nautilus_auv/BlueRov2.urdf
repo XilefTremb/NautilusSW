@@ -14,7 +14,7 @@
     </visual>
     <inertial>
       <origin rpy="0 0 0" xyz="0 0 -0.1"/>
-      <mass value="8"/>
+      <mass value="9"/>
       <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
     </inertial>
     <collision>
@@ -240,22 +240,22 @@
     <dynamics damping="0.01" friction="0.01"/>
   </joint>
   <gazebo>
-    <!--plugin name="${name}_propeller_plugin" filename="libLiftDragPlugin.so">
-        <a0>0.3</a0>
-        <alpha_stall>1.4</alpha_stall>
-        <cla>4.2500</cla>
-        <cda>0.10</cda>
-        <cma>0.00</cma>
-        <cla_stall>-0.025</cla_stall>
-        <cda_stall>0.0</cda_stall>
-        <cma_stall>0.0</cma_stall>
-        <area>0.002</area>
-        <air_density>1000</air_density>
-        <cp>-0.084 0 0</cp>
-        <forward>0 -1 0</forward>
-        <upward>0 0 -1</upward>
-        <link_name>${name}_propeler</link_name>
-      </plugin-->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster1_propeler</link_name>
+    </plugin>
   </gazebo>
   <link name="thruster2_base_link">
     <inertial>
@@ -318,22 +318,22 @@
     <dynamics damping="0.01" friction="0.01"/>
   </joint>
   <gazebo>
-    <!--plugin name="${name}_propeller_plugin" filename="libLiftDragPlugin.so">
-        <a0>0.3</a0>
-        <alpha_stall>1.4</alpha_stall>
-        <cla>4.2500</cla>
-        <cda>0.10</cda>
-        <cma>0.00</cma>
-        <cla_stall>-0.025</cla_stall>
-        <cda_stall>0.0</cda_stall>
-        <cma_stall>0.0</cma_stall>
-        <area>0.002</area>
-        <air_density>1000</air_density>
-        <cp>-0.084 0 0</cp>
-        <forward>0 -1 0</forward>
-        <upward>0 0 -1</upward>
-        <link_name>${name}_propeler</link_name>
-      </plugin-->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster2_propeler</link_name>
+    </plugin>
   </gazebo>
   <link name="thruster3_base_link">
     <inertial>
@@ -396,22 +396,22 @@
     <dynamics damping="0.01" friction="0.01"/>
   </joint>
   <gazebo>
-    <!--plugin name="${name}_propeller_plugin" filename="libLiftDragPlugin.so">
-        <a0>0.3</a0>
-        <alpha_stall>1.4</alpha_stall>
-        <cla>4.2500</cla>
-        <cda>0.10</cda>
-        <cma>0.00</cma>
-        <cla_stall>-0.025</cla_stall>
-        <cda_stall>0.0</cda_stall>
-        <cma_stall>0.0</cma_stall>
-        <area>0.002</area>
-        <air_density>1000</air_density>
-        <cp>-0.084 0 0</cp>
-        <forward>0 -1 0</forward>
-        <upward>0 0 -1</upward>
-        <link_name>${name}_propeler</link_name>
-      </plugin-->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster3_propeler</link_name>
+    </plugin>
   </gazebo>
   <link name="thruster4_base_link">
     <inertial>
@@ -474,22 +474,22 @@
     <dynamics damping="0.01" friction="0.01"/>
   </joint>
   <gazebo>
-    <!--plugin name="${name}_propeller_plugin" filename="libLiftDragPlugin.so">
-        <a0>0.3</a0>
-        <alpha_stall>1.4</alpha_stall>
-        <cla>4.2500</cla>
-        <cda>0.10</cda>
-        <cma>0.00</cma>
-        <cla_stall>-0.025</cla_stall>
-        <cda_stall>0.0</cda_stall>
-        <cma_stall>0.0</cma_stall>
-        <area>0.002</area>
-        <air_density>1000</air_density>
-        <cp>-0.084 0 0</cp>
-        <forward>0 -1 0</forward>
-        <upward>0 0 -1</upward>
-        <link_name>${name}_propeler</link_name>
-      </plugin-->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster4_propeler</link_name>
+    </plugin>
   </gazebo>
   <link name="thruster5_base_link">
     <inertial>
@@ -552,22 +552,22 @@
     <dynamics damping="0.01" friction="0.01"/>
   </joint>
   <gazebo>
-    <!--plugin name="${name}_propeller_plugin" filename="libLiftDragPlugin.so">
-        <a0>0.3</a0>
-        <alpha_stall>1.4</alpha_stall>
-        <cla>4.2500</cla>
-        <cda>0.10</cda>
-        <cma>0.00</cma>
-        <cla_stall>-0.025</cla_stall>
-        <cda_stall>0.0</cda_stall>
-        <cma_stall>0.0</cma_stall>
-        <area>0.002</area>
-        <air_density>1000</air_density>
-        <cp>-0.084 0 0</cp>
-        <forward>0 -1 0</forward>
-        <upward>0 0 -1</upward>
-        <link_name>${name}_propeler</link_name>
-      </plugin-->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster5_propeler</link_name>
+    </plugin>
   </gazebo>
   <link name="thruster6_base_link">
     <inertial>
@@ -630,22 +630,22 @@
     <dynamics damping="0.01" friction="0.01"/>
   </joint>
   <gazebo>
-    <!--plugin name="${name}_propeller_plugin" filename="libLiftDragPlugin.so">
-        <a0>0.3</a0>
-        <alpha_stall>1.4</alpha_stall>
-        <cla>4.2500</cla>
-        <cda>0.10</cda>
-        <cma>0.00</cma>
-        <cla_stall>-0.025</cla_stall>
-        <cda_stall>0.0</cda_stall>
-        <cma_stall>0.0</cma_stall>
-        <area>0.002</area>
-        <air_density>1000</air_density>
-        <cp>-0.084 0 0</cp>
-        <forward>0 -1 0</forward>
-        <upward>0 0 -1</upward>
-        <link_name>${name}_propeler</link_name>
-      </plugin-->
+    <plugin filename="gz-sim-lift-drag-system" name="gz::sim::systems::LiftDrag">
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster6_propeler</link_name>
+    </plugin>
   </gazebo>
   <allow_auto_disable>1</allow_auto_disable>
   <gazebo>
