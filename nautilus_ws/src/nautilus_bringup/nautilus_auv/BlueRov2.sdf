@@ -2,15 +2,15 @@
   <model name='BlueRov2'>
     <link name='base_link'>
       <inertial>
-        <pose>1.2124818127728089e-07 0 -0.099998542521862244 0 0 0</pose>
-        <mass>8.0001199999999955</mass>
+        <pose>1.0777634075990091e-07 0 -0.099998704461718352 0 0 0</pose>
+        <mass>9.0001199999999955</mass>
         <inertia>
-          <ixx>1.001022503473006</ixx>
+          <ixx>1.0010225034748941</ixx>
           <ixy>1.3552527156068811e-20</ixy>
-          <ixz>-9.6998586246206393e-08</ixz>
-          <iyy>1.001202477517888</iyy>
+          <ixz>-9.6998743327866735e-08</ixz>
+          <iyy>1.001202477519789</iyy>
           <iyz>0</iyz>
-          <izz>1.0008426200448819</izz>
+          <izz>1.000842620044895</izz>
         </inertia>
       </inertial>
       <collision name='base_link_collision'>
@@ -589,6 +589,102 @@
         </inertia>
       </inertial>
     </link>
+    <plugin name='gz::sim::systems::LiftDrag' filename='gz-sim-lift-drag-system'>
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster1_propeler</link_name>
+    </plugin>
+    <plugin name='gz::sim::systems::LiftDrag' filename='gz-sim-lift-drag-system'>
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster2_propeler</link_name>
+    </plugin>
+    <plugin name='gz::sim::systems::LiftDrag' filename='gz-sim-lift-drag-system'>
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster3_propeler</link_name>
+    </plugin>
+    <plugin name='gz::sim::systems::LiftDrag' filename='gz-sim-lift-drag-system'>
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster4_propeler</link_name>
+    </plugin>
+    <plugin name='gz::sim::systems::LiftDrag' filename='gz-sim-lift-drag-system'>
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster5_propeler</link_name>
+    </plugin>
+    <plugin name='gz::sim::systems::LiftDrag' filename='gz-sim-lift-drag-system'>
+      <a0>0.3</a0>
+      <alpha_stall>1.4</alpha_stall>
+      <cla>4.2500</cla>
+      <cda>0.10</cda>
+      <cma>0.00</cma>
+      <cla_stall>-0.025</cla_stall>
+      <cda_stall>0.0</cda_stall>
+      <cma_stall>0.0</cma_stall>
+      <area>0.002</area>
+      <air_density>1000</air_density>
+      <cp>-0.084 0 0</cp>
+      <forward>0 -1 0</forward>
+      <upward>0 0 -1</upward>
+      <link_name>thruster6_propeler</link_name>
+    </plugin>
     <plugin name='ArduPilotPlugin' filename='libArduPilotPlugin.so'>
       <fdm_addr>127.0.0.1</fdm_addr>
       <fdm_port_in>9002</fdm_port_in>

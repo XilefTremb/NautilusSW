@@ -247,7 +247,7 @@ def generate_launch_description():
                 pkg_ardupilot_sitl,
                 "config",
                 "default_params",
-                "gazebo-iris.parm",
+                "sub-6dof.parm",
             )
             + ","
             + os.path.join(

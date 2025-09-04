@@ -98,7 +98,7 @@
     </joint>
 
     <gazebo>
-      <!--plugin name="${name}_propeller_plugin" filename="libLiftDragPlugin.so">
+      <plugin name="gz::sim::systems::LiftDrag" filename="gz-sim-lift-drag-system">
         <a0>0.3</a0>
         <alpha_stall>1.4</alpha_stall>
         <cla>4.2500</cla>
@@ -113,7 +113,7 @@
         <forward>0 -1 0</forward>
         <upward>0 0 -1</upward>
         <link_name>${name}_propeler</link_name>
-      </plugin-->
+      </plugin>
     </gazebo>
 
   </xacro:macro>
