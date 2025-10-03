@@ -1,0 +1,4 @@
+[console_scripts]
+gui_sensor_display = submarine_sim.gui_sensor_display:main
+sensor_publisher = submarine_sim.sensor_publisher:main
+
