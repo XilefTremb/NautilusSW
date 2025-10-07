@@ -1,9 +1,0 @@
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/uninstall.dir
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/nautilus_bringup_uninstall.dir
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/test.dir
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/edit_cache.dir
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/rebuild_cache.dir
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/list_install_components.dir
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/install.dir
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/install/local.dir
-/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup/CMakeFiles/install/strip.dir
