@@ -95,6 +95,11 @@ def generate_launch_description():
         launch_arguments={"gz_args": "-v4 -g"}.items(),
     )
 
+    mavlink_telemetry_bridge = Node(
+        package='mavlink_bridge',
+        executable='mavlink_telemetry_bridge',
+    )
+
     # # RViz.
     # rviz = Node(
     #     package="rviz2",
@@ -114,6 +119,7 @@ def generate_launch_description():
             gz_sim_server,
             gz_sim_gui,
             iris,
+            mavlink_telemetry_bridge,
             # rviz,
         ]
     )

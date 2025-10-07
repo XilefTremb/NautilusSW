@@ -1,0 +1,23 @@
+running egg_info
+writing ../../build/mavlink_bridge/mavlink_bridge.egg-info/PKG-INFO
+writing dependency_links to ../../build/mavlink_bridge/mavlink_bridge.egg-info/dependency_links.txt
+writing entry points to ../../build/mavlink_bridge/mavlink_bridge.egg-info/entry_points.txt
+writing requirements to ../../build/mavlink_bridge/mavlink_bridge.egg-info/requires.txt
+writing top-level names to ../../build/mavlink_bridge/mavlink_bridge.egg-info/top_level.txt
+reading manifest file '../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'
+writing manifest file '../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'
+running build
+running build_py
+copying mavlink_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/mavlink_bridge
+copying mavlink_bridge/__init__.py -> /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/mavlink_bridge
+running install
+running install_lib
+running install_data
+copying resource/mavlink_bridge -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/share/ament_index/resource_index/packages
+copying package.xml -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/share/mavlink_bridge
+running install_egg_info
+removing '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge-0.0.0-py3.10.egg-info' (and everything under it)
+Copying ../../build/mavlink_bridge/mavlink_bridge.egg-info to /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge-0.0.0-py3.10.egg-info
+running install_scripts
+Installing mavlink_telemetry_bridge script to /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/mavlink_bridge
+writing list of installed files to '/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/install.log'
