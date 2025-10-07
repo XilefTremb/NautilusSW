@@ -1,0 +1,2 @@
+[console_scripts]
+mavlink_telemetry_bridge = telemetry_bridge.mavlink_telemetry_bridge:main

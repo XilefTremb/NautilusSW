@@ -96,9 +96,18 @@ def generate_launch_description():
     )
 
     mavlink_telemetry_bridge = Node(
-        package='mavlink_bridge',
-        executable='mavlink_telemetry_bridge',
-    )
+            #package='auv_mavlink_bridge'
+            package='mavlink_bridge',
+            executable='mavlink_telemetry_bridge',
+            name='mavlink_telemetry_bridge',
+            parameters=[{
+                'connection': 'udp:127.0.0.1:14550',
+                'frame_id': 'odom',
+                'child_frame_id': 'base_link',
+                'thruster_count': 8,
+            }],
+            output='screen'
+        )
 
     # # RViz.
     # rviz = Node(

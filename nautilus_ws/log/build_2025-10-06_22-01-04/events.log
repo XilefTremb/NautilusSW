@@ -1,0 +1,539 @@
+[0.000000] (-) TimerEvent: {}
+[0.006629] (mavlink_bridge) JobQueued: {'identifier': 'mavlink_bridge', 'dependencies': OrderedDict()}
+[0.009031] (nautilus_bringup) JobQueued: {'identifier': 'nautilus_bringup', 'dependencies': OrderedDict([('mavlink_bridge', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge')])}
+[0.020975] (mavlink_bridge) JobStarted: {'identifier': 'mavlink_bridge'}
+[0.100165] (-) TimerEvent: {}
+[0.224976] (-) TimerEvent: {}
+[0.332407] (-) TimerEvent: {}
+[0.439399] (-) TimerEvent: {}
+[0.555850] (-) TimerEvent: {}
+[0.665357] (-) TimerEvent: {}
+[0.775121] (-) TimerEvent: {}
+[0.880368] (-) TimerEvent: {}
+[0.992084] (-) TimerEvent: {}
+[1.104101] (-) TimerEvent: {}
+[1.208440] (-) TimerEvent: {}
+[1.315206] (-) TimerEvent: {}
+[1.420385] (-) TimerEvent: {}
+[1.531520] (-) TimerEvent: {}
+[1.637096] (-) TimerEvent: {}
+[1.750991] (-) TimerEvent: {}
+[1.855587] (-) TimerEvent: {}
+[1.964205] (-) TimerEvent: {}
+[2.074746] (-) TimerEvent: {}
+[2.176159] (-) TimerEvent: {}
+[2.290312] (-) TimerEvent: {}
+[2.399424] (-) TimerEvent: {}
+[2.511699] (-) TimerEvent: {}
+[2.616181] (-) TimerEvent: {}
+[2.721041] (-) TimerEvent: {}
+[2.833261] (-) TimerEvent: {}
+[2.939252] (-) TimerEvent: {}
+[3.045156] (-) TimerEvent: {}
+[3.150717] (-) TimerEvent: {}
+[3.258434] (-) TimerEvent: {}
+[3.370248] (-) TimerEvent: {}
+[3.475307] (-) TimerEvent: {}
+[3.576762] (-) TimerEvent: {}
+[3.681912] (-) TimerEvent: {}
+[3.788001] (-) TimerEvent: {}
+[3.901926] (-) TimerEvent: {}
+[4.012546] (-) TimerEvent: {}
+[4.119415] (-) TimerEvent: {}
+[4.220434] (-) TimerEvent: {}
+[4.332370] (-) TimerEvent: {}
+[4.434331] (-) TimerEvent: {}
+[4.542463] (-) TimerEvent: {}
+[4.647370] (-) TimerEvent: {}
+[4.762338] (-) TimerEvent: {}
+[4.871993] (-) TimerEvent: {}
+[4.977105] (-) TimerEvent: {}
+[5.081214] (-) TimerEvent: {}
+[5.197970] (-) TimerEvent: {}
+[5.307060] (-) TimerEvent: {}
+[5.416997] (-) TimerEvent: {}
+[5.525924] (-) TimerEvent: {}
+[5.637385] (-) TimerEvent: {}
+[5.749137] (-) TimerEvent: {}
+[5.862896] (-) TimerEvent: {}
+[5.978653] (-) TimerEvent: {}
+[6.091860] (-) TimerEvent: {}
+[6.196827] (-) TimerEvent: {}
+[6.311990] (-) TimerEvent: {}
+[6.421105] (-) TimerEvent: {}
+[6.530309] (-) TimerEvent: {}
+[6.637907] (-) TimerEvent: {}
+[6.747476] (-) TimerEvent: {}
+[6.858032] (-) TimerEvent: {}
+[6.963395] (-) TimerEvent: {}
+[7.071181] (-) TimerEvent: {}
+[7.178003] (-) TimerEvent: {}
+[7.282347] (-) TimerEvent: {}
+[7.385885] (-) TimerEvent: {}
+[7.492833] (-) TimerEvent: {}
+[7.600099] (-) TimerEvent: {}
+[7.707196] (-) TimerEvent: {}
+[7.815127] (-) TimerEvent: {}
+[7.919915] (-) TimerEvent: {}
+[8.025910] (-) TimerEvent: {}
+[8.137404] (-) TimerEvent: {}
+[8.244149] (-) TimerEvent: {}
+[8.349062] (-) TimerEvent: {}
+[8.457290] (-) TimerEvent: {}
+[8.566470] (-) TimerEvent: {}
+[8.674900] (-) TimerEvent: {}
+[8.787685] (-) TimerEvent: {}
+[8.890800] (-) TimerEvent: {}
+[8.994617] (-) TimerEvent: {}
+[9.096858] (-) TimerEvent: {}
+[9.206044] (-) TimerEvent: {}
+[9.310255] (-) TimerEvent: {}
+[9.420181] (-) TimerEvent: {}
+[9.526651] (-) TimerEvent: {}
+[9.633312] (-) TimerEvent: {}
+[9.743608] (-) TimerEvent: {}
+[9.853109] (-) TimerEvent: {}
+[9.964154] (-) TimerEvent: {}
+[10.068329] (-) TimerEvent: {}
+[10.180195] (-) TimerEvent: {}
+[10.285893] (-) TimerEvent: {}
+[10.395605] (-) TimerEvent: {}
+[10.504031] (-) TimerEvent: {}
+[10.606448] (-) TimerEvent: {}
+[10.715014] (-) TimerEvent: {}
+[10.827450] (-) TimerEvent: {}
+[10.936520] (-) TimerEvent: {}
+[11.043295] (-) TimerEvent: {}
+[11.145107] (-) TimerEvent: {}
+[11.255423] (-) TimerEvent: {}
+[11.363626] (-) TimerEvent: {}
+[11.472163] (-) TimerEvent: {}
+[11.580360] (-) TimerEvent: {}
+[11.691843] (-) TimerEvent: {}
+[11.799877] (-) TimerEvent: {}
+[11.907139] (-) TimerEvent: {}
+[12.013830] (-) TimerEvent: {}
+[12.123855] (-) TimerEvent: {}
+[12.234417] (-) TimerEvent: {}
+[12.336880] (-) TimerEvent: {}
+[12.446887] (-) TimerEvent: {}
+[12.558409] (-) TimerEvent: {}
+[12.667739] (-) TimerEvent: {}
+[12.778035] (-) TimerEvent: {}
+[12.880956] (-) TimerEvent: {}
+[12.987632] (-) TimerEvent: {}
+[13.092439] (-) TimerEvent: {}
+[13.196060] (-) TimerEvent: {}
+[13.302716] (-) TimerEvent: {}
+[13.411898] (-) TimerEvent: {}
+[13.519722] (-) TimerEvent: {}
+[13.635013] (-) TimerEvent: {}
+[13.735836] (-) TimerEvent: {}
+[13.837906] (-) TimerEvent: {}
+[13.942698] (-) TimerEvent: {}
+[14.057280] (-) TimerEvent: {}
+[14.166215] (-) TimerEvent: {}
+[14.280166] (-) TimerEvent: {}
+[14.394037] (-) TimerEvent: {}
+[14.501693] (-) TimerEvent: {}
+[14.609705] (-) TimerEvent: {}
+[14.716179] (-) TimerEvent: {}
+[14.818963] (-) TimerEvent: {}
+[14.923500] (-) TimerEvent: {}
+[15.034152] (-) TimerEvent: {}
+[15.140399] (-) TimerEvent: {}
+[15.249192] (-) TimerEvent: {}
+[15.354383] (-) TimerEvent: {}
+[15.458028] (-) TimerEvent: {}
+[15.561959] (-) TimerEvent: {}
+[15.662624] (-) TimerEvent: {}
+[15.763808] (-) TimerEvent: {}
+[15.869937] (-) TimerEvent: {}
+[15.987609] (-) TimerEvent: {}
+[16.089155] (-) TimerEvent: {}
+[16.092967] (mavlink_bridge) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../../build/mavlink_bridge', 'build', '--build-base', '/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build', 'install', '--record', '/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/home/devs/NautilusSW/nautilus_ws/src/mavlink_bridge', 'env': {'GZ_SIM_SYSTEM_PLUGIN_PATH': '/home/devs/ardu_ws/install/ardupilot_sitl_models/lib/ardupilot_sitl_models/:/home/devs/ardu_ws/install/ardupilot_gz_gazebo/lib/ardupilot_gz_gazebo/:/home/devs/ardu_ws/install/ardupilot_gazebo/lib/ardupilot_gazebo/', 'GJS_DEBUG_TOPICS': 'JS ERROR;JS LOG', 'PYTHON_BASIC_REPL': '1', 'LESSOPEN': '| /usr/bin/lesspipe %s', 'GZ_SIM_RESOURCE_PATH': '/home/devs/ardu_ws/install/ardupilot_sitl_models/share/ardupilot_sitl_models/worlds:/home/devs/ardu_ws/install/ardupilot_sitl_models/share/ardupilot_sitl_models/models:/home/devs/ardu_ws/install/ardupilot_sitl_models/share:/home/devs/ardu_ws/install/ardupilot_gz_gazebo/share/ardupilot_gz_gazebo/worlds:/home/devs/ardu_ws/install/ardupilot_gz_description/share/ardupilot_gz_description/models:/home/devs/ardu_ws/install/ardupilot_gz_description/share:/home/devs/ardu_ws/install/ardupilot_gazebo/share/ardupilot_gazebo/worlds:/home/devs/ardu_ws/install/ardupilot_gazebo/share/ardupilot_gazebo/models:/home/devs/ardu_ws/install/ardupilot_gazebo/share', 'USER': 'devs', 'XDG_SESSION_TYPE': 'wayland', 'GIT_ASKPASS': '/usr/share/code/resources/app/extensions/git/dist/askpass.sh', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/home/devs/ardu_ws/install/sdformat_urdf/lib:/home/devs/ardu_ws/install/ros_ign_interfaces/lib:/home/devs/ardu_ws/install/ros_gz_sim/lib:/home/devs/ardu_ws/install/ros_gz_bridge/lib:/home/devs/ardu_ws/install/ros_gz_interfaces/lib:/home/devs/ardu_ws/install/micro_ros_agent/lib:/home/devs/ardu_ws/install/ardupilot_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/devs', 'CHROME_DESKTOP': 'code.desktop', 'OLDPWD': '/home/devs/NautilusSW', 'TERM_PROGRAM_VERSION': '1.104.3', 'DESKTOP_SESSION': 'ubuntu', 'GIO_LAUNCHED_DESKTOP_FILE': '/usr/share/applications/code.desktop', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'VSCODE_GIT_ASKPASS_MAIN': '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js', 'PS1': '\\[\x1b]633;A\x07\\]\\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ \\[\x1b]633;B\x07\\]', 'VSCODE_GIT_ASKPASS_NODE': '/usr/share/code/code', 'MANAGERPID': '2617', 'PYDEVD_DISABLE_FILE_VALIDATION': '1', 'SYSTEMD_EXEC_PID': '2773', 'BUNDLED_DEBUGPY_PATH': '/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/bundled/libs/debugpy', 'IM_CONFIG_CHECK_ENV': '1', 'VSCODE_PYTHON_AUTOACTIVATE_GUARD': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'GIO_LAUNCHED_DESKTOP_FILE_PID': '3369', 'IM_CONFIG_PHASE': '1', 'WAYLAND_DISPLAY': 'wayland-0', 'COLCON_PREFIX_PATH': '/home/devs/NautilusSW/nautilus_ws/install:/home/devs/ardu_ws/install', 'ROS_DISTRO': 'humble', 'LOGNAME': 'devs', 'JOURNAL_STREAM': '8:12646', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'PKG_CONFIG_PATH': '/home/devs/ardu_ws/install/sdformat_test_files/lib/x86_64-linux-gnu/pkgconfig:/home/devs/ardu_ws/install/sdformat_test_files/lib/pkgconfig', 'XDG_SESSION_CLASS': 'user', 'USERNAME': 'devs', 'TERM': 'xterm-256color', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/bin:/home/devs/ardu_ws/install/ardupilot_sitl/bin:/usr/lib/ccache:/home/devs/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/devs/.local/bin:/home/devs/nautilus_venv/bin:/opt/ros/humble/bin:/usr/lib/ccache:/home/devs/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/devs/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/devs/ardu_ws/Micro-XRCE-DDS-Gen/scripts:/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/bundled/scripts/noConfigScripts:/home/devs/ardu_ws/Micro-XRCE-DDS-Gen/scripts', 'SESSION_MANAGER': 'local/NautilusOS:@/tmp/.ICE-unix/2754,unix/NautilusOS:/tmp/.ICE-unix/2754', 'INVOCATION_ID': '47f68f1ed3dd49859a0ba1eb69b20cd5', 'XDG_MENU_PREFIX': 'gnome-', 'GNOME_SETUP_DISPLAY': ':1', 'XDG_RUNTIME_DIR': '/run/user/1000', 'GDK_BACKEND': 'x11', 'DISPLAY': ':0', 'VSCODE_DEBUGPY_ADAPTER_ENDPOINTS': '/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-1ad53b0bec9bb031.txt', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'Unity', 'PYTHONSTARTUP': '/home/devs/.config/Code/User/workspaceStorage/53dc7e94719de9b3e66f0e50e21f8a84/ms-python.python/pythonrc.py', 'VIRTUAL_ENV_PROMPT': '(nautilus_venv)', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/.mutter-Xwaylandauth.RUQ2D3', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'VSCODE_GIT_IPC_HANDLE': '/run/user/1000/vscode-git-82d4ffe3c3.sock', 'TERM_PROGRAM': 'vscode', 'SSH_AGENT_LAUNCHER': 'gnome-keyring', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'AMENT_PREFIX_PATH': '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_dds_tests:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble', 'ORIGINAL_XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'SHELL': '/bin/bash', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'IGN_GAZEBO_RESOURCE_PATH': '/home/devs/ardu_ws/install/ros_gz_sim_demos/share', 'GJS_DEBUG_OUTPUT': 'stderr', 'GZ_VERSION': 'harmonic', 'VIRTUAL_ENV': '/home/devs/nautilus_venv', 'VSCODE_GIT_ASKPASS_EXTRA_ARGS': '', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge', 'LC_ALL': 'en_US.UTF-8', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages:/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages:/home/devs/ardu_ws/install/ros_ign_interfaces/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ros_gz_interfaces/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ardupilot_dds_tests/lib/python3.10/site-packages:/home/devs/ardu_ws/install/ardupilot_sitl/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ardupilot_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'COLCON': '1', 'CMAKE_PREFIX_PATH': '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/sdformat_test_files:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup'}, 'shell': False}
+[16.192012] (-) TimerEvent: {}
+[16.299232] (-) TimerEvent: {}
+[16.400958] (-) TimerEvent: {}
+[16.513077] (-) TimerEvent: {}
+[16.617009] (-) TimerEvent: {}
+[16.723332] (-) TimerEvent: {}
+[16.829389] (-) TimerEvent: {}
+[16.934253] (-) TimerEvent: {}
+[17.040541] (-) TimerEvent: {}
+[17.152922] (-) TimerEvent: {}
+[17.261377] (-) TimerEvent: {}
+[17.369382] (-) TimerEvent: {}
+[17.477860] (-) TimerEvent: {}
+[17.590805] (-) TimerEvent: {}
+[17.700889] (-) TimerEvent: {}
+[17.811920] (-) TimerEvent: {}
+[17.914637] (-) TimerEvent: {}
+[18.023789] (-) TimerEvent: {}
+[18.125823] (-) TimerEvent: {}
+[18.234384] (-) TimerEvent: {}
+[18.358554] (-) TimerEvent: {}
+[18.465449] (-) TimerEvent: {}
+[18.571797] (-) TimerEvent: {}
+[18.677893] (-) TimerEvent: {}
+[18.784739] (-) TimerEvent: {}
+[18.894866] (-) TimerEvent: {}
+[19.004183] (-) TimerEvent: {}
+[19.109940] (-) TimerEvent: {}
+[19.216833] (-) TimerEvent: {}
+[19.326866] (-) TimerEvent: {}
+[19.436781] (-) TimerEvent: {}
+[19.545048] (-) TimerEvent: {}
+[19.651377] (-) TimerEvent: {}
+[19.757074] (-) TimerEvent: {}
+[19.864651] (-) TimerEvent: {}
+[19.968435] (-) TimerEvent: {}
+[20.074977] (-) TimerEvent: {}
+[20.180026] (-) TimerEvent: {}
+[20.290377] (-) TimerEvent: {}
+[20.394571] (-) TimerEvent: {}
+[20.499846] (-) TimerEvent: {}
+[20.603587] (-) TimerEvent: {}
+[20.708698] (-) TimerEvent: {}
+[20.817322] (-) TimerEvent: {}
+[20.928727] (-) TimerEvent: {}
+[21.037097] (-) TimerEvent: {}
+[21.144883] (-) TimerEvent: {}
+[21.253010] (-) TimerEvent: {}
+[21.356597] (-) TimerEvent: {}
+[21.462374] (-) TimerEvent: {}
+[21.567567] (-) TimerEvent: {}
+[21.671733] (-) TimerEvent: {}
+[21.779041] (-) TimerEvent: {}
+[21.886576] (-) TimerEvent: {}
+[21.990651] (-) TimerEvent: {}
+[22.094251] (-) TimerEvent: {}
+[22.194966] (-) TimerEvent: {}
+[22.299662] (-) TimerEvent: {}
+[22.409771] (-) TimerEvent: {}
+[22.513935] (-) TimerEvent: {}
+[22.620737] (-) TimerEvent: {}
+[22.724973] (-) TimerEvent: {}
+[22.828387] (-) TimerEvent: {}
+[22.932285] (-) TimerEvent: {}
+[22.959036] (mavlink_bridge) StdoutLine: {'line': b'running egg_info\n'}
+[23.046124] (-) TimerEvent: {}
+[23.156940] (-) TimerEvent: {}
+[23.264375] (-) TimerEvent: {}
+[23.292689] (mavlink_bridge) StdoutLine: {'line': b'creating ../../build/mavlink_bridge/mavlink_bridge.egg-info\n'}
+[23.296308] (mavlink_bridge) StdoutLine: {'line': b'writing ../../build/mavlink_bridge/mavlink_bridge.egg-info/PKG-INFO\n'}
+[23.306537] (mavlink_bridge) StdoutLine: {'line': b'writing dependency_links to ../../build/mavlink_bridge/mavlink_bridge.egg-info/dependency_links.txt\n'}
+[23.314256] (mavlink_bridge) StdoutLine: {'line': b'writing entry points to ../../build/mavlink_bridge/mavlink_bridge.egg-info/entry_points.txt\n'}
+[23.314619] (mavlink_bridge) StdoutLine: {'line': b'writing requirements to ../../build/mavlink_bridge/mavlink_bridge.egg-info/requires.txt\n'}
+[23.314695] (mavlink_bridge) StdoutLine: {'line': b'writing top-level names to ../../build/mavlink_bridge/mavlink_bridge.egg-info/top_level.txt\n'}
+[23.331377] (mavlink_bridge) StdoutLine: {'line': b"writing manifest file '../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'\n"}
+[23.368340] (-) TimerEvent: {}
+[23.476735] (-) TimerEvent: {}
+[23.582041] (-) TimerEvent: {}
+[23.688735] (-) TimerEvent: {}
+[23.792302] (-) TimerEvent: {}
+[23.900476] (-) TimerEvent: {}
+[24.009760] (-) TimerEvent: {}
+[24.119941] (-) TimerEvent: {}
+[24.180164] (mavlink_bridge) StdoutLine: {'line': b"reading manifest file '../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'\n"}
+[24.194366] (mavlink_bridge) StdoutLine: {'line': b"writing manifest file '../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'\n"}
+[24.204889] (mavlink_bridge) StdoutLine: {'line': b'running build\n'}
+[24.206434] (mavlink_bridge) StdoutLine: {'line': b'running build_py\n'}
+[24.214422] (mavlink_bridge) StdoutLine: {'line': b'creating /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge\n'}
+[24.219610] (mavlink_bridge) StdoutLine: {'line': b'copying telemetry_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge\n'}
+[24.224562] (-) TimerEvent: {}
+[24.239918] (mavlink_bridge) StdoutLine: {'line': b'copying telemetry_bridge/__init__.py -> /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge\n'}
+[24.243438] (mavlink_bridge) StdoutLine: {'line': b'running install\n'}
+[24.327780] (-) TimerEvent: {}
+[24.354028] (mavlink_bridge) StdoutLine: {'line': b'running install_lib\n'}
+[24.435424] (-) TimerEvent: {}
+[24.545854] (-) TimerEvent: {}
+[24.648610] (-) TimerEvent: {}
+[24.739433] (mavlink_bridge) StdoutLine: {'line': b'creating /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge\n'}
+[24.748710] (mavlink_bridge) StdoutLine: {'line': b'copying /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge\n'}
+[24.748939] (-) TimerEvent: {}
+[24.759747] (mavlink_bridge) StdoutLine: {'line': b'copying /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge/__init__.py -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge\n'}
+[24.776464] (mavlink_bridge) StdoutLine: {'line': b'byte-compiling /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge/mavlink_telemetry_bridge.py to mavlink_telemetry_bridge.cpython-310.pyc\n'}
+[24.834054] (mavlink_bridge) StdoutLine: {'line': b'byte-compiling /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge/__init__.py to __init__.cpython-310.pyc\n'}
+[24.834434] (mavlink_bridge) StdoutLine: {'line': b'running install_data\n'}
+[24.834599] (mavlink_bridge) StdoutLine: {'line': b'creating /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/share/ament_index/resource_index/packages\n'}
+[24.834706] (mavlink_bridge) StdoutLine: {'line': b'copying resource/mavlink_bridge -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/share/ament_index/resource_index/packages\n'}
+[24.851754] (mavlink_bridge) StdoutLine: {'line': b'copying package.xml -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/share/mavlink_bridge\n'}
+[24.852167] (-) TimerEvent: {}
+[24.857235] (mavlink_bridge) StdoutLine: {'line': b'running install_egg_info\n'}
+[24.955377] (-) TimerEvent: {}
+[25.070021] (-) TimerEvent: {}
+[25.153123] (mavlink_bridge) StdoutLine: {'line': b'Copying ../../build/mavlink_bridge/mavlink_bridge.egg-info to /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge-0.0.1-py3.10.egg-info\n'}
+[25.163991] (mavlink_bridge) StdoutLine: {'line': b'running install_scripts\n'}
+[25.170571] (-) TimerEvent: {}
+[25.279504] (-) TimerEvent: {}
+[25.387277] (-) TimerEvent: {}
+[25.504162] (-) TimerEvent: {}
+[25.613141] (-) TimerEvent: {}
+[25.715644] (-) TimerEvent: {}
+[25.821416] (-) TimerEvent: {}
+[25.901255] (mavlink_bridge) StdoutLine: {'line': b'Installing mavlink_telemetry_bridge script to /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/bin\n'}
+[25.924478] (mavlink_bridge) StdoutLine: {'line': b"writing list of installed files to '/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/install.log'\n"}
+[25.925064] (-) TimerEvent: {}
+[26.028040] (-) TimerEvent: {}
+[26.132778] (-) TimerEvent: {}
+[26.238235] (-) TimerEvent: {}
+[26.344673] (-) TimerEvent: {}
+[26.454370] (-) TimerEvent: {}
+[26.488324] (mavlink_bridge) CommandEnded: {'returncode': 0}
+[26.575601] (-) TimerEvent: {}
+[26.692581] (-) TimerEvent: {}
+[26.819668] (-) TimerEvent: {}
+[26.885258] (mavlink_bridge) JobEnded: {'identifier': 'mavlink_bridge', 'rc': 0}
+[26.894170] (nautilus_bringup) JobStarted: {'identifier': 'nautilus_bringup'}
+[26.920999] (-) TimerEvent: {}
+[27.034713] (-) TimerEvent: {}
+[27.078646] (nautilus_bringup) JobProgress: {'identifier': 'nautilus_bringup', 'progress': 'cmake'}
+[27.106882] (nautilus_bringup) Command: {'cmd': ['/usr/bin/cmake', '/home/devs/NautilusSW/nautilus_ws/src/nautilus_bringup', '-DCMAKE_INSTALL_PREFIX=/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup'], 'cwd': '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup', 'env': OrderedDict([('GZ_SIM_SYSTEM_PLUGIN_PATH', '/home/devs/ardu_ws/install/ardupilot_sitl_models/lib/ardupilot_sitl_models/:/home/devs/ardu_ws/install/ardupilot_gz_gazebo/lib/ardupilot_gz_gazebo/:/home/devs/ardu_ws/install/ardupilot_gazebo/lib/ardupilot_gazebo/'), ('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('PYTHON_BASIC_REPL', '1'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('GZ_SIM_RESOURCE_PATH', '/home/devs/ardu_ws/install/ardupilot_sitl_models/share/ardupilot_sitl_models/worlds:/home/devs/ardu_ws/install/ardupilot_sitl_models/share/ardupilot_sitl_models/models:/home/devs/ardu_ws/install/ardupilot_sitl_models/share:/home/devs/ardu_ws/install/ardupilot_gz_gazebo/share/ardupilot_gz_gazebo/worlds:/home/devs/ardu_ws/install/ardupilot_gz_description/share/ardupilot_gz_description/models:/home/devs/ardu_ws/install/ardupilot_gz_description/share:/home/devs/ardu_ws/install/ardupilot_gazebo/share/ardupilot_gazebo/worlds:/home/devs/ardu_ws/install/ardupilot_gazebo/share/ardupilot_gazebo/models:/home/devs/ardu_ws/install/ardupilot_gazebo/share'), ('USER', 'devs'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/devs/ardu_ws/install/sdformat_urdf/lib:/home/devs/ardu_ws/install/ros_ign_interfaces/lib:/home/devs/ardu_ws/install/ros_gz_sim/lib:/home/devs/ardu_ws/install/ros_gz_bridge/lib:/home/devs/ardu_ws/install/ros_gz_interfaces/lib:/home/devs/ardu_ws/install/micro_ros_agent/lib:/home/devs/ardu_ws/install/ardupilot_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/devs'), ('CHROME_DESKTOP', 'code.desktop'), ('OLDPWD', '/home/devs/NautilusSW'), ('TERM_PROGRAM_VERSION', '1.104.3'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('PS1', '\\[\x1b]633;A\x07\\]\\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ \\[\x1b]633;B\x07\\]'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2617'), ('PYDEVD_DISABLE_FILE_VALIDATION', '1'), ('SYSTEMD_EXEC_PID', '2773'), ('BUNDLED_DEBUGPY_PATH', '/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/bundled/libs/debugpy'), ('IM_CONFIG_CHECK_ENV', '1'), ('VSCODE_PYTHON_AUTOACTIVATE_GUARD', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3369'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install:/home/devs/ardu_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'devs'), ('JOURNAL_STREAM', '8:12646'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', '/home/devs/ardu_ws/install/sdformat_test_files/lib/x86_64-linux-gnu/pkgconfig:/home/devs/ardu_ws/install/sdformat_test_files/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'devs'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/bin:/home/devs/ardu_ws/install/ardupilot_sitl/bin:/usr/lib/ccache:/home/devs/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/devs/.local/bin:/home/devs/nautilus_venv/bin:/opt/ros/humble/bin:/usr/lib/ccache:/home/devs/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/devs/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/devs/ardu_ws/Micro-XRCE-DDS-Gen/scripts:/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/bundled/scripts/noConfigScripts:/home/devs/ardu_ws/Micro-XRCE-DDS-Gen/scripts'), ('SESSION_MANAGER', 'local/NautilusOS:@/tmp/.ICE-unix/2754,unix/NautilusOS:/tmp/.ICE-unix/2754'), ('INVOCATION_ID', '47f68f1ed3dd49859a0ba1eb69b20cd5'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('VSCODE_DEBUGPY_ADAPTER_ENDPOINTS', '/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-1ad53b0bec9bb031.txt'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('PYTHONSTARTUP', '/home/devs/.config/Code/User/workspaceStorage/53dc7e94719de9b3e66f0e50e21f8a84/ms-python.python/pythonrc.py'), ('VIRTUAL_ENV_PROMPT', '(nautilus_venv)'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.RUQ2D3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-82d4ffe3c3.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_dds_tests:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('IGN_GAZEBO_RESOURCE_PATH', '/home/devs/ardu_ws/install/ros_gz_sim_demos/share'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('GZ_VERSION', 'harmonic'), ('VIRTUAL_ENV', '/home/devs/nautilus_venv'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages:/home/devs/ardu_ws/install/ros_ign_interfaces/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ros_gz_interfaces/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ardupilot_dds_tests/lib/python3.10/site-packages:/home/devs/ardu_ws/install/ardupilot_sitl/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ardupilot_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/sdformat_test_files:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/home/devs/ardu_ws/install/ardupilot_dds_tests:/opt/ros/humble')]), 'shell': False}
+[27.140712] (-) TimerEvent: {}
+[27.265058] (-) TimerEvent: {}
+[27.370195] (-) TimerEvent: {}
+[27.477207] (-) TimerEvent: {}
+[27.582559] (-) TimerEvent: {}
+[27.693107] (-) TimerEvent: {}
+[27.727360] (nautilus_bringup) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[27.799855] (-) TimerEvent: {}
+[27.913036] (-) TimerEvent: {}
+[28.020711] (-) TimerEvent: {}
+[28.133024] (-) TimerEvent: {}
+[28.238893] (-) TimerEvent: {}
+[28.339906] (-) TimerEvent: {}
+[28.441844] (-) TimerEvent: {}
+[28.552308] (-) TimerEvent: {}
+[28.657978] (-) TimerEvent: {}
+[28.768750] (-) TimerEvent: {}
+[28.877295] (-) TimerEvent: {}
+[28.988391] (-) TimerEvent: {}
+[29.100618] (-) TimerEvent: {}
+[29.208069] (-) TimerEvent: {}
+[29.238938] (nautilus_bringup) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[29.311014] (-) TimerEvent: {}
+[29.419853] (-) TimerEvent: {}
+[29.473192] (nautilus_bringup) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[29.526949] (-) TimerEvent: {}
+[29.635374] (-) TimerEvent: {}
+[29.752799] (-) TimerEvent: {}
+[29.862600] (-) TimerEvent: {}
+[29.971531] (-) TimerEvent: {}
+[30.081506] (-) TimerEvent: {}
+[30.200081] (-) TimerEvent: {}
+[30.306591] (-) TimerEvent: {}
+[30.413709] (-) TimerEvent: {}
+[30.523318] (-) TimerEvent: {}
+[30.629979] (-) TimerEvent: {}
+[30.734828] (-) TimerEvent: {}
+[30.854459] (-) TimerEvent: {}
+[30.858928] (nautilus_bringup) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[30.968746] (-) TimerEvent: {}
+[31.069692] (-) TimerEvent: {}
+[31.107781] (nautilus_bringup) StdoutLine: {'line': b'-- Check for working C compiler: /usr/lib/ccache/cc - skipped\n'}
+[31.125059] (nautilus_bringup) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[31.147068] (nautilus_bringup) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[31.173784] (-) TimerEvent: {}
+[31.244520] (nautilus_bringup) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[31.275667] (-) TimerEvent: {}
+[31.389418] (-) TimerEvent: {}
+[31.497770] (-) TimerEvent: {}
+[31.612389] (-) TimerEvent: {}
+[31.715826] (-) TimerEvent: {}
+[31.822478] (-) TimerEvent: {}
+[31.924404] (-) TimerEvent: {}
+[32.027520] (-) TimerEvent: {}
+[32.145665] (-) TimerEvent: {}
+[32.258602] (-) TimerEvent: {}
+[32.366716] (-) TimerEvent: {}
+[32.476267] (-) TimerEvent: {}
+[32.584023] (-) TimerEvent: {}
+[32.685044] (-) TimerEvent: {}
+[32.733090] (nautilus_bringup) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[32.793936] (-) TimerEvent: {}
+[32.899427] (nautilus_bringup) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/lib/ccache/c++ - skipped\n'}
+[32.899795] (-) TimerEvent: {}
+[32.912856] (nautilus_bringup) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[32.925601] (nautilus_bringup) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[32.960930] (nautilus_bringup) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[33.000588] (-) TimerEvent: {}
+[33.107648] (-) TimerEvent: {}
+[33.219806] (-) TimerEvent: {}
+[33.323277] (-) TimerEvent: {}
+[33.435158] (-) TimerEvent: {}
+[33.540928] (-) TimerEvent: {}
+[33.641852] (-) TimerEvent: {}
+[33.755720] (-) TimerEvent: {}
+[33.858633] (-) TimerEvent: {}
+[33.973004] (-) TimerEvent: {}
+[34.085336] (-) TimerEvent: {}
+[34.185998] (-) TimerEvent: {}
+[34.294281] (-) TimerEvent: {}
+[34.407352] (-) TimerEvent: {}
+[34.521601] (-) TimerEvent: {}
+[34.628039] (-) TimerEvent: {}
+[34.741271] (-) TimerEvent: {}
+[34.848202] (-) TimerEvent: {}
+[34.959363] (-) TimerEvent: {}
+[35.067359] (-) TimerEvent: {}
+[35.173602] (-) TimerEvent: {}
+[35.287357] (-) TimerEvent: {}
+[35.401732] (-) TimerEvent: {}
+[35.511157] (-) TimerEvent: {}
+[35.613845] (-) TimerEvent: {}
+[35.720940] (-) TimerEvent: {}
+[35.823350] (-) TimerEvent: {}
+[35.930602] (-) TimerEvent: {}
+[36.038496] (-) TimerEvent: {}
+[36.148850] (-) TimerEvent: {}
+[36.251383] (-) TimerEvent: {}
+[36.358790] (-) TimerEvent: {}
+[36.468295] (-) TimerEvent: {}
+[36.482042] (nautilus_bringup) StdoutLine: {'line': b'-- Found Python3: /home/devs/nautilus_venv/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[36.571903] (-) TimerEvent: {}
+[36.686099] (-) TimerEvent: {}
+[36.820240] (-) TimerEvent: {}
+[36.922832] (-) TimerEvent: {}
+[37.031373] (-) TimerEvent: {}
+[37.141155] (-) TimerEvent: {}
+[37.250862] (-) TimerEvent: {}
+[37.353641] (-) TimerEvent: {}
+[37.461657] (-) TimerEvent: {}
+[37.564652] (-) TimerEvent: {}
+[37.669935] (-) TimerEvent: {}
+[37.776830] (-) TimerEvent: {}
+[37.882767] (-) TimerEvent: {}
+[37.988603] (-) TimerEvent: {}
+[38.094681] (-) TimerEvent: {}
+[38.204087] (-) TimerEvent: {}
+[38.314445] (-) TimerEvent: {}
+[38.421659] (-) TimerEvent: {}
+[38.522817] (-) TimerEvent: {}
+[38.630748] (-) TimerEvent: {}
+[38.737814] (-) TimerEvent: {}
+[38.842316] (-) TimerEvent: {}
+[38.951553] (-) TimerEvent: {}
+[39.056991] (-) TimerEvent: {}
+[39.164780] (-) TimerEvent: {}
+[39.276345] (-) TimerEvent: {}
+[39.285724] (nautilus_bringup) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[39.377564] (-) TimerEvent: {}
+[39.485787] (-) TimerEvent: {}
+[39.595342] (-) TimerEvent: {}
+[39.698431] (-) TimerEvent: {}
+[39.801562] (-) TimerEvent: {}
+[39.910676] (-) TimerEvent: {}
+[40.017352] (-) TimerEvent: {}
+[40.120853] (-) TimerEvent: {}
+[40.222936] (-) TimerEvent: {}
+[40.329411] (-) TimerEvent: {}
+[40.436156] (-) TimerEvent: {}
+[40.541906] (-) TimerEvent: {}
+[40.649710] (-) TimerEvent: {}
+[40.754251] (-) TimerEvent: {}
+[40.863548] (-) TimerEvent: {}
+[40.968935] (-) TimerEvent: {}
+[41.078642] (-) TimerEvent: {}
+[41.181485] (-) TimerEvent: {}
+[41.298179] (-) TimerEvent: {}
+[41.414459] (-) TimerEvent: {}
+[41.524871] (-) TimerEvent: {}
+[41.625432] (-) TimerEvent: {}
+[41.735547] (-) TimerEvent: {}
+[41.845751] (-) TimerEvent: {}
+[41.952388] (-) TimerEvent: {}
+[42.060661] (-) TimerEvent: {}
+[42.161289] (-) TimerEvent: {}
+[42.264817] (-) TimerEvent: {}
+[42.345893] (nautilus_bringup) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[42.365646] (-) TimerEvent: {}
+[42.454734] (nautilus_bringup) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[42.467111] (-) TimerEvent: {}
+[42.486991] (nautilus_bringup) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[42.522902] (nautilus_bringup) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257\n"}
+[42.552808] (nautilus_bringup) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[42.569004] (-) TimerEvent: {}
+[42.615258] (nautilus_bringup) StdoutLine: {'line': b'-- Configuring done\n'}
+[42.678715] (nautilus_bringup) StdoutLine: {'line': b'-- Generating done\n'}
+[42.686249] (-) TimerEvent: {}
+[42.730981] (nautilus_bringup) StdoutLine: {'line': b'-- Build files have been written to: /home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup\n'}
+[42.812885] (nautilus_bringup) CommandEnded: {'returncode': 0}
+[42.839055] (-) TimerEvent: {}
+[42.881605] (nautilus_bringup) JobProgress: {'identifier': 'nautilus_bringup', 'progress': 'build'}
+[42.881729] (nautilus_bringup) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup', '--', '-j4', '-l4'], 'cwd': '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup', 'env': OrderedDict([('GZ_SIM_SYSTEM_PLUGIN_PATH', '/home/devs/ardu_ws/install/ardupilot_sitl_models/lib/ardupilot_sitl_models/:/home/devs/ardu_ws/install/ardupilot_gz_gazebo/lib/ardupilot_gz_gazebo/:/home/devs/ardu_ws/install/ardupilot_gazebo/lib/ardupilot_gazebo/'), ('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('PYTHON_BASIC_REPL', '1'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('GZ_SIM_RESOURCE_PATH', '/home/devs/ardu_ws/install/ardupilot_sitl_models/share/ardupilot_sitl_models/worlds:/home/devs/ardu_ws/install/ardupilot_sitl_models/share/ardupilot_sitl_models/models:/home/devs/ardu_ws/install/ardupilot_sitl_models/share:/home/devs/ardu_ws/install/ardupilot_gz_gazebo/share/ardupilot_gz_gazebo/worlds:/home/devs/ardu_ws/install/ardupilot_gz_description/share/ardupilot_gz_description/models:/home/devs/ardu_ws/install/ardupilot_gz_description/share:/home/devs/ardu_ws/install/ardupilot_gazebo/share/ardupilot_gazebo/worlds:/home/devs/ardu_ws/install/ardupilot_gazebo/share/ardupilot_gazebo/models:/home/devs/ardu_ws/install/ardupilot_gazebo/share'), ('USER', 'devs'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/devs/ardu_ws/install/sdformat_urdf/lib:/home/devs/ardu_ws/install/ros_ign_interfaces/lib:/home/devs/ardu_ws/install/ros_gz_sim/lib:/home/devs/ardu_ws/install/ros_gz_bridge/lib:/home/devs/ardu_ws/install/ros_gz_interfaces/lib:/home/devs/ardu_ws/install/micro_ros_agent/lib:/home/devs/ardu_ws/install/ardupilot_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/devs'), ('CHROME_DESKTOP', 'code.desktop'), ('OLDPWD', '/home/devs/NautilusSW'), ('TERM_PROGRAM_VERSION', '1.104.3'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('PS1', '\\[\x1b]633;A\x07\\]\\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ \\[\x1b]633;B\x07\\]'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2617'), ('PYDEVD_DISABLE_FILE_VALIDATION', '1'), ('SYSTEMD_EXEC_PID', '2773'), ('BUNDLED_DEBUGPY_PATH', '/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/bundled/libs/debugpy'), ('IM_CONFIG_CHECK_ENV', '1'), ('VSCODE_PYTHON_AUTOACTIVATE_GUARD', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3369'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install:/home/devs/ardu_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'devs'), ('JOURNAL_STREAM', '8:12646'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', '/home/devs/ardu_ws/install/sdformat_test_files/lib/x86_64-linux-gnu/pkgconfig:/home/devs/ardu_ws/install/sdformat_test_files/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'devs'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/bin:/home/devs/ardu_ws/install/ardupilot_sitl/bin:/usr/lib/ccache:/home/devs/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/devs/.local/bin:/home/devs/nautilus_venv/bin:/opt/ros/humble/bin:/usr/lib/ccache:/home/devs/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/devs/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/devs/ardu_ws/Micro-XRCE-DDS-Gen/scripts:/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/bundled/scripts/noConfigScripts:/home/devs/ardu_ws/Micro-XRCE-DDS-Gen/scripts'), ('SESSION_MANAGER', 'local/NautilusOS:@/tmp/.ICE-unix/2754,unix/NautilusOS:/tmp/.ICE-unix/2754'), ('INVOCATION_ID', '47f68f1ed3dd49859a0ba1eb69b20cd5'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('VSCODE_DEBUGPY_ADAPTER_ENDPOINTS', '/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-1ad53b0bec9bb031.txt'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('PYTHONSTARTUP', '/home/devs/.config/Code/User/workspaceStorage/53dc7e94719de9b3e66f0e50e21f8a84/ms-python.python/pythonrc.py'), ('VIRTUAL_ENV_PROMPT', '(nautilus_venv)'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.RUQ2D3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-82d4ffe3c3.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_dds_tests:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('IGN_GAZEBO_RESOURCE_PATH', '/home/devs/ardu_ws/install/ros_gz_sim_demos/share'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('GZ_VERSION', 'harmonic'), ('VIRTUAL_ENV', '/home/devs/nautilus_venv'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages:/home/devs/ardu_ws/install/ros_ign_interfaces/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ros_gz_interfaces/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ardupilot_dds_tests/lib/python3.10/site-packages:/home/devs/ardu_ws/install/ardupilot_sitl/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ardupilot_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/sdformat_test_files:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/home/devs/ardu_ws/install/ardupilot_dds_tests:/opt/ros/humble')]), 'shell': False}
+[42.940025] (-) TimerEvent: {}
+[43.043365] (-) TimerEvent: {}
+[43.154932] (-) TimerEvent: {}
+[43.261398] (-) TimerEvent: {}
+[43.364072] (-) TimerEvent: {}
+[43.470719] (-) TimerEvent: {}
+[43.514606] (nautilus_bringup) CommandEnded: {'returncode': 0}
+[43.525152] (nautilus_bringup) JobProgress: {'identifier': 'nautilus_bringup', 'progress': 'install'}
+[43.571422] (-) TimerEvent: {}
+[43.657907] (nautilus_bringup) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup'], 'cwd': '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup', 'env': OrderedDict([('GZ_SIM_SYSTEM_PLUGIN_PATH', '/home/devs/ardu_ws/install/ardupilot_sitl_models/lib/ardupilot_sitl_models/:/home/devs/ardu_ws/install/ardupilot_gz_gazebo/lib/ardupilot_gz_gazebo/:/home/devs/ardu_ws/install/ardupilot_gazebo/lib/ardupilot_gazebo/'), ('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('PYTHON_BASIC_REPL', '1'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('GZ_SIM_RESOURCE_PATH', '/home/devs/ardu_ws/install/ardupilot_sitl_models/share/ardupilot_sitl_models/worlds:/home/devs/ardu_ws/install/ardupilot_sitl_models/share/ardupilot_sitl_models/models:/home/devs/ardu_ws/install/ardupilot_sitl_models/share:/home/devs/ardu_ws/install/ardupilot_gz_gazebo/share/ardupilot_gz_gazebo/worlds:/home/devs/ardu_ws/install/ardupilot_gz_description/share/ardupilot_gz_description/models:/home/devs/ardu_ws/install/ardupilot_gz_description/share:/home/devs/ardu_ws/install/ardupilot_gazebo/share/ardupilot_gazebo/worlds:/home/devs/ardu_ws/install/ardupilot_gazebo/share/ardupilot_gazebo/models:/home/devs/ardu_ws/install/ardupilot_gazebo/share'), ('USER', 'devs'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/devs/ardu_ws/install/sdformat_urdf/lib:/home/devs/ardu_ws/install/ros_ign_interfaces/lib:/home/devs/ardu_ws/install/ros_gz_sim/lib:/home/devs/ardu_ws/install/ros_gz_bridge/lib:/home/devs/ardu_ws/install/ros_gz_interfaces/lib:/home/devs/ardu_ws/install/micro_ros_agent/lib:/home/devs/ardu_ws/install/ardupilot_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/devs'), ('CHROME_DESKTOP', 'code.desktop'), ('OLDPWD', '/home/devs/NautilusSW'), ('TERM_PROGRAM_VERSION', '1.104.3'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('VSCODE_GIT_ASKPASS_MAIN', '/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('PS1', '\\[\x1b]633;A\x07\\]\\[\\e]0;\\u@\\h: \\w\\a\\]${debian_chroot:+($debian_chroot)}\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ \\[\x1b]633;B\x07\\]'), ('VSCODE_GIT_ASKPASS_NODE', '/usr/share/code/code'), ('MANAGERPID', '2617'), ('PYDEVD_DISABLE_FILE_VALIDATION', '1'), ('SYSTEMD_EXEC_PID', '2773'), ('BUNDLED_DEBUGPY_PATH', '/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/bundled/libs/debugpy'), ('IM_CONFIG_CHECK_ENV', '1'), ('VSCODE_PYTHON_AUTOACTIVATE_GUARD', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '3369'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install:/home/devs/ardu_ws/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'devs'), ('JOURNAL_STREAM', '8:12646'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('PKG_CONFIG_PATH', '/home/devs/ardu_ws/install/sdformat_test_files/lib/x86_64-linux-gnu/pkgconfig:/home/devs/ardu_ws/install/sdformat_test_files/lib/pkgconfig'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'devs'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/bin:/home/devs/ardu_ws/install/ardupilot_sitl/bin:/usr/lib/ccache:/home/devs/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/devs/.local/bin:/home/devs/nautilus_venv/bin:/opt/ros/humble/bin:/usr/lib/ccache:/home/devs/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/devs/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/devs/ardu_ws/Micro-XRCE-DDS-Gen/scripts:/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/bundled/scripts/noConfigScripts:/home/devs/ardu_ws/Micro-XRCE-DDS-Gen/scripts'), ('SESSION_MANAGER', 'local/NautilusOS:@/tmp/.ICE-unix/2754,unix/NautilusOS:/tmp/.ICE-unix/2754'), ('INVOCATION_ID', '47f68f1ed3dd49859a0ba1eb69b20cd5'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('VSCODE_DEBUGPY_ADAPTER_ENDPOINTS', '/home/devs/.vscode/extensions/ms-python.debugpy-2025.10.0-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-1ad53b0bec9bb031.txt'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('PYTHONSTARTUP', '/home/devs/.config/Code/User/workspaceStorage/53dc7e94719de9b3e66f0e50e21f8a84/ms-python.python/pythonrc.py'), ('VIRTUAL_ENV_PROMPT', '(nautilus_venv)'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.RUQ2D3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-82d4ffe3c3.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('AMENT_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_dds_tests:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('IGN_GAZEBO_RESOURCE_PATH', '/home/devs/ardu_ws/install/ros_gz_sim_demos/share'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('GZ_VERSION', 'harmonic'), ('VIRTUAL_ENV', '/home/devs/nautilus_venv'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages:/home/devs/ardu_ws/install/ros_ign_interfaces/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ros_gz_interfaces/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ardupilot_dds_tests/lib/python3.10/site-packages:/home/devs/ardu_ws/install/ardupilot_sitl/local/lib/python3.10/dist-packages:/home/devs/ardu_ws/install/ardupilot_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/sdformat_test_files:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/home/devs/ardu_ws/install/ardupilot_dds_tests:/opt/ros/humble')]), 'shell': False}
+[43.680821] (-) TimerEvent: {}
+[43.797432] (-) TimerEvent: {}
+[43.906999] (-) TimerEvent: {}
+[43.939654] (nautilus_bringup) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[43.949987] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch\n'}
+[43.950415] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/nautilus.launch.py\n'}
+[43.966284] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/robots\n'}
+[43.966508] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/robots/nautilus_auv.launch.py\n'}
+[43.975418] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/config\n'}
+[43.975650] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/config/nautilus_auv_bridge.yaml\n'}
+[43.980582] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv\n'}
+[43.981241] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/BlueRov2.urdf\n'}
+[43.981333] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part\n'}
+[43.981396] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/DepthSensor\n'}
+[43.981457] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/DepthSensor/DepthSensor.urdf.xacro\n'}
+[43.981518] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/IMU\n'}
+[43.981583] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/IMU/IMU.urdf.xacro\n'}
+[43.981644] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera\n'}
+[43.981703] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera/CameraMonoDepth.urdf.xacro\n'}
+[43.981762] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera/CameraStereo.urdf.xacro\n'}
+[43.981820] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera/Camera.urdf.xacro\n'}
+[43.981877] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera/CameraDepth.urdf.xacro\n'}
+[43.981935] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/P3D\n'}
+[43.981993] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/P3D/P3D.urdf.xacro\n'}
+[43.982122] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Thruster\n'}
+[43.982206] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Thruster/T200.urdf.xacro\n'}
+[43.982289] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/DVL\n'}
+[43.982376] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/DVL/DVL.urdf.xacro\n'}
+[43.982455] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/BlueRov2.sdf\n'}
+[43.987642] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/BlueRov2.urdf.xacro\n'}
+[43.988102] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds\n'}
+[44.000750] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/terrain.sdf\n'}
+[44.015147] (-) TimerEvent: {}
+[44.023736] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/wildthumper_playpen.sdf\n'}
+[44.031734] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/artisticHouse.world\n'}
+[44.032028] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/underwater.world\n'}
+[44.032142] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/iris_maze.sdf\n'}
+[44.032245] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/terrain.dae\n'}
+[44.121277] (-) TimerEvent: {}
+[44.129659] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/pool_corner.world\n'}
+[44.129986] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/iris_runway.sdf\n'}
+[44.138170] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/ament_index/resource_index/package_run_dependencies/nautilus_bringup\n'}
+[44.141030] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/ament_index/resource_index/parent_prefix_path/nautilus_bringup\n'}
+[44.150699] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/ament_prefix_path.sh\n'}
+[44.158653] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/ament_prefix_path.dsv\n'}
+[44.166741] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/path.sh\n'}
+[44.166870] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/path.dsv\n'}
+[44.169158] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/local_setup.bash\n'}
+[44.169404] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/local_setup.sh\n'}
+[44.169588] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/local_setup.zsh\n'}
+[44.171354] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/local_setup.dsv\n'}
+[44.175121] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.dsv\n'}
+[44.177669] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/ament_index/resource_index/packages/nautilus_bringup\n'}
+[44.179572] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/cmake/nautilus_bringupConfig.cmake\n'}
+[44.180022] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/cmake/nautilus_bringupConfig-version.cmake\n'}
+[44.180667] (nautilus_bringup) StdoutLine: {'line': b'-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.xml\n'}
+[44.204124] (nautilus_bringup) CommandEnded: {'returncode': 0}
+[44.224847] (-) TimerEvent: {}
+[44.330491] (-) TimerEvent: {}
+[44.434346] (-) TimerEvent: {}
+[44.541998] (-) TimerEvent: {}
+[44.649544] (-) TimerEvent: {}
+[44.765079] (nautilus_bringup) JobEnded: {'identifier': 'nautilus_bringup', 'rc': 0}
+[44.773875] (-) TimerEvent: {}
+[44.781901] (-) EventReactorShutdown: {}

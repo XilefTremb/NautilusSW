@@ -1,0 +1,4 @@
+source;share/nautilus_bringup/local_setup.bash
+source;share/nautilus_bringup/local_setup.dsv
+source;share/nautilus_bringup/local_setup.sh
+source;share/nautilus_bringup/local_setup.zsh
