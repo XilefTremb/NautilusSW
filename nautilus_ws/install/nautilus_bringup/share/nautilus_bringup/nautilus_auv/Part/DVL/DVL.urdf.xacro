@@ -1,0 +1,32 @@
+<?xml version='1.0'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="DVL">
+
+  <xacro:macro name="DVL" params="link topicName noise Hz">
+
+    <gazebo>
+    
+        <plugin name="gazebo_ros_DVL" filename="libgazebo_ros_DVL.so">
+
+            <ros>
+                <!-- Add a namespace -->
+                <namespace>/DVL</namespace>
+                <!-- Remap the default topic -->
+                <remapping>odom:=${topicName}</remapping>
+            </ros>
+
+            <!-- Name of the link within this model whose pose will be published -->
+            <body_name>${link}</body_name>
+
+            <!-- Update rate in Hz, defaults to 0.0, which means as fast as possible -->
+            <update_rate>${Hz}</update_rate>
+
+            <!-- Standard deviation of the noise to be added to the reported velocities. -->
+            <gaussian_noise>${noise}</gaussian_noise>
+
+        </plugin>
+
+    </gazebo>
+    
+  </xacro:macro>
+  
+</robot>

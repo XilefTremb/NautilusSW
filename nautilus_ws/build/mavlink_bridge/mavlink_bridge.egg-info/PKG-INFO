@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: mavlink_bridge
+Version: 0.0.1
+Requires-Dist: rclpy
+Requires-Dist: pymavlink
+Dynamic: requires-dist

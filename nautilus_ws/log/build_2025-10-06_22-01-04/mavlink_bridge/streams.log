@@ -1,0 +1,33 @@
+[16.073s] Invoking command in '/home/devs/NautilusSW/nautilus_ws/src/mavlink_bridge': PYTHONPATH=/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(nautilus_venv) /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/mavlink_bridge build --build-base /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build install --record /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/install.log --single-version-externally-managed install_data
+[22.938s] running egg_info
+[23.275s] creating ../../build/mavlink_bridge/mavlink_bridge.egg-info
+[23.275s] writing ../../build/mavlink_bridge/mavlink_bridge.egg-info/PKG-INFO
+[23.286s] writing dependency_links to ../../build/mavlink_bridge/mavlink_bridge.egg-info/dependency_links.txt
+[23.293s] writing entry points to ../../build/mavlink_bridge/mavlink_bridge.egg-info/entry_points.txt
+[23.294s] writing requirements to ../../build/mavlink_bridge/mavlink_bridge.egg-info/requires.txt
+[23.294s] writing top-level names to ../../build/mavlink_bridge/mavlink_bridge.egg-info/top_level.txt
+[23.313s] writing manifest file '../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'
+[24.160s] reading manifest file '../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'
+[24.176s] writing manifest file '../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'
+[24.185s] running build
+[24.190s] running build_py
+[24.193s] creating /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge
+[24.203s] copying telemetry_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge
+[24.219s] copying telemetry_bridge/__init__.py -> /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge
+[24.229s] running install
+[24.336s] running install_lib
+[24.722s] creating /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge
+[24.728s] copying /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge
+[24.739s] copying /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build/lib/telemetry_bridge/__init__.py -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge
+[24.757s] byte-compiling /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge/mavlink_telemetry_bridge.py to mavlink_telemetry_bridge.cpython-310.pyc
+[24.813s] byte-compiling /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge/__init__.py to __init__.cpython-310.pyc
+[24.813s] running install_data
+[24.814s] creating /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/share/ament_index/resource_index/packages
+[24.814s] copying resource/mavlink_bridge -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/share/ament_index/resource_index/packages
+[24.831s] copying package.xml -> /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/share/mavlink_bridge
+[24.836s] running install_egg_info
+[25.132s] Copying ../../build/mavlink_bridge/mavlink_bridge.egg-info to /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge-0.0.1-py3.10.egg-info
+[25.143s] running install_scripts
+[25.880s] Installing mavlink_telemetry_bridge script to /home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/bin
+[25.904s] writing list of installed files to '/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/install.log'
+[26.469s] Invoked command in '/home/devs/NautilusSW/nautilus_ws/src/mavlink_bridge' returned '0': PYTHONPATH=/home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/devs/NautilusSW/nautilus_ws/install/mavlink_bridge/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(nautilus_venv) /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/mavlink_bridge build --build-base /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/build install --record /home/devs/NautilusSW/nautilus_ws/build/mavlink_bridge/install.log --single-version-externally-managed install_data
