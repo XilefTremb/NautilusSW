@@ -128,7 +128,7 @@ def generate_launch_description():
             gz_sim_server,
             gz_sim_gui,
             iris,
-            # mavlink_telemetry_bridge,
+            mavlink_telemetry_bridge,
             # rviz,
         ]
     )
