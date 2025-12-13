@@ -10,10 +10,11 @@ Contributors:
 
 Follow these steps to compile and run the Nautilus software stack:
 
-<pre>cd NautilusSW/nautilus_ws
-colcon build
+<pre>cd 
 source install/setup.bash
 source ~/ardu_ws/install/setup.bash
+NautilusSW/nautilus_ws
+colcon build
 ros2 launch nautilus_bringup nautilus.launch.py </pre>
 
 
