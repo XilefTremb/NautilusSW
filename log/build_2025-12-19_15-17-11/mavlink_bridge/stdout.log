@@ -1,0 +1,39 @@
+running egg_info
+creating ../../../build/mavlink_bridge/mavlink_bridge.egg-info
+writing ../../../build/mavlink_bridge/mavlink_bridge.egg-info/PKG-INFO
+writing dependency_links to ../../../build/mavlink_bridge/mavlink_bridge.egg-info/dependency_links.txt
+writing entry points to ../../../build/mavlink_bridge/mavlink_bridge.egg-info/entry_points.txt
+writing requirements to ../../../build/mavlink_bridge/mavlink_bridge.egg-info/requires.txt
+writing top-level names to ../../../build/mavlink_bridge/mavlink_bridge.egg-info/top_level.txt
+writing manifest file '../../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'
+reading manifest file '../../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'
+writing manifest file '../../../build/mavlink_bridge/mavlink_bridge.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/devs/NautilusSW/build/mavlink_bridge/build/lib/mavlink_bridge
+copying mavlink_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/build/mavlink_bridge/build/lib/mavlink_bridge
+copying mavlink_bridge/__init__.py -> /home/devs/NautilusSW/build/mavlink_bridge/build/lib/mavlink_bridge
+creating /home/devs/NautilusSW/build/mavlink_bridge/build/lib/telemetry_bridge
+copying telemetry_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/build/mavlink_bridge/build/lib/telemetry_bridge
+copying telemetry_bridge/__init__.py -> /home/devs/NautilusSW/build/mavlink_bridge/build/lib/telemetry_bridge
+running install
+running install_lib
+creating /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge
+copying /home/devs/NautilusSW/build/mavlink_bridge/build/lib/mavlink_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge
+copying /home/devs/NautilusSW/build/mavlink_bridge/build/lib/mavlink_bridge/__init__.py -> /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge
+creating /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge
+copying /home/devs/NautilusSW/build/mavlink_bridge/build/lib/telemetry_bridge/mavlink_telemetry_bridge.py -> /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge
+copying /home/devs/NautilusSW/build/mavlink_bridge/build/lib/telemetry_bridge/__init__.py -> /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge
+byte-compiling /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge/mavlink_telemetry_bridge.py to mavlink_telemetry_bridge.cpython-310.pyc
+byte-compiling /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge/mavlink_telemetry_bridge.py to mavlink_telemetry_bridge.cpython-310.pyc
+byte-compiling /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/telemetry_bridge/__init__.py to __init__.cpython-310.pyc
+running install_data
+creating /home/devs/NautilusSW/install/mavlink_bridge/share/ament_index/resource_index/packages
+copying resource/mavlink_bridge -> /home/devs/NautilusSW/install/mavlink_bridge/share/ament_index/resource_index/packages
+copying package.xml -> /home/devs/NautilusSW/install/mavlink_bridge/share/mavlink_bridge
+running install_egg_info
+Copying ../../../build/mavlink_bridge/mavlink_bridge.egg-info to /home/devs/NautilusSW/install/mavlink_bridge/lib/python3.10/site-packages/mavlink_bridge-0.0.0-py3.10.egg-info
+running install_scripts
+Installing mavlink_telemetry_bridge script to /home/devs/NautilusSW/install/mavlink_bridge/lib/mavlink_bridge
+writing list of installed files to '/home/devs/NautilusSW/build/mavlink_bridge/install.log'
