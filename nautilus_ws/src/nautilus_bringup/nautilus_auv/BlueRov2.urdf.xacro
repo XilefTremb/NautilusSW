@@ -5,6 +5,9 @@
     <xacro:include filename="./Part/Camera/Camera.urdf.xacro" />
     <xacro:include filename="./Part/Camera/CameraDepth.urdf.xacro" />
     <xacro:include filename="./Part/Camera/CameraStereo.urdf.xacro" />
+    <xacro:include filename="./Part/DVL/DVL.urdf.xacro" />
+    <xacro:include filename="./Part/DepthSensor/DepthSensor.urdf.xacro"/>
+
 
     <link name="base_link">
         <visual>
@@ -35,11 +38,22 @@
 
     </link> 
 
+	
     <xacro:IMU name="base_link_imu_sensor" link="base_link" xyz="0 0 0" rpy="0 0 0"  />
     <!--<xacro:Camera name="camera_front" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />-->
     <xacro:CameraDepth name="camera" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />
     <!--<xacro:CameraStero name="camera_stereo" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />-->
+    <xacro:dvl_sensor name="dvl_front"
+                  parent_link="base_link"
+                  update_rate="10"
+                  aperture="3.0" tilt="30.0"
+                  min_range="0.3" max_range="40.0" resolution="0.01"
+                  ref_frame="parent"
+                  bottom_stddev="0.01"
+                  wm_enabled="true" wm_bins="10" wm_near="20.0" wm_far="60.0" wm_stddev="0.05"/>
 
+	<xacro:DepthSensor parent_link="base_link" sensor_name="water_pressure"/>
+	
     <xacro:T200 name="thruster1" fixTo="base_link" xyz="0.125 -0.105 0.02" RPY="1.5707963 1.5707963 -0.78539815"/>
     <xacro:T200 name="thruster2" fixTo="base_link" xyz="0.125 0.105 0.02" RPY="1.5707963 1.5707963 3.92699075"/>
     <xacro:T200 name="thruster3" fixTo="base_link" xyz="-0.125 -0.105 0.02" RPY="1.5707963 1.5707963 0.78540075"/>
@@ -149,6 +163,11 @@
             <jointName>thruster6_propeler_joint</jointName>
             <multiplier>102</multiplier>
             </control>
+            
+            <barometer>
+            	<name>water_pressure</name>
+            	<linkName>base_link</linkName>
+            </barometer>
         </plugin> 
 
         <plugin

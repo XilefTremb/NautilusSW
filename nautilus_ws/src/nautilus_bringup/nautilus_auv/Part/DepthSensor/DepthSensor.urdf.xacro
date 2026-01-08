@@ -1,33 +1,15 @@
 <?xml version='1.0'?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="DepthSensor">
 
-  <xacro:macro name="DepthSensor" params="link topicName sealevel noise Hz">
+  <xacro:macro name="DepthSensor" params="parent_link sensor_name">
 
-    <gazebo>
-    
-        <plugin name="gazebo_ros_DepthSensor" filename="libgazebo_ros_DepthSensor.so">
-
-            <ros>
-
-                <!-- Add a namespace -->
-                <namespace>/depthSensor</namespace>
-                <!-- Remap the default topic -->
-                <remapping>odom:=${topicName}</remapping>
-
-            </ros>
-
-            <!-- Name of the link within this model whose pose will be published -->
-            <body_name>${link}</body_name>
-
-            <!-- Update rate in Hz, defaults to 0.0, which means as fast as possible -->
-            <update_rate>${Hz}</update_rate>
-            <sea_level>${sealevel}</sea_level>
-
-            <!-- Standard deviation of the noise to be added to the reported velocities. -->
-            <gaussian_noise>${noise}</gaussian_noise>
-
-        </plugin>
-
+    <gazebo reference="${parent_link}">
+      <sensor name="${sensor_name}" type="air_pressure">
+        <always_on>true</always_on>
+        <update_rate>50</update_rate>
+        <pose>0 0 0 0 0 0</pose>
+        <topic>/${sensor_name}</topic>
+      </sensor>
     </gazebo>
     
   </xacro:macro>

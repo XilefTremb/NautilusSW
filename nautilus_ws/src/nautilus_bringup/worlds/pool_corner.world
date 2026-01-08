@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <sdf version='1.7'>
   <world name='default'>
+  	<plugin
+  		filename="gz-sim-air-pressure-system"
+  		name="gz::sim::systems::AirPressure">
+  	</plugin>
     <plugin filename="gz-sim-imu-system"
       name="gz::sim::systems::Imu">
     </plugin>
@@ -9,7 +13,7 @@
       <graded_buoyancy>
         <default_density>1000</default_density>
         <density_change>
-          <above_depth>2</above_depth>
+          <above_depth>0</above_depth>
           <density>1</density>
         </density_change>
       </graded_buoyancy>
@@ -47,7 +51,7 @@
       </spot>
     </light>
     <model name='ground_plane'>
-      <pose>0 0 0 0 -0 0</pose>
+      <pose>0 0 -5 0 -0 0</pose>
       <static>1</static>
       <link name='link'>
         <collision name='collision'>
@@ -95,7 +99,7 @@
       </link>
     </model>
     <model name="water_plane">
-      <pose> 0 0 2 0 0 0 </pose>
+      <pose> 0 0 0 0 0 0 </pose>
       <static>true</static>
       <link name="link">
         <visual name="water_plane">
@@ -126,6 +130,9 @@
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>0.7 0.7 0.7 1</background>
       <shadows>1</shadows>
+      <grid>
+      	<pose>0 0 -5 0 0 0</pose>
+      </grid>
     </scene>
     <audio>
       <device>default</device>
@@ -144,10 +151,10 @@
         <collision name='Wall_25_Collision'>
           <geometry>
             <box>
-              <size>13 0.15 2.5</size>
+              <size>13 0.15 6.0</size>
             </box>
           </geometry>
-          <pose>0 0 1.25 0 -0 0</pose>
+          <pose>0 0 0 -2.0 -0 0</pose>
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
@@ -163,10 +170,10 @@
           </surface>
         </collision>
         <visual name='Wall_25_Visual'>
-          <pose>0 0 1.25 0 -0 0</pose>
+          <pose>0 0 -2.0 0 -0 0</pose>
           <geometry>
             <box>
-              <size>13 0.15 2.5</size>
+              <size>13 0.15 6.0</size>
             </box>
           </geometry>
           <material>
@@ -189,10 +196,10 @@
         <collision name='Wall_27_Collision'>
           <geometry>
             <box>
-              <size>13.5 0.15 2.5</size>
+              <size>13.5 0.15 6.0</size>
             </box>
           </geometry>
-          <pose>0 0 1.25 0 -0 0</pose>
+          <pose>0 0 -2.0 0 -0 0</pose>
           <max_contacts>10</max_contacts>
           <surface>
             <contact>
@@ -208,10 +215,10 @@
           </surface>
         </collision>
         <visual name='Wall_27_Visual'>
-          <pose>0 0 1.25 0 -0 0</pose>
+          <pose>0 0 -2.0 0 -0 0</pose>
           <geometry>
             <box>
-              <size>13.5 0.15 2.5</size>
+              <size>13.5 0.15 6.0</size>
             </box>
           </geometry>
           <material>
@@ -254,7 +261,7 @@
         </link>
       </model>
       <model name='ground_plane'>
-        <pose>0 0 -1.5 0 -0 0</pose>
+        <pose>0 0 -5 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
           <pose>0 0 -1.5 0 -0 0</pose>
