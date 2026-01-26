@@ -31,6 +31,7 @@
 
 """Launch an iris quadcopter in Gazebo and Rviz."""
 from pathlib import Path
+import os
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -47,13 +48,18 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
+
+    # os.system("pkill -9 ruby")
+    os.system("pkill -9 ardusub")
+    os.system("pkill -9 mavproxy.py")
+
     """Generate a launch description for a iris quadcopter."""
     pkg_project_bringup = get_package_share_directory("nautilus_bringup")
     pkg_project_gazebo = get_package_share_directory("ardupilot_gz_gazebo")
     pkg_ros_gz_sim = get_package_share_directory("ros_gz_sim")
 
-    # Iris.
-    iris = IncludeLaunchDescription(
+    # AUV.
+    auv = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
                 PathJoinSubstitution(
@@ -127,7 +133,7 @@ def generate_launch_description():
             ),
             gz_sim_server,
             gz_sim_gui,
-            iris,
+            auv,
             mavlink_telemetry_bridge,
             # rviz,
         ]
