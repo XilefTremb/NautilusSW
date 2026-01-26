@@ -116,6 +116,8 @@
         <always_on>true</always_on>
         <visualize>true</visualize>
         <update_rate>10.0</update_rate>
+        <topic>camera/image_raw</topic>
+        <gz_frame_id>camera_rgb_frame</gz_frame_id>
         <camera name="head">
         <!-- https://elinux.com/Rpi_Camera_Module  -->
             <horizontal_fov>1.0855</horizontal_fov>
@@ -138,7 +140,7 @@
             <stddev>0.007</stddev>
             </noise>
         </camera>
-            <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <!-- <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
             <frame_name>${name}_camera_rgb_optical_frame</frame_name>
                 <alwaysOn>true</alwaysOn>
                 <visualize>true</visualize>
@@ -153,7 +155,7 @@
                 <distortionK3>0.0</distortionK3>
                 <distortionT1>0.0</distortionT1>
                 <distortionT2>0.0</distortionT2>
-            </plugin>
+            </plugin> -->
             
         </sensor>
     </gazebo>

@@ -99,12 +99,13 @@ def launch_state_pub_with_bridge(context):
     xacroPath = os.path.join(pkg_project_bringup, "nautilus_auv", "BlueRov2.urdf.xacro")
     urdfPath = os.path.join(pkg_project_bringup,'nautilus_auv','BlueRov2.urdf')
     sdfPath = os.path.join(pkg_project_bringup, "nautilus_auv", "BlueRov2.sdf")
+    # sdfPath = os.path.join(pkg_project_bringup, "models","bluerov2","model.sdf")
 
 
     os.system("xacro "+ str(xacroPath)+ " -o " + str(urdfPath))   
     os.system("gz sdf -p " + str(urdfPath) + " > " + str(sdfPath))
 
-    with open(sdfPath, "r") as infp:
+    with open(urdfPath, "r") as infp:
         robot_desc = infp.read()
         # print(robot_desc)
 

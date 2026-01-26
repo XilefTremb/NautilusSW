@@ -41,7 +41,7 @@
 	
     <xacro:IMU name="base_link_imu_sensor" link="base_link" xyz="0 0 0" rpy="0 0 0"  />
     <!--<xacro:Camera name="camera_front" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />-->
-    <xacro:CameraDepth name="camera" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />
+    <xacro:Camera name="camera" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />
     <!--<xacro:CameraStero name="camera_stereo" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />-->
     <xacro:dvl_sensor name="dvl_front"
                   parent_link="base_link"
@@ -63,6 +63,18 @@
 
     <allow_auto_disable>1</allow_auto_disable>
     <gazebo>
+
+        <plugin filename="gz-sim-joint-state-publisher-system"
+            name="gz::sim::systems::JointStatePublisher">
+        </plugin>
+
+        <plugin
+            filename="gz-sim-odometry-publisher-system"
+            name="gz::sim::systems::OdometryPublisher">
+            <odom_frame>odom</odom_frame>
+            <robot_base_frame>base_link</robot_base_frame>
+            <dimensions>3</dimensions>
+        </plugin>
         
         <plugin name="ArduPilotPlugin" filename="libArduPilotPlugin.so">
         <fdm_addr>127.0.0.1</fdm_addr>
@@ -78,6 +90,11 @@
             Positive thrust = 51
             Negative thrust = -41
         -->
+            <!-- Transform from the Gazebo body frame (x-forward, y-left, z-up) to the ArduPilot body frame (x-forward, y-right, z-down) -->
+            <modelXYZToAirplaneXForwardZDown>0 0 0 3.141592653589793 0 0</modelXYZToAirplaneXForwardZDown>
+
+            <!-- Transform from the Gazebo world frame (ENU) to the ArduPilot world frame (NED) -->
+            <gazeboXYZToNED>0 0 0 3.141592653589793 0 1.5707963267948966</gazeboXYZToNED>
             
             <control channel="0">
             <type>VELOCITY</type>
@@ -168,6 +185,8 @@
             	<name>water_pressure</name>
             	<linkName>base_link</linkName>
             </barometer>
+
+
         </plugin> 
 
         <plugin
