@@ -49,11 +49,10 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
 
-    # os.system("pkill -9 ruby")
+    #os.system("pkill -9 ruby")
     os.system("pkill -9 ardusub")
     os.system("pkill -9 mavproxy.py")
 
-    """Generate a launch description for a iris quadcopter."""
     pkg_project_bringup = get_package_share_directory("nautilus_bringup")
     pkg_project_gazebo = get_package_share_directory("ardupilot_gz_gazebo")
     pkg_ros_gz_sim = get_package_share_directory("ros_gz_sim")
@@ -67,13 +66,13 @@ def generate_launch_description():
                         FindPackageShare("nautilus_bringup"),
                         "launch",
                         "robots",
-                        "nautilus_auv.launch.py",
+                        "orca_auv.launch.py",
                     ]
                 ),
             ]
         ),
         launch_arguments={
-            "model": "nautilus_auv",
+            "model": "orca_auv",
             "name": "AUV",
             "x": "0",
             "y": "0",

@@ -105,7 +105,7 @@ def launch_state_pub_with_bridge(context):
     os.system("xacro "+ str(xacroPath)+ " -o " + str(urdfPath))   
     os.system("gz sdf -p " + str(urdfPath) + " > " + str(sdfPath))
 
-    with open(urdfPath, "r") as infp:
+    with open(sdfPath, "r") as infp:
         robot_desc = infp.read()
         # print(robot_desc)
 
