@@ -1,4 +1,5 @@
 from auv_pymavlink import AuvPymavlink
+from math import pi
 
 AUV = AuvPymavlink()
 
@@ -6,21 +7,12 @@ AUV.Connect()
 
 AUV.Arm()
 
-AUV.ModeGuided()
+AUV.ChangeMode('GUIDED')
 
-AUV.SendPos(-1, -1, 1)
+AUV.GoToWaypointLocal(1, 1, 1, 0)
 
-# msg = the_connection.recv_match(type='COMMAND_ACK', blocking=True)
-# print(msg)
+AUV.GoToWaypointLocal(0, 0, 0.5, pi/2)
 
+AUV.GoToWaypointLocal(1, 1, 1, 0)
 
-# msg = the_connection.recv_match(type='POSITION_TARGET_LOCAL_NED', blocking=True)
-
-
-# while True:
-    #      msg = the_connection.recv_match(type='NAV_CONTROLLER_OUTPUT', blocking=False)
-    #      msg2 = the_connection.recv_match(type='LOCAL_POSITION_NED', blocking=True)
-    #      msg3 = the_connection.recv_match(type='POSITION_TARGET_LOCAL_NED', blocking=False)
-#     print("Hello!")
-#      print(msg2)
-#      print(msg3)
+AUV.GoToWaypointLocal(0, 0, 0.5, pi/2)
