@@ -1,0 +1,28 @@
+[0.522s] Invoking command in '/home/devs/NautilusSW/UTILES/ros2_ws/src/submarine_sim': PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/devs/NautilusSW/build/submarine_sim/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/devs/NautilusSW/install/submarine_sim/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/submarine_sim build --build-base /home/devs/NautilusSW/build/submarine_sim/build install --record /home/devs/NautilusSW/build/submarine_sim/install.log --single-version-externally-managed install_data
+[0.616s] /home/devs/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:289: UserWarning: Unknown distribution option: 'tests_require'
+[0.616s]   warnings.warn(msg)
+[0.668s] running egg_info
+[0.677s] writing ../../../../build/submarine_sim/submarine_sim.egg-info/PKG-INFO
+[0.678s] writing dependency_links to ../../../../build/submarine_sim/submarine_sim.egg-info/dependency_links.txt
+[0.679s] writing entry points to ../../../../build/submarine_sim/submarine_sim.egg-info/entry_points.txt
+[0.679s] writing requirements to ../../../../build/submarine_sim/submarine_sim.egg-info/requires.txt
+[0.679s] writing top-level names to ../../../../build/submarine_sim/submarine_sim.egg-info/top_level.txt
+[0.696s] reading manifest file '../../../../build/submarine_sim/submarine_sim.egg-info/SOURCES.txt'
+[0.696s] writing manifest file '../../../../build/submarine_sim/submarine_sim.egg-info/SOURCES.txt'
+[0.697s] running build
+[0.697s] running build_py
+[0.697s] copying submarine_sim/gui_sensor_display.py -> /home/devs/NautilusSW/build/submarine_sim/build/lib/submarine_sim
+[0.697s] copying submarine_sim/sensor_publisher.py -> /home/devs/NautilusSW/build/submarine_sim/build/lib/submarine_sim
+[0.698s] copying submarine_sim/__init__.py -> /home/devs/NautilusSW/build/submarine_sim/build/lib/submarine_sim
+[0.698s] running install
+[0.700s] running install_lib
+[0.708s] running install_data
+[0.708s] copying package.xml -> /home/devs/NautilusSW/install/submarine_sim/share/submarine_sim
+[0.709s] running install_egg_info
+[0.717s] removing '/home/devs/NautilusSW/install/submarine_sim/lib/python3.10/site-packages/submarine_sim-0.0.0-py3.10.egg-info' (and everything under it)
+[0.719s] Copying ../../../../build/submarine_sim/submarine_sim.egg-info to /home/devs/NautilusSW/install/submarine_sim/lib/python3.10/site-packages/submarine_sim-0.0.0-py3.10.egg-info
+[0.720s] running install_scripts
+[0.739s] Installing gui_sensor_display script to /home/devs/NautilusSW/install/submarine_sim/lib/submarine_sim
+[0.740s] Installing sensor_publisher script to /home/devs/NautilusSW/install/submarine_sim/lib/submarine_sim
+[0.741s] writing list of installed files to '/home/devs/NautilusSW/build/submarine_sim/install.log'
+[0.759s] Invoked command in '/home/devs/NautilusSW/UTILES/ros2_ws/src/submarine_sim' returned '0': PS1=\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/devs/NautilusSW/build/submarine_sim/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/devs/NautilusSW/install/submarine_sim/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/submarine_sim build --build-base /home/devs/NautilusSW/build/submarine_sim/build install --record /home/devs/NautilusSW/build/submarine_sim/install.log --single-version-externally-managed install_data
