@@ -338,6 +338,12 @@
       <velocity_control>true</velocity_control>
       <use_angvel_cmd>False</use_angvel_cmd>
     </plugin>
+    
+    <plugin filename="gz-sim-pose-publisher-system"
+        name="gz::sim::systems::PosePublisher">
+      <publish_link_pose>true</publish_link_pose>
+      <publish_nested_model_pose>true</publish_nested_model_pose>
+    </plugin>
 
     <plugin name="ArduPilotPlugin" filename="libArduPilotPlugin.so">
       <!-- Port settings -->
