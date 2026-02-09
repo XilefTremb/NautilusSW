@@ -1,16 +1,16 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
 import cv2
 from ultralytics import YOLO
+from cv_bridge import CvBridge
 
 class YoloNode(Node):
     def __init__(self):
         super().__init__('yolo_node')
 
         self.bridge = CvBridge()
-        self.model = YOLO('../yolo_models/best.pt')
+        self.model = YOLO('src/nautilus_vision/yolo_models/best.pt')
 
         self.subscription = self.create_subscription(
             Image,
