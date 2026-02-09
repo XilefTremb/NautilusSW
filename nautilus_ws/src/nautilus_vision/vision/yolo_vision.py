@@ -3,7 +3,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 import cv2
 from ultralytics import YOLO
-from .CVBridge import CvBridge
+from cv_bridge import CvBridge
 
 class YoloNode(Node):
     def __init__(self):
