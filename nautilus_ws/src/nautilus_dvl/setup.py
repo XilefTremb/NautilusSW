@@ -19,7 +19,7 @@ setup(
     license='TODO: License declaration',
     entry_points={
         'console_scripts': [
-            'fake_dvl = DVL.fake_DVL:main'
+            'fake_dvl = DVL.fake_dvl:main'
         ],
     },
 )
