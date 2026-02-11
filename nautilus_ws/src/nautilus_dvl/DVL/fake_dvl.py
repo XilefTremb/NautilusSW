@@ -14,7 +14,7 @@ class FakeDVL(Node):
     def __init__(self):
         super().__init__('Fake_DVL')
 
-        self.last_pose_ned = None
+        self.last_pose_enu = None
         self.msg = None
 
         self.pose_sub = self.create_subscription(
@@ -30,7 +30,7 @@ class FakeDVL(Node):
             10
         )
 
-        self.timer = self.create_timer(1,self.timer_callback)
+        self.timer = self.create_timer(0.1,self.timer_callback)
 
         self.get_logger().info('Fake DVL started')
     
@@ -50,27 +50,27 @@ class FakeDVL(Node):
             qw = self.msg.orientation.w
 
             roll_enu, pitch_enu, yaw_enu = euleur_from_quat(qx,qy,qz,qw)
+            # print(f"yaw_enu = {yaw_enu}")
 
-            x_ned = y_enu
-            y_ned = x_enu
-            z_ned = -z_enu
+            # x_ned = y_enu
+            # y_ned = x_enu
+            # z_ned = -z_enu
 
-            roll_ned = pitch_enu
-            pitch_ned = roll_enu
-            yaw_ned = -yaw_enu
+            # roll_ned = pitch_enu
+            # pitch_ned = roll_enu
+            # yaw_ned = -yaw_enu + math.pi/2
 
-            current_pose_ned = np.array([x_ned, y_ned, z_ned, roll_ned, pitch_ned, yaw_ned])
-            if self.last_pose_ned is not None:
-                delta_pose_ned = current_pose_ned - self.last_pose_ned
-        
 
-                delta_pose_frd = delta_pose_ned
-                delta_pose_frd[0] = math.cos(yaw_ned) * delta_pose_ned[0] - math.sin(yaw_ned) * delta_pose_ned[1]
-                delta_pose_frd[1] = math.sin(yaw_ned) * delta_pose_ned[0] + math.cos(yaw_ned) * delta_pose_ned[1]
+            current_pose_enu = np.array([x_enu, y_enu, z_enu, roll_enu, pitch_enu, yaw_enu])
+            if self.last_pose_enu is not None:
+                delta_pose_enu = current_pose_enu - self.last_pose_enu
+                delta_pose_frd = delta_pose_enu.copy()
+                delta_pose_frd[0] = math.cos(yaw_enu) * delta_pose_enu[0] + math.sin(yaw_enu) * delta_pose_enu[1]
+                delta_pose_frd[1] = math.sin(yaw_enu) * delta_pose_enu[0] - math.cos(yaw_enu) * delta_pose_enu[1]
+                delta_pose_frd[2] *= -1
                 if abs(delta_pose_frd[5]) > 2*math.pi*0.5:
-                    print(f'received delta = {delta_pose_frd[5]}')
                     delta_pose_frd[5] -= np.sign(delta_pose_frd[5])*2*math.pi
-                    print(f'corrected delta = {delta_pose_frd[5]}')
+                    delta_pose_frd[5] *= -1
 
 
                 pose_msg = Pose()
@@ -86,7 +86,7 @@ class FakeDVL(Node):
 
                 self.pose_pub.publish(pose_msg) #timestamped important???
 
-            self.last_pose_ned = current_pose_ned
+            self.last_pose_enu = current_pose_enu
         
 
 def main(args=None):
