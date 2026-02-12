@@ -22,6 +22,7 @@ class FakeDVL(Node):
         os.environ["MAVLINK_DIALECT"] = "ardupilotmega"
 
         self.last_pose_enu = None
+        self.last_t = 0.0
         self.msg = None
 
         self.pose_sub = self.create_subscription(
@@ -40,7 +41,7 @@ class FakeDVL(Node):
         self.timer = self.create_timer(0.1,self.timer_callback)
 
         self.dvl = AuvPymavlink()
-        self.dvl.Connect("udpin:localhost:14551",False)
+        self.dvl.Connect("udpin:localhost:14552",False)
         self.get_logger().info('Fake DVL started')
     
     def msg_callback(self,msg):
@@ -106,7 +107,7 @@ class FakeDVL(Node):
         position_delta = [dx, dy, dz]  # m
 
    
-        self.dvl_connection.mav.vision_position_delta_send(
+        self.dvl.the_connection.mav.vision_position_delta_send(
             time_usec,
             time_delta_usec,
             angle_delta,

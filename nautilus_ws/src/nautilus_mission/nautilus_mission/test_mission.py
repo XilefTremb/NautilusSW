@@ -7,13 +7,14 @@ from nautilus_bringup.auv_pymavlink import AuvPymavlink
 import rclpy
 from geometry_msgs.msg import Pose
 from rclpy.node import Node
+from pymavlink import mavutil
 
 def parse_args():
     p = argparse.ArgumentParser()
     mode = p.add_mutually_exclusive_group(required=True)
     mode.add_argument("--sitl", action="store_true", help="Run against SITL (keep sim GPS, don't start DVL aiding)")
     mode.add_argument("--auv", action="store_true", help="Run against real vehicle (enable DVL aiding + ExternalNav fusion)")
-    p.add_argument("--endpoint", default="udpin:localhost:14550", help="MAVLink endpoint (udpin:... or udpout:...)")
+    p.add_argument("--endpoint", default="udpin:localhost:14551", help="MAVLink endpoint (udpin:... or udpout:...)")
     p.add_argument("--dvl-rate", type=float, default=10.0, help="VISION_POSITION_DELTA rate (Hz) in --auv mode")
     p.add_argument("--ros-args",action="store_true")
     return p.parse_args()
@@ -22,14 +23,17 @@ class Master(Node):
     def __init__(self, args):
 
         self.auv = AuvPymavlink()
-
         self.auv.Connect(args.endpoint, start_receiver=False)
+
+        print('connected')
 
         profile = self.auv.SITL_PROFILE if args.sitl else self.auv.AUV_PROFILE
         print(f"Applying {'SITL' if args.sitl else 'AUV'} parameter profile...")
         self.auv.ApplyParamProfile(profile)
 
         self.auv.StartReceiver()
+
+        self.validate_efk()
 
         self.mission()
 
@@ -45,6 +49,77 @@ class Master(Node):
         # except KeyboardInterrupt:
         #     print("Stopping...")
         #     self.auv.StopReceiver()
+
+    def ekf_good(self, ekf):
+        flags = ekf.flags
+
+        # We avoid hardcoding bit numbers; instead, interpret by behavior:
+        # If your pymavlink has these enums, use them. If not, see note below.
+        required_bits = []
+        for name in [
+            "EKF_ATTITUDE",
+            "EKF_VELOCITY_HORIZ",
+            "EKF_VELOCITY_VERT",
+            "EKF_POS_HORIZ_REL",   # common for DVL-based nav
+            "EKF_POS_VERT_ABS",    # depth/baro, depends on setup
+        ]:
+            bit = getattr(mavutil.mavlink, name, None)
+            if bit is not None:
+                required_bits.append(bit)
+
+        # If enums exist, require all
+        if required_bits:
+            if not all((flags & b) for b in required_bits):
+                return False
+        else:
+            # Fallback: if your pymavlink doesn't expose EKF_* bits,
+            # rely on variances + presence of LOCAL_POSITION_NED as below.
+            pass
+
+        # Variance thresholds (tune for your vehicle)
+        if ekf.pos_horiz_variance > 2.0:   # (m^2-ish) tune
+            return False
+        if ekf.velocity_variance > 1.0:
+            return False
+        if ekf.pos_vert_variance > 3.0:
+            return False
+
+        return True
+
+    def validate_efk(self):
+        print('validating ekf before starting mission')
+        t0 = time.time()
+        last_local = None
+
+        while True:
+            msg = self.auv.the_connection.recv_match(type=["EKF_STATUS_REPORT", "LOCAL_POSITION_NED", "STATUSTEXT"], blocking=True, timeout=1)
+            if not msg:
+                continue
+
+            if msg.get_type() == "STATUSTEXT":
+                text = msg.text.lower()
+                if "ekf" in text or "prearm" in text:
+                    print("STATUSTEXT:", msg.text)
+
+            if msg.get_type() == "LOCAL_POSITION_NED":
+                last_local = time.time()
+
+            if msg.get_type() == "EKF_STATUS_REPORT":
+                ok = self.ekf_good(msg)
+                have_local = (last_local is not None and (time.time() - last_local) < 1.0)
+
+                print(f"EKF flags={msg.flags} "
+                    f"pos_h_var={msg.pos_horiz_variance:.3f} "
+                    f"vel_var={msg.velocity_variance:.3f} "
+                    f"pos_v_var={msg.pos_vert_variance:.3f} "
+                    f"local={have_local}")
+
+                if ok and have_local:
+                    print("EKF/odometry looks good; safe to attempt GUIDED.")
+                    break
+
+            if time.time() - t0 > 60:
+                raise RuntimeError("EKF never became 'good' within 60s")
 
 def main():
     args = parse_args()
