@@ -3,6 +3,10 @@ from rclpy.node import Node
 import math
 import numpy as np
 from geometry_msgs.msg import Pose
+import time
+from pymavlink import mavutil
+import os
+from nautilus_bringup.auv_pymavlink import AuvPymavlink
 
 def euleur_from_quat(x,y,z,w):
     roll = math.atan2(2*(x*w+y*z), 1-2*(x**2+y**2))
@@ -13,6 +17,9 @@ def euleur_from_quat(x,y,z,w):
 class FakeDVL(Node):
     def __init__(self):
         super().__init__('Fake_DVL')
+
+        os.environ["MAVLINK20"] = "1"
+        os.environ["MAVLINK_DIALECT"] = "ardupilotmega"
 
         self.last_pose_enu = None
         self.msg = None
@@ -32,6 +39,8 @@ class FakeDVL(Node):
 
         self.timer = self.create_timer(0.1,self.timer_callback)
 
+        self.dvl = AuvPymavlink()
+        self.dvl.Connect("udpin:localhost:14551",False)
         self.get_logger().info('Fake DVL started')
     
     def msg_callback(self,msg):
@@ -52,15 +61,6 @@ class FakeDVL(Node):
             roll_enu, pitch_enu, yaw_enu = euleur_from_quat(qx,qy,qz,qw)
             # print(f"yaw_enu = {yaw_enu}")
 
-            # x_ned = y_enu
-            # y_ned = x_enu
-            # z_ned = -z_enu
-
-            # roll_ned = pitch_enu
-            # pitch_ned = roll_enu
-            # yaw_ned = -yaw_enu + math.pi/2
-
-
             current_pose_enu = np.array([x_enu, y_enu, z_enu, roll_enu, pitch_enu, yaw_enu])
             if self.last_pose_enu is not None:
                 delta_pose_enu = current_pose_enu - self.last_pose_enu
@@ -71,7 +71,6 @@ class FakeDVL(Node):
                 if abs(delta_pose_frd[5]) > 2*math.pi*0.5:
                     delta_pose_frd[5] -= np.sign(delta_pose_frd[5])*2*math.pi
                     delta_pose_frd[5] *= -1
-
 
                 pose_msg = Pose()
 
@@ -85,8 +84,37 @@ class FakeDVL(Node):
                 pose_msg.orientation.w = 0.0        
 
                 self.pose_pub.publish(pose_msg) #timestamped important???
+                self.SendDVLAsGps(delta_pose_frd[0],delta_pose_frd[1],0) #z source is gps/baro
 
             self.last_pose_enu = current_pose_enu
+
+    def SendDVLAsGps(self, dx, dy, dz, confidence=100.0):
+        """
+        dx, dy, dz: position increments (meters) for VISION_POSITION_DELTA
+        confidence: 0..100
+        """
+
+        #TODO verify validity of timestamp, if not push gz timestamp
+        now = time.time()
+        dt = now - self.last_t
+        self.last_t = now
+
+        time_usec = int(now * 1e6)
+        time_delta_usec = int(dt * 1e6)
+
+        angle_delta = [0.0, 0.0, 0.0]  # rad
+        position_delta = [dx, dy, dz]  # m
+
+   
+        self.dvl_connection.mav.vision_position_delta_send(
+            time_usec,
+            time_delta_usec,
+            angle_delta,
+            position_delta,
+            float(confidence),
+        )
+
+        print(f"Sending DVL estimated pos [{dx}, {dy}, {dz}] to VISION_POSITION_DELTA")
         
 
 def main(args=None):

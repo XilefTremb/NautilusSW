@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
-project(nautilus_bringup)
+project(nautilus_mission)
 
 # --------------------------------------------------------------------------- #
 # Find dependencies.
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 
 # --------------------------------------------------------------------------- #
 #  Install.
@@ -15,40 +16,11 @@ install(
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
-# Install project configuration files.
-install(
-  DIRECTORY
-    config/
-  DESTINATION share/${PROJECT_NAME}/config
-)
-
-
-install(
-  DIRECTORY
-    nautilus_auv/
-  DESTINATION share/${PROJECT_NAME}/nautilus_auv
-)
-
-install(
-  DIRECTORY
-    worlds/
-  DESTINATION share/${PROJECT_NAME}/worlds
-)
-install(
-  DIRECTORY
-    scripts/
-  DESTINATION share/${PROJECT_NAME}/scripts
-)
 install(
   PROGRAMS
-    scripts/dvl_sensor_node.py
+    nautilus_mission/test_mission.py
   DESTINATION lib/${PROJECT_NAME}
-)
-
-install(
-  DIRECTORY
-    models/
-  DESTINATION share/${PROJECT_NAME}/models
+  RENAME test_mission
 )
 
 ament_python_install_package(${PROJECT_NAME})

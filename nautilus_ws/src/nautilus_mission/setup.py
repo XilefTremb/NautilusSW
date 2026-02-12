@@ -1,6 +1,8 @@
 from setuptools import find_packages, setup
+from glob import glob
+import os
 
-package_name = 'nautilus_dvl'
+package_name = 'nautilus_mission'
 
 setup(
     name=package_name,
@@ -10,6 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*'))
+
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -19,7 +23,7 @@ setup(
     license='TODO: License declaration',
     entry_points={
         'console_scripts': [
-            'fake_dvl = DVL.fake_dvl:main'
+            'test_mission = nautilus_mission.launch.test_mission:main',
         ],
     },
 )
