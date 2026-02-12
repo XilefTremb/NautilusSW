@@ -3,9 +3,8 @@
 import argparse
 import time
 from math import pi
-from nautilus_bringup.auv_pymavlink import AuvPymavlink
+from nautilus_mission.auv_pymavlink import AuvPymavlink
 import rclpy
-from geometry_msgs.msg import Pose
 from rclpy.node import Node
 from pymavlink import mavutil
 
@@ -22,13 +21,13 @@ def parse_args():
 class Master(Node):
     def __init__(self, args):
 
-        self.auv = AuvPymavlink()
+        super().__init__('master')
+
+        self.auv = AuvPymavlink(self)
         self.auv.Connect(args.endpoint, start_receiver=False)
 
-        print('connected')
-
         profile = self.auv.SITL_PROFILE if args.sitl else self.auv.AUV_PROFILE
-        print(f"Applying {'SITL' if args.sitl else 'AUV'} parameter profile...")
+        self.get_logger().info(f"Applying {'SITL' if args.sitl else 'AUV'} parameter profile...")
         self.auv.ApplyParamProfile(profile)
 
         self.auv.StartReceiver()
@@ -36,6 +35,10 @@ class Master(Node):
         self.validate_ekf()
 
         self.mission()
+
+        self.get_logger().info("Stopping...")
+        
+        self.auv.StopReceiver()
 
     def mission(self):
         self.auv.Arm()
@@ -47,8 +50,6 @@ class Master(Node):
         #     #     self.auv.GoToWaypointLocal(1, 1, 1, 0)
         #     #     self.auv.GoToWaypointLocal(0, 0, 0.5, pi/2)
         # except KeyboardInterrupt:
-        print("Stopping...")
-        self.auv.StopReceiver()
 
     def ekf_good(self, ekf):
         flags = ekf.flags

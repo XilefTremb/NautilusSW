@@ -23,7 +23,10 @@ class AuvPymavlink:
       4) Run your control threads (SendPosLocal, SendDVLAsGps, etc.)
     """
 
-    def __init__(self):
+    def __init__(self, node):
+
+        self.node = node
+
         self.pos_mask = int(0b100111111000)
         self.vel_mask = int(0b110111000111)
         self.vel_pos_mask = int(0b110111000000)
@@ -74,7 +77,7 @@ class AuvPymavlink:
     def Connect(self, endpoint: str = "udpin:localhost:14550", start_receiver: bool = True):
         self.the_connection = mavutil.mavlink_connection(endpoint)
         self.the_connection.wait_heartbeat()
-        print(
+        self.node.get_logger().info(
             f"Heartbeat from system: system {self.the_connection.target_system}  and component {self.the_connection.target_component}"
         )
         if start_receiver:
@@ -87,12 +90,14 @@ class AuvPymavlink:
             return
         self._rx_stop.clear()
         self._rx_thread = threading.Thread(target=self._rx_loop, name="mavlink-rx", daemon=True)
+        self.node.get_logger().info("Started receiver thread...")
         self._rx_thread.start()
 
     def StopReceiver(self, join_timeout: float = 1.0):
         self._rx_stop.set()
         if self._rx_thread and self._rx_thread.is_alive():
             self._rx_thread.join(timeout=join_timeout)
+        self.node.get_logger().info("Stopped receiver thread...")
 
     def _rx_loop(self):
         while not self._rx_stop.is_set():
@@ -168,10 +173,10 @@ class AuvPymavlink:
             pid = d.get("param_id", "").strip("\x00")
             if pid == name:
                 got = d.get("param_value")
-                print(f"[PARAM] {name} -> {got}")
+                self.node.get_logger().info(f"[PARAM] {name} -> {got}")
                 return True
 
-        print(f"[PARAM] Timeout waiting confirm for {name}")
+        self.node.get_logger().info(f"[PARAM] Timeout waiting confirm for {name}")
         return False
 
     def ApplyParamProfile(self, profile: dict, timeout_s_each: float = 2.0) -> bool:
@@ -199,15 +204,15 @@ class AuvPymavlink:
                 0,
                 0,
             )
-        print("Waiting for motors to be armed")
+        self.node.get_logger().info("Waiting for motors to be armed")
         self.the_connection.motors_armed_wait()
-        print("Armed!")
+        self.node.get_logger().info("Armed!")
 
     def ChangeMode(self, mode: str, timeout_s: float = 3.0):
         # Check if mode is available
         if mode not in self.the_connection.mode_mapping():
-            print("Unknown mode : {}".format(mode))
-            print("Try:", list(self.the_connection.mode_mapping().keys()))
+            self.node.get_logger().info("Unknown mode : {}".format(mode))
+            self.node.get_logger().info("Try:", list(self.the_connection.mode_mapping().keys()))
             sys.exit(1)
 
         # Set new mode via MAV_CMD_DO_SET_MODE (same as your original)
@@ -226,16 +231,16 @@ class AuvPymavlink:
                 0,
                 0,
             )
-        print(f"Mode {mode} was sent to controller!")
+        self.node.get_logger().info(f"Mode {mode} was sent to controller!")
 
         # If RX thread is running, wait using the ACK cache.
         # If RX thread is NOT running (startup), we can safely recv_match() here.
         if self._rx_thread and self._rx_thread.is_alive():
             ack = self.WaitForCommandAck(CHGMODE, timeout_s=timeout_s)
             if ack is None:
-                print("[MODE] Timeout waiting for COMMAND_ACK")
+                self.node.get_logger().info("[MODE] Timeout waiting for COMMAND_ACK")
                 return False
-            print(mavutil.mavlink.enums["MAV_RESULT"][ack["result"]].description)
+            self.node.get_logger().info(mavutil.mavlink.enums["MAV_RESULT"][ack["result"]].description)
             return True
 
         # Startup/no RX thread case:
@@ -247,10 +252,10 @@ class AuvPymavlink:
             ack_msg = ack_msg.to_dict()
             if ack_msg["command"] != CHGMODE:
                 continue
-            print(mavutil.mavlink.enums["MAV_RESULT"][ack_msg["result"]].description)
+            self.node.get_logger().info(mavutil.mavlink.enums["MAV_RESULT"][ack_msg["result"]].description)
             return True
 
-        print("[MODE] Timeout waiting for COMMAND_ACK")
+        self.node.get_logger().info("[MODE] Timeout waiting for COMMAND_ACK")
         return False
 
     def SendPosLocal(self, north, east, down, yaw):
@@ -338,13 +343,13 @@ class AuvPymavlink:
             pos = self.GetLocalPosNed()
             if pos:
                 ok, dist, speed = self.ArrivedLogic(pos, target)
-                print(f"Dist={dist:.2f}m Speed={speed:.2f}m/s")
+                self.node.get_logger().info(f"Dist={dist:.2f}m Speed={speed:.2f}m/s")
 
                 if ok:
                     if stable_since is None:
                         stable_since = time.time()
                     elif (time.time() - stable_since) >= settle_time:
-                        print("Arrived at destination!")
+                        self.node.get_logger().info("Arrived at destination!")
                         return
                 else:
                     stable_since = None
@@ -381,5 +386,5 @@ class AuvPymavlink:
         return stop_evt, th
 
     def CheckDialectAndMethodAvailability(self, method):
-        print("dialect:", mavutil.mavlink.WIRE_PROTOCOL_VERSION if hasattr(mavutil.mavlink, 'WIRE_PROTOCOL_VERSION') else "unknown")
-        print("has vision_position_delta_send:", hasattr(self.the_connection.mav, method))
+        self.node.get_logger().info("dialect:", mavutil.mavlink.WIRE_PROTOCOL_VERSION if hasattr(mavutil.mavlink, 'WIRE_PROTOCOL_VERSION') else "unknown")
+        self.node.get_logger().info("has vision_position_delta_send:", hasattr(self.the_connection.mav, method))
