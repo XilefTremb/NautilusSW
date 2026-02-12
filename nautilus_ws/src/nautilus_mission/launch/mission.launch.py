@@ -10,6 +10,7 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.substitutions import PathJoinSubstitution
+from launch.substitutions import PythonExpression
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
@@ -17,11 +18,10 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
 
-    if LaunchConfiguration('use_fake_dvl'):
-        params_profile = "--auv"
-    else:
-        params_profile = "--sitl"
-
+    params_profile = PythonExpression([
+    "'--auv' if ", LaunchConfiguration('use_fake_dvl'), " else '--sitl'"
+    ])
+    
     dvl=Node(
         package='nautilus_sensors',
         executable='fake_dvl',
