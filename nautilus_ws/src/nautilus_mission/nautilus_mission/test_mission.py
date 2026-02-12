@@ -33,7 +33,7 @@ class Master(Node):
 
         self.auv.StartReceiver()
 
-        self.validate_efk()
+        self.validate_ekf()
 
         self.mission()
 
@@ -47,8 +47,8 @@ class Master(Node):
         #     #     self.auv.GoToWaypointLocal(1, 1, 1, 0)
         #     #     self.auv.GoToWaypointLocal(0, 0, 0.5, pi/2)
         # except KeyboardInterrupt:
-        #     print("Stopping...")
-        #     self.auv.StopReceiver()
+        print("Stopping...")
+        self.auv.StopReceiver()
 
     def ekf_good(self, ekf):
         flags = ekf.flags
@@ -71,10 +71,6 @@ class Master(Node):
         if required_bits:
             if not all((flags & b) for b in required_bits):
                 return False
-        else:
-            # Fallback: if your pymavlink doesn't expose EKF_* bits,
-            # rely on variances + presence of LOCAL_POSITION_NED as below.
-            pass
 
         # Variance thresholds (tune for your vehicle)
         if ekf.pos_horiz_variance > 2.0:   # (m^2-ish) tune
@@ -86,7 +82,7 @@ class Master(Node):
 
         return True
 
-    def validate_efk(self):
+    def validate_ekf(self):
         print('validating ekf before starting mission')
         t0 = time.time()
         last_local = None
