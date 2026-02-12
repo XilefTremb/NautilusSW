@@ -77,7 +77,7 @@ def generate_launch_description():
             "name": "AUV",
             "x": "0",
             "y": "0",
-            "z": "2",
+            "z": "0",
             "R": "0.0",
             "P": "0.0",
         }.items(),
@@ -101,19 +101,19 @@ def generate_launch_description():
         launch_arguments={"gz_args": "-v4 -g"}.items(),
     )
 
-    mavlink_telemetry_bridge = Node(
-            #package='auv_mavlink_bridge'
-            package='mavlink_bridge',
-            executable='mavlink_telemetry_bridge',
-            name='mavlink_telemetry_bridge',
-            parameters=[{
-                'connection': 'udp:127.0.0.1:14550',
-                'frame_id': 'odom',
-                'child_frame_id': 'base_link',
-                'thruster_count': 8,
-            }],
-            output='screen'
-        )
+    # mavlink_telemetry_bridge = Node(
+    #         #package='auv_mavlink_bridge'
+    #         package='mavlink_bridge',
+    #         executable='mavlink_telemetry_bridge',
+    #         name='mavlink_telemetry_bridge',
+    #         parameters=[{
+    #             'connection': 'udp:127.0.0.1:14550',
+    #             'frame_id': 'odom',
+    #             'child_frame_id': 'base_link',
+    #             'thruster_count': 8,
+    #         }],
+    #         output='screen'
+    #     )
 
     # # RViz.
     # rviz = Node(
@@ -134,7 +134,7 @@ def generate_launch_description():
             gz_sim_server,
             gz_sim_gui,
             auv,
-            mavlink_telemetry_bridge,
+            # mavlink_telemetry_bridge,
             # rviz,
         ]
     )

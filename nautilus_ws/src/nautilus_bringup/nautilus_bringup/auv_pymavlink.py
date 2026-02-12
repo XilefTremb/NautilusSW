@@ -29,6 +29,21 @@ class AuvPymavlink:
         self.vel_pos_mask = int(0b110111000000)
         self.ingore_all = int(0b111111111111)
 
+
+        # Parameter profiles (minimal, extend as needed)
+        self.SITL_PROFILE = {
+            "VISO_TYPE": 0,
+            "EK3_SRC1_POSXY": 3,   # GPS
+            "EK3_SRC1_VELXY": 3,   # GPS
+        }
+
+        self.AUV_PROFILE = {
+            "VISO_TYPE": 1,        # MAVLink vision/odometry (DVL integration)
+            "EK3_SRC1_POSXY": 6,   # ExternalNav
+            "EK3_SRC1_VELXY": 6,   # ExternalNav
+        }
+
+
         self.the_connection = None
         self.last_t = time.time()
 
@@ -56,7 +71,7 @@ class AuvPymavlink:
 
     # -------------------- Connection --------------------
 
-    def Connect(self, endpoint: str = "udpin:localhost:14551", start_receiver: bool = True):
+    def Connect(self, endpoint: str = "udpin:localhost:14550", start_receiver: bool = True):
         self.the_connection = mavutil.mavlink_connection(endpoint)
         self.the_connection.wait_heartbeat()
         print(
@@ -338,31 +353,7 @@ class AuvPymavlink:
 
     # -------------------- DVL / VISION_POSITION_DELTA (kept) --------------------
 
-    def SendDVLAsGps(self, dx, dy, dz, confidence=100.0):
-        """
-        dx, dy, dz: position increments (meters) for VISION_POSITION_DELTA
-        confidence: 0..100
-        """
-        now = time.time()
-        dt = now - self.last_t
-        self.last_t = now
-
-        time_usec = int(now * 1e6)
-        time_delta_usec = int(dt * 1e6)
-
-        angle_delta = [0.0, 0.0, 0.0]  # rad
-        position_delta = [dx, dy, dz]  # m
-
-        with self._send_lock:
-            self.the_connection.mav.vision_position_delta_send(
-                time_usec,
-                time_delta_usec,
-                angle_delta,
-                position_delta,
-                float(confidence),
-            )
-
-        print(f"Sending DVL estimated pos [{dx}, {dy}, {dz}] to VISION_POSITION_DELTA")
+   
 
     def StartDvlThread(self, dvl_delta_fn, rate_hz: float = 10.0, confidence: float = 100.0, name="dvl-tx"):
         """

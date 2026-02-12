@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'nautilus_vision'
+package_name = 'nautilus_sensors'
 
 setup(
     name=package_name,
@@ -19,6 +19,7 @@ setup(
     license='TODO: License declaration',
     entry_points={
         'console_scripts': [
+            'fake_dvl = DVL.fake_dvl:main',
             'yolo_vision = vision.yolo_vision:main'
         ],
     },

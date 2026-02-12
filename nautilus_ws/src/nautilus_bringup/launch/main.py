@@ -1,8 +1,9 @@
 import argparse
 import time
 from math import pi
-from auv_pymavlink import AuvPymavlink
-
+from nautilus_bringup.nautilus_bringup.auv_pymavlink import AuvPymavlink
+import rclpy
+from geometry_msgs.msg import Pose
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -13,64 +14,43 @@ def parse_args():
     p.add_argument("--dvl-rate", type=float, default=10.0, help="VISION_POSITION_DELTA rate (Hz) in --auv mode")
     return p.parse_args()
 
+class Master(rclpy.Node):
+    def __init__(self, args):
 
-# Parameter profiles (minimal, extend as needed)
-SITL_PROFILE = {
-    "VISO_TYPE": 0,
-    "EK3_SRC1_POSXY": 3,   # GPS
-    "EK3_SRC1_VELXY": 3,   # GPS
-}
+        self.auv = AuvPymavlink()
 
-AUV_PROFILE = {
-    "VISO_TYPE": 1,        # MAVLink vision/odometry (DVL integration)
-    "EK3_SRC1_POSXY": 6,   # ExternalNav
-    "EK3_SRC1_VELXY": 6,   # ExternalNav
-}
+        # 1) Connect WITHOUT receiver thread (startup uses recv_match() to confirm PARAM_VALUE)
+        self.auv.Connect(args.endpoint, start_receiver=False)
 
+        # 2) Apply SITL vs AUV params
+        profile = self.auv.SITL_PROFILE if args.sitl else self.auv.AUV_PROFILE
+        print(f"Applying {'SITL' if args.sitl else 'AUV'} parameter profile...")
+        self.auv.ApplyParamProfile(profile)
+
+        # 3) Start receiver thread AFTER params are set
+        self.auv.StartReceiver()
 
 def main():
     args = parse_args()
+    rclpy.init(args=args)
 
-    auv = AuvPymavlink()
-
-    # 1) Connect WITHOUT receiver thread (startup uses recv_match() to confirm PARAM_VALUE)
-    auv.Connect(args.endpoint, start_receiver=False)
-
-    # 2) Apply SITL vs AUV params
-    profile = SITL_PROFILE if args.sitl else AUV_PROFILE
-    print(f"Applying {'SITL' if args.sitl else 'AUV'} parameter profile...")
-    auv.ApplyParamProfile(profile)
-
-    # 3) Start receiver thread AFTER params are set
-    auv.StartReceiver()
-
-    # 4) Optional DVL thread (only in --auv)
-    dvl_stop = None
-
-    def dvl_delta_fn():
-        # TODO: replace with real integrated DVL deltas (meters)
-        return 0.0, 0.0, 0.0
-
-    if args.auv:
-        print("Starting DVL -> VISION_POSITION_DELTA thread...")
-        dvl_stop, _ = auv.StartDvlThread(dvl_delta_fn, rate_hz=args.dvl_rate, confidence=100.0)
-    else:
-        print("SITL mode: DVL thread disabled (SITL sim GPS will be used).")
-
+    master = Master(args)
+    rclpy.spin(master)
+    master.destroy_node()
+    rclpy.shutdown()
+    
     # ---- Your original style control code (kept) ----
-    auv.Arm()
-    auv.ChangeMode('GUIDED')
-    auv.GoToWaypointLocal(2, 0, 0, 0)
+    master.auv.Arm()
+    master.auv.ChangeMode('GUIDED')
+    master.auv.GoToWaypointLocal(2, 0, 0, 0)
     try:
         while True:
             time.sleep(0.1)
-            auv.GoToWaypointLocal(1, 1, 1, 0)
-            auv.GoToWaypointLocal(0, 0, 0.5, pi/2)
+            master.auv.GoToWaypointLocal(1, 1, 1, 0)
+            master.auv.GoToWaypointLocal(0, 0, 0.5, pi/2)
     except KeyboardInterrupt:
         print("Stopping...")
-        if dvl_stop is not None:
-            dvl_stop.set()
-        auv.StopReceiver()
+        master.auv.StopReceiver()
 
 
 if __name__ == "__main__":
