@@ -279,6 +279,7 @@ def generate_launch_description():
     opfunc_robot_state_publisher = OpaqueFunction(function=launch_state_pub_with_bridge)
     opfunc_spawn_robot = OpaqueFunction(function=launch_spawn_robot)
     ld = LaunchDescription(launch_arguments)
+
     ld.add_action(sitl_dds)
     ld.add_action(opfunc_robot_state_publisher)
     ld.add_action(opfunc_spawn_robot)

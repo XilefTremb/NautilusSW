@@ -44,6 +44,7 @@ class Master(Node):
         self.auv.Arm()
         self.auv.ChangeMode('GUIDED')
         self.auv.GoToWaypointLocal(2, 0, 0, 0)
+        self.auv.ChangeMode('POSHOLD')
         # try:
         #     # while True:
         #     #     time.sleep(0.1)
@@ -115,8 +116,8 @@ class Master(Node):
                     print("EKF/odometry looks good; safe to attempt GUIDED.")
                     break
 
-            if time.time() - t0 > 60:
-                raise RuntimeError("EKF never became 'good' within 60s")
+            # if time.time() - t0 > 60:
+            #     raise RuntimeError("EKF never became 'good' within 60s")
 
 def main():
     args = parse_args()
