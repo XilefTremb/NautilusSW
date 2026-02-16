@@ -19,7 +19,7 @@
 
 - ros_topic_name: "gz/tf"
   gz_topic_name: "/model/AUV/pose"
-  ros_type_name: "geometry_msgs/msg/Pose"
+  ros_type_name: "geometry_msgs/msg/PoseStamped"
   gz_type_name: "gz.msgs.Pose"
   direction: "GZ_TO_ROS"
 
