@@ -43,8 +43,8 @@ class Master(Node):
     def mission(self):
         self.auv.Arm()
         self.auv.ChangeMode('GUIDED')
-        self.auv.GoToWaypointLocal(2, 0, 0, 0)
-        self.auv.ChangeMode('POSHOLD')
+        self.auv.GoToWaypointLocal(2, 0, 2, 0)
+        # self.auv.ChangeMode('POSHOLD')
         # try:
         #     # while True:
         #     #     time.sleep(0.1)
@@ -97,7 +97,7 @@ class Master(Node):
             if msg.get_type() == "STATUSTEXT":
                 text = msg.text.lower()
                 if "ekf" in text or "prearm" in text:
-                    print("STATUSTEXT:", msg.text)
+                    self.get_logger().info(f"STATUSTEXT:{msg.text}")
 
             if msg.get_type() == "LOCAL_POSITION_NED":
                 last_local = time.time()
@@ -106,14 +106,14 @@ class Master(Node):
                 ok = self.ekf_good(msg)
                 have_local = (last_local is not None and (time.time() - last_local) < 1.0)
 
-                print(f"EKF flags={msg.flags} "
+                self.get_logger().info(f"EKF flags={msg.flags} "
                     f"pos_h_var={msg.pos_horiz_variance:.3f} "
                     f"vel_var={msg.velocity_variance:.3f} "
                     f"pos_v_var={msg.pos_vert_variance:.3f} "
                     f"local={have_local}")
 
                 if ok and have_local:
-                    print("EKF/odometry looks good; safe to attempt GUIDED.")
+                    self.get_logger().info("EKF/odometry looks good; safe to attempt GUIDED.")
                     break
 
             # if time.time() - t0 > 60:

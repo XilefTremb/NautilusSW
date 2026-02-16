@@ -38,7 +38,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction, LogInfo, IncludeLaunchDescription, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, OpaqueFunction, LogInfo, IncludeLaunchDescription, RegisterEventHandler, ExecuteProcess
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessStart
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -212,29 +212,64 @@ def generate_launch_arguments():
             default_value="0",
             description="The intial yaw angle (radians).",
         ),
+        # MAVProxy fan-out ports
+        DeclareLaunchArgument(
+            "qgc_out", default_value="14550", description="UDP port for QGC telemetry."
+        ),
+        DeclareLaunchArgument(
+            "cmd_out",
+            default_value="14551",
+            description="UDP port for command script telemetry.",
+        ),
+        DeclareLaunchArgument(
+            "dvl_out",
+            default_value="14552",
+            description="UDP port for DVL script telemetry.",
+        ),
+        DeclareLaunchArgument(
+            "mon_out",
+            default_value="14553",
+            description="UDP port for monitor script telemetry.",
+        ),
+        # Core endpoints
+        DeclareLaunchArgument(
+            "master",
+            default_value="tcp:127.0.0.1:5760",
+            description="SITL MAVLink master endpoint (TCP).",
+        ),
+        DeclareLaunchArgument(
+            "sitl",
+            default_value="127.0.0.1:5501",
+            description="SITL internal port (as expected by ardupilot_sitl).",
+        ),
     ]
 
 def generate_launch_description():
-    """Generate a launch description for a iris quadrotor"""
-
     launch_arguments = generate_launch_arguments()
-
     pkg_ardupilot_sitl = get_package_share_directory("ardupilot_sitl")
 
-    # Include component launch files.
-    sitl_dds = IncludeLaunchDescription(
+    # micro-ROS agent (same one sitl_dds_udp.launch.py includes)
+    micro_ros_agent = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
                 PathJoinSubstitution(
-                    [
-                        FindPackageShare("ardupilot_sitl"),
-                        "launch",
-                        "sitl_dds_udp.launch.py",
-                    ]
+                    [FindPackageShare("ardupilot_sitl"), "launch", "micro_ros_agent.launch.py"]
+                ),
+            ]
+        )
+    )
+
+    # Launch SITL only (no MAVProxy wrapper).
+    sitl_only = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [
+                PathJoinSubstitution(
+                    [FindPackageShare("ardupilot_sitl"), "launch", "sitl.launch.py"]
                 ),
             ]
         ),
         launch_arguments={
+            # Keep these aligned with your previous setup
             "transport": "udp4",
             "port": "2019",
             "synthetic_clock": "True",
@@ -245,42 +280,53 @@ def generate_launch_description():
             "instance": "0",
             "command": "ardusub",
             "defaults": os.path.join(
-                pkg_ardupilot_sitl,
-                "config",
-                "default_params",
-                "sub-6dof.parm",
+                pkg_ardupilot_sitl, "config", "default_params", "sub-6dof.parm"
             )
             + ","
             + os.path.join(
-                pkg_ardupilot_sitl,
-                "config",
-                "default_params",
-                "dds_udp.parm",
+                pkg_ardupilot_sitl, "config", "default_params", "dds_udp.parm"
             ),
             "sim_address": "127.0.0.1",
-            "master": "tcp:127.0.0.1:5760",
-            "sitl": "127.0.0.1:5501",
-            "out": "udp:127.0.0.1:14552",
-            "out2": "udp:127.0.0.1:14553"
-        }.items()
+            "master": LaunchConfiguration("master"),
+            "sitl": LaunchConfiguration("sitl"),
+            # IMPORTANT: don't set SITL "out" here; MAVProxy will be the fan-out hub.
+        }.items(),
     )
 
-    # Ensure `SDF_PATH` is populated as `sdformat_urdf`` uses this rather
-    # than `GZ_SIM_RESOURCE_PATH` to locate resources.
+    # 2) Launch MAVProxy manually with multiple --out endpoints.
+    #    We delay it slightly to let SITL bind tcp:5760 first.
+    mavproxy_multi_out = ExecuteProcess(
+        cmd=[
+            "mavproxy.py",
+            "--master",
+            LaunchConfiguration("master"),
+            "--out",
+            ["udp:127.0.0.1:", LaunchConfiguration("qgc_out")],
+            "--out",
+            ["udp:127.0.0.1:", LaunchConfiguration("cmd_out")],
+            "--out",
+            ["udp:127.0.0.1:", LaunchConfiguration("dvl_out")],
+            "--out",
+            ["udp:127.0.0.1:", LaunchConfiguration("mon_out")],
+        ],
+        output="screen",
+    )
+
+    # Ensure `SDF_PATH` includes Gazebo resource paths.
     if "GZ_SIM_RESOURCE_PATH" in os.environ:
         gz_sim_resource_path = os.environ["GZ_SIM_RESOURCE_PATH"]
-
         if "SDF_PATH" in os.environ:
-            sdf_path = os.environ["SDF_PATH"]
-            os.environ["SDF_PATH"] = sdf_path + ":" + gz_sim_resource_path
+            os.environ["SDF_PATH"] = os.environ["SDF_PATH"] + ":" + gz_sim_resource_path
         else:
             os.environ["SDF_PATH"] = gz_sim_resource_path
 
     opfunc_robot_state_publisher = OpaqueFunction(function=launch_state_pub_with_bridge)
     opfunc_spawn_robot = OpaqueFunction(function=launch_spawn_robot)
-    ld = LaunchDescription(launch_arguments)
 
-    ld.add_action(sitl_dds)
+    ld = LaunchDescription(launch_arguments)
+    ld.add_action(micro_ros_agent)
+    ld.add_action(sitl_only)
+    ld.add_action(mavproxy_multi_out)
     ld.add_action(opfunc_robot_state_publisher)
     ld.add_action(opfunc_spawn_robot)
 

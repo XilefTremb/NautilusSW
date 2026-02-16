@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 import math
@@ -6,7 +8,7 @@ from geometry_msgs.msg import PoseStamped
 import time
 from pymavlink import mavutil
 import os
-from nautilus_bringup.auv_pymavlink import AuvPymavlink
+from nautilus_mission.auv_pymavlink import AuvPymavlink
 
 def euleur_from_quat(x,y,z,w):
     roll = math.atan2(2*(x*w+y*z), 1-2*(x**2+y**2))
@@ -41,7 +43,7 @@ class FakeDVL(Node):
 
         self.timer = self.create_timer(0.1,self.timer_callback)
 
-        self.dvl = AuvPymavlink()
+        self.dvl = AuvPymavlink(self)
         self.dvl.Connect("udpin:localhost:14552",False)
         self.get_logger().info('Fake DVL started')
     
@@ -90,7 +92,7 @@ class FakeDVL(Node):
                 pose_msg.pose.orientation.w = 0.0        
 
                 self.pose_pub.publish(pose_msg) #timestamped important???
-                self.SendDVLAsGps(t, delta_pose_frd[0], delta_pose_frd[1],delta_pose_frd[2],0) #dt,dx,dy. z source is gps/baro
+                self.SendDVLAsGps(t, delta_pose_frd[0], delta_pose_frd[1],delta_pose_frd[2],delta_pose_frd[3]) #dt,dx,dy. z source is gps/baro
 
             self.last_pose_enu = current_pose_enu
             self.last_msg = self.msg
@@ -116,7 +118,7 @@ class FakeDVL(Node):
             float(confidence),
         )
 
-        print(f"Sending DVL estimated pos [{dt}, {dx}, {dy}, {dz}] to VISION_pose.position_DELTA")
+        self.get_logger().info(f"Sending DVL estimated pos [{dt}, {dx}, {dy}, {dz}] to VISION_pose.position_DELTA")
         
 
 def main(args=None):
