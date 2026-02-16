@@ -19,6 +19,13 @@ install(
 
 install(
   PROGRAMS
+    DVL/dvl_sensor_node.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME dvl_sensor_node
+)
+
+install(
+  PROGRAMS
     vision/yolo_vision.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME yolo_vision
