@@ -38,6 +38,7 @@ class AuvPymavlink:
             "VISO_TYPE": 0,
             "EK3_SRC1_POSXY": 3,   # GPS
             "EK3_SRC1_VELXY": 3,   # GPS
+            "EK3_SRC1_POSZ": 3,    # GPS
         }
 
         self.AUV_PROFILE = {
@@ -47,6 +48,7 @@ class AuvPymavlink:
             "EK3_ENABLE" : 1,
             "AHRS_EKF_TYPE" : 3,
             "EK2_ENABLE" : 0,
+            "EK3_SRC1_POSZ": 6,    # ExternalNav (to be changed back to 1 when ran on the real vehicle)
         }
 
 
