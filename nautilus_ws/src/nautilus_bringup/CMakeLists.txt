@@ -34,16 +34,6 @@ install(
     worlds/
   DESTINATION share/${PROJECT_NAME}/worlds
 )
-install(
-  DIRECTORY
-    scripts/
-  DESTINATION share/${PROJECT_NAME}/scripts
-)
-install(
-  PROGRAMS
-    scripts/dvl_sensor_node.py
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 install(
   DIRECTORY
