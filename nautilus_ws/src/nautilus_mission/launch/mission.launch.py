@@ -19,7 +19,7 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
 
     params_profile = PythonExpression([
-    "'--auv' if ", LaunchConfiguration('use_fake_dvl'), "||", LaunchConfiguration('use_real_dvl'), " else '--sitl'"
+    "'--auv' if ", LaunchConfiguration('use_fake_dvl'), "or", LaunchConfiguration('use_real_dvl'), " else '--sitl'"
     ])
     
     fake_dvl=Node(
