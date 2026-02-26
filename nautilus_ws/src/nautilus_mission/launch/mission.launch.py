@@ -19,13 +19,19 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
 
     params_profile = PythonExpression([
-    "'--auv' if ", LaunchConfiguration('use_fake_dvl'), " else '--sitl'"
+    "'--auv' if ", LaunchConfiguration('use_fake_dvl'), "||", LaunchConfiguration('use_real_dvl'), " else '--sitl'"
     ])
     
-    dvl=Node(
+    fake_dvl=Node(
         package='nautilus_sensors',
         executable='fake_dvl',
         condition=IfCondition(LaunchConfiguration('use_fake_dvl'))
+    )
+
+    real_dvl=Node(
+        package='nautilus_sensors',
+        executable='dvl_sensor_node',
+        condition=IfCondition(LaunchConfiguration('use_real_dvl'))
     )
     
     test_mission = Node(
@@ -41,7 +47,13 @@ def generate_launch_description():
                 default_value='False',
                 description="launches fake_dvl node and sets ardusub params to accept external nav"
             ),
-            dvl,
+            DeclareLaunchArgument(
+                "use_real_dvl",
+                default_value='False',
+                description="launches dvl_sensor_node node and sets ardusub params to accept external nav"
+            ),
+            fake_dvl,
+            real_dvl,
             test_mission
         ]
     )
