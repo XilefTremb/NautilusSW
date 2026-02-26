@@ -43,7 +43,7 @@ class Master(Node):
     def mission(self):
         self.auv.Arm()
         self.auv.ChangeMode('GUIDED')
-        self.auv.GoToWaypointLocal(2, 0, 2, 0)
+        #self.auv.GoToWaypointLocal(2, 0, 2, 0)
         # self.auv.ChangeMode('POSHOLD')
         # try:
         #     # while True:
