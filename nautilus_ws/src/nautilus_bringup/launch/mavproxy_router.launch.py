@@ -49,7 +49,7 @@ def generate_launch_description():
             "--baudrate",
             LaunchConfiguration("baudrate"),
             "--out",
-            ["udp:127.0.0.1:", LaunchConfiguration("qgc_out")],
+            ["udp:192.168.1.10:", LaunchConfiguration("qgc_out")],
             "--out",
             ["udp:127.0.0.1:", LaunchConfiguration("cmd_out")],
             "--out",
