@@ -48,7 +48,7 @@ with pipeline:
         appsrc.emit("push-buffer", buf)
 
         # optionnel : aperçu local pour debug
-        cv2.imshow("RGB",frame)
+        #cv2.imshow("RGB",frame)
         if cv2.waitKey(1) == 27:  # ESC pour quitter
             break
 
