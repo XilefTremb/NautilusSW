@@ -32,6 +32,8 @@ class AuvPymavlink:
         self.vel_pos_mask = int(0b110111000000)
         self.ingore_all = int(0b111111111111)
 
+        self.reset_counter = 0
+
 
         # Parameter profiles (minimal, extend as needed)
         self.SITL_PROFILE = {
@@ -286,6 +288,30 @@ class AuvPymavlink:
                 )
             )
 
+    def SendPosLocalReset(self):
+        self.reset_counter += 1
+        if self.reset_counter > 255:
+            self.reset_counter = 0
+        self.node.get_logger().info(f'reset_counter : {self.reset_counter}')
+        with self._send_lock:
+            self.the_connection.mav.vision_position_estimate_send(
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    [math.nan,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    self.reset_counter
+                )
+            
+    def ResetPosEstimate(self):
+        self.SendPosLocalReset()
+        while not self.ValidateLocalNedReset():
+            self.SendPosLocalReset()
+            time.sleep(0.5)
+
     def SendPosOffset(self, north, east, down, yaw):
         with self._send_lock:
             self.the_connection.mav.send(
@@ -308,6 +334,13 @@ class AuvPymavlink:
                     pi / 2,
                 )
             )
+        
+    def ValidateLocalNedReset(self):
+        msg = self.GetLocalPosNed()
+        if math.sqrt(msg.x**2 + msg.y**2 + msg.z**2) < 0.05:
+            return True
+        else:
+            return False
 
     # Kept for compatibility, but now uses cache if receiver is running.
     def GetLocalPosNed(self):
@@ -360,35 +393,6 @@ class AuvPymavlink:
                     stable_since = None
 
             time.sleep(dt)
-
-    # -------------------- DVL / VISION_POSITION_DELTA (kept) --------------------
-
-   
-
-    def StartDvlThread(self, dvl_delta_fn, rate_hz: float = 10.0, confidence: float = 100.0, name="dvl-tx"):
-        """
-        Starts a daemon thread that calls dvl_delta_fn() -> (dx,dy,dz) and sends VISION_POSITION_DELTA.
-        Returns: (stop_event, thread)
-        """
-        period = 1.0 / float(rate_hz)
-        stop_evt = threading.Event()
-
-        def _loop():
-            next_t = time.time()
-            while not stop_evt.is_set():
-                dx, dy, dz = dvl_delta_fn()
-                self.SendDVLAsGps(dx, dy, dz, confidence=confidence)
-
-                next_t += period
-                sleep = next_t - time.time()
-                if sleep > 0:
-                    time.sleep(sleep)
-                else:
-                    next_t = time.time()
-
-        th = threading.Thread(target=_loop, name=name, daemon=True)
-        th.start()
-        return stop_evt, th
 
     def CheckDialectAndMethodAvailability(self, method):
         self.node.get_logger().info("dialect:", mavutil.mavlink.WIRE_PROTOCOL_VERSION if hasattr(mavutil.mavlink, 'WIRE_PROTOCOL_VERSION') else "unknown")

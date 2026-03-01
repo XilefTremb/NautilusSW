@@ -32,7 +32,7 @@ class Master(Node):
 
         self.auv.StartReceiver()
 
-        self.validate_ekf()
+        # self.validate_ekf()
 
         self.mission()
 
@@ -43,7 +43,9 @@ class Master(Node):
     def mission(self):
         self.auv.Arm()
         self.auv.ChangeMode('GUIDED')
-        #self.auv.GoToWaypointLocal(2, 0, 2, 0)
+        while True:
+            self.auv.GoToWaypointLocal(2, 0, 0, 0)
+            self.auv.ResetPosEstimate()
         # self.auv.ChangeMode('POSHOLD')
         # try:
         #     # while True:
