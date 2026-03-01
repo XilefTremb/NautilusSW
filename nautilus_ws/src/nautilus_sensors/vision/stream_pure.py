@@ -1,54 +1,79 @@
-import cv2
 import depthai as dai
 import gi
-gi.require_version('Gst', '1.0')
+gi.require_version("Gst", "1.0")
 from gi.repository import Gst
 
+# ---------------- GStreamer ----------------
 Gst.init(None)
 
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 15
 
+# appsrc will receive already-encoded H264 access units (AU)
 pipeline_str = (
-    "appsrc name=src is-live=true do-timestamp=true format=time block=true max-buffers=2 ! "
-    "queue leaky=downstream max-size-buffers=1 ! "
-    "videoconvert ! "
-    "x264enc bitrate=7000 speed-preset=ultrafast tune=zerolatency key-int-max=30 ! "
-    "h264parse ! rtph264pay config-interval=1 pt=96 ! "
+    "appsrc name=src is-live=true do-timestamp=true format=time block=true max-buffers=4 ! "
+    "queue leaky=downstream max-size-buffers=2 ! "
+    "h264parse config-interval=1 ! "
+    "rtph264pay config-interval=1 pt=96 ! "
     f"udpsink host={UDP_IP} port={UDP_PORT} sync=false async=false"
 )
 
 gst_pipeline = Gst.parse_launch(pipeline_str)
 appsrc = gst_pipeline.get_by_name("src")
-appsrc.set_property("caps", Gst.Caps.from_string(
-    f"video/x-raw,format=BGR,width=1280,height=720,framerate={FPS}/1"
-))
+
+# Caps for H264 bytestream; alignment=au is important for RTP payloader
+appsrc.set_property(
+    "caps",
+    Gst.Caps.from_string(
+        f"video/x-h264,stream-format=(string)byte-stream,alignment=(string)au,framerate={FPS}/1"
+    ),
+)
+
 gst_pipeline.set_state(Gst.State.PLAYING)
 
+# ---------------- DepthAI pipeline (H264 on camera) ----------------
 pipeline = dai.Pipeline()
-rgbCam = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A)
-rgbOut = rgbCam.requestOutput(size=(1280, 720), type=dai.ImgFrame.Type.BGR888i)
-rgbQueue = rgbOut.createOutputQueue(maxSize=4)
 
-SHOW = False  # <-- IMPORTANT: keep False when using ssh -X
+cam = pipeline.create(dai.node.ColorCamera)
+cam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
+cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+cam.setFps(FPS)
 
-with pipeline:
-    pipeline.start()
+# Encoder input is NV12 by default from video output (efficient)
+enc = pipeline.create(dai.node.VideoEncoder)
+enc.setDefaultProfilePreset(FPS, dai.VideoEncoderProperties.Profile.H264_MAIN)
+# Optional: tune bitrate (bits per second)
+enc.setBitrate(7_000_000)
+# Force periodic keyframes (helps join stream / recovery)
+enc.setKeyframeFrequency(FPS * 2)  # every ~2 seconds
 
-    while pipeline.isRunning():
-        frame = rgbQueue.get().getCvFrame()
+cam.video.link(enc.input)
 
-        # Wrap bytes and push (bounded appsrc + leaky queue prevents runaway RAM)
-        buf = Gst.Buffer.new_wrapped(frame.tobytes())
-        ret = appsrc.emit("push-buffer", buf)
-        if ret != Gst.FlowReturn.OK:
+xout = pipeline.create(dai.node.XLinkOut)
+xout.setStreamName("h264")
+enc.bitstream.link(xout.input)
+
+# Small queue, non-blocking to avoid piling up if downstream stalls
+h264Q = None
+
+with dai.Device(pipeline) as device:
+    h264Q = device.getOutputQueue(name="h264", maxSize=8, blocking=False)
+
+    while True:
+        pkt = h264Q.get()  # could be None if non-blocking; but .get() blocks in python wrapper
+        if pkt is None:
             continue
 
-        if SHOW:
-            cv2.imshow("RGB", frame)
-            if cv2.waitKey(1) == 27:
-                break
+        data = pkt.getData()  # bytes-like (encoded H264)
+        if not data:
+            continue
+
+        # Wrap and push into GStreamer
+        buf = Gst.Buffer.new_wrapped(bytes(data))
+        ret = appsrc.emit("push-buffer", buf)
+        if ret != Gst.FlowReturn.OK:
+            # downstream not accepting; drop
+            continue
 
 gst_pipeline.set_state(Gst.State.NULL)
-cv2.destroyAllWindows()
