@@ -108,7 +108,7 @@ class DVLSensor(Node):
             confidence = fields[9].split('*')[0]
             
             self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
-            self.get_logger().info(f"{dt} {dx} {dy} {dz} {droll} {dpitch} {dyaw}")
+            #self.get_logger().info(f"{dt} {dx} {dy} {dz} {droll} {dpitch} {dyaw}")
             
 
         except Exception as e:
