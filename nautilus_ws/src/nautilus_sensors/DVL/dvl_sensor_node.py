@@ -128,19 +128,14 @@ class DVLSensor(Node):
         angle_delta = [0.0, 0.0, 0.0]
         position_delta = [dx, dy, dz]
 
-        self.get_logger().info("About to send VISION_POSITION_DELTA...")
-        try:
-            self.dvl.the_connection.mav.vision_position_delta_send(
-                time_usec,
-                time_delta_usec,
-                angle_delta,
-                position_delta,
-                confidence,
-            )
-        except Exception as e:
-            self.get_logger().error(f"Send failed: {e}")
-            return
-
+        self.dvl.the_connection.mav.vision_position_delta_send(
+            time_usec,
+            time_delta_usec,
+            angle_delta,
+            position_delta,
+            confidence,
+        )
+    
         self.get_logger().info(f"Sent DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
 
 
