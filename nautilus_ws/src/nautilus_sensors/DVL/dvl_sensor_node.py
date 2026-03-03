@@ -107,8 +107,9 @@ class DVLSensor(Node):
             dz = fields[8]
             confidence = fields[9].split('*')[0]
             
-            self.get_logger().info(f"{dt} {dx} {dy} {dz} {droll} {dpitch} {dyaw}")
             self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
+            self.get_logger().info(f"{dt} {dx} {dy} {dz} {droll} {dpitch} {dyaw}")
+            
 
         except Exception as e:
             return f"Parse error: {e}"
