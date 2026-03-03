@@ -115,27 +115,33 @@ class DVLSensor(Node):
             return f"Parse error: {e}"
         
     def SendDVLAsGps(self, t, dt, dx, dy, dz, confidence=80.0):
-        """
-        dx, dy, dz: pose.position increments (meters) for VISION_pose.position_DELTA
-        confidence: 0..100
-        """
+        t = float(t)
+        dt = float(dt)
+        dx = float(dx)
+        dy = float(dy)
+        dz = float(dz)
+        confidence = float(confidence)
 
-        time_usec = int(t) * 1e6
-        time_delta_usec = int(dt) * 1e6
+        time_usec = int(t * 1e6)
+        time_delta_usec = int(dt * 1e6)
 
-        angle_delta = [0.0, 0.0, 0.0]  # rad
-        position_delta = [float(dx), float(dy), float(dz)]  # m
+        angle_delta = [0.0, 0.0, 0.0]
+        position_delta = [dx, dy, dz]
 
-   
-        self.dvl.the_connection.mav.vision_position_delta_send(
-            time_usec,
-            time_delta_usec,
-            angle_delta,
-            position_delta,
-            float(confidence),
-        )
+        self.get_logger().info("About to send VISION_POSITION_DELTA...")
+        try:
+            self.dvl.the_connection.mav.vision_position_delta_send(
+                time_usec,
+                time_delta_usec,
+                angle_delta,
+                position_delta,
+                confidence,
+            )
+        except Exception as e:
+            self.get_logger().error(f"Send failed: {e}")
+            return
 
-        self.get_logger().info(f"Sending DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
+        self.get_logger().info(f"Sent DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
 
 
 def main(args=None):
