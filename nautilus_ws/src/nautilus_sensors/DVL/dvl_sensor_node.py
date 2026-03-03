@@ -122,8 +122,8 @@ class DVLSensor(Node):
         dz = float(dz)
         confidence = float(confidence)
 
-        time_usec = int(t * 1e6)
-        time_delta_usec = int(dt * 1e6)
+        time_usec = int(t)
+        time_delta_usec = int(dt)
 
         angle_delta = [0.0, 0.0, 0.0]
         position_delta = [dx, dy, dz]
