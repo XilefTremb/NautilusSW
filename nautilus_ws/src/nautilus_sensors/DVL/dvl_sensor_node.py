@@ -120,11 +120,11 @@ class DVLSensor(Node):
         confidence: 0..100
         """
 
-        time_usec = int(t * 1e6)
-        time_delta_usec = int(dt * 1e6)
+        time_usec = int(t) * 1e6
+        time_delta_usec = int(dt) * 1e6
 
         angle_delta = [0.0, 0.0, 0.0]  # rad
-        position_delta = [dx, dy, dz]  # m
+        position_delta = [float(dx), float(dy), float(dz)]  # m
 
    
         self.dvl.the_connection.mav.vision_position_delta_send(
