@@ -118,7 +118,7 @@ class FakeDVL(Node):
             float(confidence),
         )
 
-        self.get_logger().info(f"Sending DVL estimated pos [{dt}, {dx}, {dy}, {dz}] to VISION_pose.position_DELTA")
+        self.get_logger().info(f"Sending DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
         
 
 def main(args=None):
