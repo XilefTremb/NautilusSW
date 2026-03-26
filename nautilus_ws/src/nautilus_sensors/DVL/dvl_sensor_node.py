@@ -65,6 +65,12 @@ class DVLSensor(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to send FREEFORM ON command: {e}")
 
+        try:
+            self.sock.sendto("MANUAL-MODE 0.001,5.0,0.5,56,0.1,50,20.6,-0.671,100,100\r".encode(), (DVL_IP, DVL_PORT))
+            self.get_logger().info(f"Sent MANUAL MODE command to DVL {DVL_IP}:{DVL_PORT}")
+        except Exception as e:
+            self.get_logger().error(f"Failed to send MANUAL MODE command: {e}")
+
     def timer_callback(self):
         try:
             data, addr = self.sock.recvfrom(2048)
