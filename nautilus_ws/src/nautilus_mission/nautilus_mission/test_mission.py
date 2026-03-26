@@ -56,9 +56,6 @@ class Master(Node):
 
     def ekf_good(self, ekf):
         flags = ekf.flags
-
-        # We avoid hardcoding bit numbers; instead, interpret by behavior:
-        # If your pymavlink has these enums, use them. If not, see note below.
         required_bits = []
         for name in [
             "EKF_ATTITUDE",
@@ -120,7 +117,8 @@ class Master(Node):
 
             # if time.time() - t0 > 60:
             #     raise RuntimeError("EKF never became 'good' within 60s")
-
+        # We avoid hardcoding bit numbers; instead, interpret by behavior:
+        # If your pymavlink has these enums, use them. If not, see note below.
 def main():
     args = parse_args()
     rclpy.init()
