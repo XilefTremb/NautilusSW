@@ -1,4 +1,0 @@
-rclpy
-sensor_msgs
-setuptools
-std_msgs
