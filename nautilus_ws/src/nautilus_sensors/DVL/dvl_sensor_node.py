@@ -51,22 +51,30 @@ class DVLSensor(Node):
             self.sock.sendto("SEND-DVPDL ON\r".encode(), (DVL_IP, DVL_PORT))
             self.get_logger().info(f"Sent DVPDL ON command to DVL {DVL_IP}:{DVL_PORT}")
         except Exception as e:
-            self.get_logger().error(f"Failed to send streaming command: {e}")
+            self.get_logger().error(f"Failed to send DVPDL ON command: {e}")
 
         try:
             self.sock.sendto("SEND-DVEXT OFF\r".encode(), (DVL_IP, DVL_PORT))
             self.get_logger().info(f"Sent DVEXT OFF command to DVL {DVL_IP}:{DVL_PORT}")
         except Exception as e:
-            self.get_logger().error(f"Failed to send streaming command: {e}")
+            self.get_logger().error(f"Failed to send DVEXT OFF command: {e}")
+
+        try:
+            self.sock.sendto("SEND-FREEFORM ON\r".encode(), (DVL_IP, DVL_PORT))
+            self.get_logger().info(f"Sent FREEFORM ON command to DVL {DVL_IP}:{DVL_PORT}")
+        except Exception as e:
+            self.get_logger().error(f"Failed to send FREEFORM ON command: {e}")
 
     def timer_callback(self):
         try:
             data, addr = self.sock.recvfrom(2048)
             msg_str = data.decode("utf-8").strip()
             # self.get_logger().info(msg_str)
-            parsed = self.parse_dvpdl(msg_str)
-            # self.publisher.publish(String(data=parsed))
-            # self.get_logger().info(f"Published: {parsed}")
+            if msg_str.startswith("$DVPDL"):
+                dvpdl_parsed = self.parse_dvpdl(msg_str)
+            elif msg_str.startswith("$DVTXT"):
+                dvtxt_parsed = self.parse_dvtxt(msg_str)
+
         except socket.timeout:
             self.get_logger().warn("No UDP data received")
         except Exception as e:
@@ -74,8 +82,6 @@ class DVLSensor(Node):
 
     def parse_dvext(self, msg: str) -> str:
         """Minimal parsing of $DVEXT message"""
-        if not msg.startswith("$DVEXT"):
-            self.get_logger().info("Invalid message")
 
         try:
             fields = msg.split(",")
@@ -92,8 +98,6 @@ class DVLSensor(Node):
         
     def parse_dvpdl(self, msg: str) -> str:
         """Minimal parsing of $DVPDL message"""
-        if not msg.startswith("$DVPDL"):
-            self.get_logger().info("Invalid message")
 
         try:
             fields = msg.split(",")
@@ -111,6 +115,14 @@ class DVLSensor(Node):
             #self.get_logger().info(f"{dt} {dx} {dy} {dz} {droll} {dpitch} {dyaw}")
             
 
+        except Exception as e:
+            return f"Parse error: {e}"
+        
+    def parse_dvtxt(self, msg: str) -> str:
+        """Minimal parsing of $DVTXT message"""
+
+        try:
+            self.get_logger().info(msg)
         except Exception as e:
             return f"Parse error: {e}"
         
