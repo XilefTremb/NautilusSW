@@ -32,7 +32,7 @@ class Master(Node):
 
         self.auv.StartReceiver()
 
-        # self.validate_ekf()
+        self.validate_ekf()
 
         self.mission()
 
@@ -43,16 +43,23 @@ class Master(Node):
     def mission(self):
         self.auv.Arm()
         self.auv.ChangeMode('GUIDED')
-        while True:
-            self.auv.GoToWaypointLocal(2, 0, 0, 0)
-            self.auv.ResetPosEstimate()
+        self.auv.GoToWaypointLocal(0, 0, 1, 0)
+        # while True:
+        #     self.auv.GoToWaypointLocal(2, 0, 0, 0)
+        #     self.auv.ResetPosEstimate()
+
         # self.auv.ChangeMode('POSHOLD')
-        # try:
-        #     # while True:
-        #     #     time.sleep(0.1)
-        #     #     self.auv.GoToWaypointLocal(1, 1, 1, 0)
-        #     #     self.auv.GoToWaypointLocal(0, 0, 0.5, pi/2)
-        # except KeyboardInterrupt:
+        
+        
+        while True:
+            yaw = 0
+            self.auv.SendVecCommand(0.5, yaw)
+            time.sleep(10)
+            yaw = pi
+            self.auv.SendVecCommand(0.5, yaw)
+            time.sleep(10)
+
+        
 
     def ekf_good(self, ekf):
         flags = ekf.flags
