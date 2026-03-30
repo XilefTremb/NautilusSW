@@ -76,12 +76,12 @@ def generate_launch_description():
         launch_arguments={
             "model": "orca_auv",
             "name": "AUV",
-            "x": "0",
-            "y": "0",
-            "z": "0",
+            "x": "-9.0",
+            "y": "3.0",
+            "z": "0.0",
             "R": "0.0",
             "P": "0.0",
-            "Y": f"{pi/2}"
+            "Y": "0.0"
         }.items(),
     )
 
@@ -92,7 +92,7 @@ def generate_launch_description():
         ),
         launch_arguments={
             "gz_args": "-v4 -s -r "
-            + f'{Path(pkg_project_bringup) / "worlds" / "semi_final_pool.world"}'
+            + f'{Path(pkg_project_bringup) / "worlds" / "basic_comp_pool.world"}'
         }.items(),
     )
 
@@ -102,20 +102,6 @@ def generate_launch_description():
         ),
         launch_arguments={"gz_args": "-v4 -g"}.items(),
     )
-
-    # mavlink_telemetry_bridge = Node(
-    #         #package='auv_mavlink_bridge'
-    #         package='mavlink_bridge',
-    #         executable='mavlink_telemetry_bridge',
-    #         name='mavlink_telemetry_bridge',
-    #         parameters=[{
-    #             'connection': 'udp:127.0.0.1:14550',
-    #             'frame_id': 'odom',
-    #             'child_frame_id': 'base_link',
-    #             'thruster_count': 8,
-    #         }],
-    #         output='screen'
-    #     )
 
     # # RViz.
     # rviz = Node(
@@ -135,7 +121,7 @@ def generate_launch_description():
             ),
             gz_sim_server,
             gz_sim_gui,
-            TimerAction(period=30.0, actions=[auv]),
+            TimerAction(period=5.0, actions=[auv]),
             # mavlink_telemetry_bridge,
             # rviz,
         ]
