@@ -28,9 +28,9 @@ class DVLSensor(Node):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.settimeout(2)
 
-        # self.dvl = AuvPymavlink(self)
-        # self.dvl.Connect("udpin:localhost:14552",False)
-        # self.get_logger().info('Real DVL started')
+        self.dvl = AuvPymavlink(self)
+        self.dvl.Connect("udpin:localhost:14552",False)
+        self.get_logger().info('Real DVL started')
 
         try:
             # Bind to all interfaces (0.0.0.0) on LOCAL_PORT
@@ -120,8 +120,8 @@ class DVLSensor(Node):
             dz = fields[8]
             confidence = fields[9].split('*')[0]
             
-            # self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
-            self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, dx:{dx}, dy:{dy}, dz:{dz}")
+            self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
+            self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, dx:{dx}, dy:{dy}, dz:{dz}, confidence: {confidence}")
             
 
         except Exception as e:
@@ -157,7 +157,7 @@ class DVLSensor(Node):
             confidence,
         )
     
-        self.get_logger().info(f"Sent DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
+        # self.get_logger().info(f"Sent DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
 
 
 def main(args=None):
