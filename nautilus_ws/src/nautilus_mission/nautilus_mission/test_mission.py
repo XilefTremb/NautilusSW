@@ -41,11 +41,23 @@ class Master(Node):
         self.auv.StopReceiver()
 
     def mission(self):
-        self.auv.Arm()
+        self.auv.Disarm()
+        self.auv.ChangeMode('MANUAL')
+        time.sleep(1.0)
+        self.auv.ResetPosEstimate()
+        self.auv.Arm() 
         self.auv.ChangeMode('GUIDED')
-        while True:
-            self.auv.GoToWaypointLocal(2, 0, 0, 0)
-            self.auv.ResetPosEstimate()
+        self.auv.GoToWaypointLocal(0, 0, 0.8, pi/2)
+        self.auv.GoToWaypointLocal(0, 17, 0.8, pi/2)
+        self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
+        self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
+        self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
+        
+
+        # self.auv.Arm()    
+        # self.auv.ChangeMode('GUIDED')
+        # self.auv.GoToWaypointLocal(0, 0, 1, pi/2)
+
         # self.auv.ChangeMode('POSHOLD')
         # try:
         #     # while True:

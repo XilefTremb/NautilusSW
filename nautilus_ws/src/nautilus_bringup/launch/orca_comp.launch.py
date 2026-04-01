@@ -76,8 +76,8 @@ def generate_launch_description():
         launch_arguments={
             "model": "orca_auv",
             "name": "AUV",
-            "x": "-9.0",
-            "y": "3.0",
+            "x": "-6.5",
+            "y": "-7.0",
             "z": "0.0",
             "R": "0.0",
             "P": "0.0",
@@ -122,7 +122,6 @@ def generate_launch_description():
             gz_sim_server,
             gz_sim_gui,
             TimerAction(period=5.0, actions=[auv]),
-            # mavlink_telemetry_bridge,
             # rviz,
         ]
     )
