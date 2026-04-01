@@ -22,15 +22,15 @@ class DVLSensor(Node):
 
         # Publisher
         # self.publisher = self.create_publisher(String, "dvl_pub", 10)
-        self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.timer_callback)
+        # self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.timer_callback)
 
         # UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.settimeout(0.2)
+        self.sock.settimeout(2)
 
-        self.dvl = AuvPymavlink(self)
-        self.dvl.Connect("udpin:localhost:14552",False)
-        self.get_logger().info('Real DVL started')
+        # self.dvl = AuvPymavlink(self)
+        # self.dvl.Connect("udpin:localhost:14552",False)
+        # self.get_logger().info('Real DVL started')
 
         try:
             # Bind to all interfaces (0.0.0.0) on LOCAL_PORT
@@ -71,20 +71,23 @@ class DVLSensor(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to send MANUAL MODE command: {e}")
 
-    def timer_callback(self):
-        try:
-            data, addr = self.sock.recvfrom(2048)
-            msg_str = data.decode("utf-8").strip()
-            # self.get_logger().info(msg_str)
-            if msg_str.startswith("$DVPDL"):
-                dvpdl_parsed = self.parse_dvpdl(msg_str)
-            elif msg_str.startswith("$DVTXT"):
-                dvtxt_parsed = self.parse_dvtxt(msg_str)
+        self.loop()
 
-        except socket.timeout:
-            self.get_logger().warn("No UDP data received")
-        except Exception as e:
-            self.get_logger().error(f"Error receiving UDP: {e}")
+    def loop(self):
+        while True:
+            try:
+                data, addr = self.sock.recvfrom(2048)
+                msg_str = data.decode("utf-8").strip()
+                # self.get_logger().info(msg_str)
+                if msg_str.startswith("$DVPDL"):
+                    dvpdl_parsed = self.parse_dvpdl(msg_str)
+                elif msg_str.startswith("$DVTXT"):
+                    dvtxt_parsed = self.parse_dvtxt(msg_str)
+
+            except socket.timeout:
+                self.get_logger().warn("No UDP data received")
+            except Exception as e:
+                self.get_logger().error(f"Error receiving UDP: {e}")
 
     def parse_dvext(self, msg: str) -> str:
         """Minimal parsing of $DVEXT message"""
@@ -117,8 +120,8 @@ class DVLSensor(Node):
             dz = fields[8]
             confidence = fields[9].split('*')[0]
             
-            self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
-            #self.get_logger().info(f"{dt} {dx} {dy} {dz} {droll} {dpitch} {dyaw}")
+            # self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
+            self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, dx:{dx}, dy:{dy}, dz:{dz}")
             
 
         except Exception as e:
