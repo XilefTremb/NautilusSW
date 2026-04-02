@@ -10,7 +10,7 @@ class YoloNode(Node):
         super().__init__('yolo_node')
 
         self.bridge = CvBridge()
-        self.model = YOLO('src/nautilus_sensors/vision/yolo_models/best.pt')
+        self.model = YOLO('src/nautilus_sensors/vision/yolo_models/model_sim.pt')
 
         self.subscription = self.create_subscription(
             Image,
