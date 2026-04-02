@@ -13,7 +13,7 @@ DVL_PORT = 50000             # DVL port to send commands to
 VM_IP = "192.168.2.10"     # VM IP on DVL subnet
 LOCAL_PORT = 27000           # Port to listen for UDP packets
 PUBLISH_HZ = 20              # Publishing frequency (Hz)
-STREAM_CMD = "SET OUTPUT UDP {} {} ON\r".format(VM_IP, LOCAL_PORT)
+# STREAM_CMD = "SET OUTPUT UDP {} {} ON\r".format(VM_IP, LOCAL_PORT)
 
 
 class DVLSensor(Node):
@@ -40,12 +40,12 @@ class DVLSensor(Node):
             self.get_logger().error(f"Failed to bind UDP socket: {e}")
             raise e
 
-        # Send initial streaming command
-        try:
-            self.sock.sendto(STREAM_CMD.encode(), (DVL_IP, DVL_PORT))
-            self.get_logger().info(f"Sent streaming command to DVL {DVL_IP}:{DVL_PORT}")
-        except Exception as e:
-            self.get_logger().error(f"Failed to send streaming command: {e}")
+        # # Send initial streaming command
+        # try:
+        #     self.sock.sendto(STREAM_CMD.encode(), (DVL_IP, DVL_PORT))
+        #     self.get_logger().info(f"Sent streaming command to DVL {DVL_IP}:{DVL_PORT}")
+        # except Exception as e:
+        #     self.get_logger().error(f"Failed to send streaming command: {e}")
 
         try:
             self.sock.sendto("SEND-DVPDL ON\r".encode(), (DVL_IP, DVL_PORT))
