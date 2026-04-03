@@ -26,6 +26,9 @@ class DVLSensor(Node):
 
         # UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4 * 1024 * 1024)
+        actual_buf = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
+        self.get_logger().info(f"UDP SO_RCVBUF actual value: {actual_buf}")
         self.sock.settimeout(2)
 
         self.dvl = AuvPymavlink(self)
