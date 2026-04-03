@@ -8,7 +8,7 @@ import math
 from nautilus_mission.auv_pymavlink import AuvPymavlink
 
 # ===== CONFIGURATION =====
-DVL_IP = "192.168.2.3"      # DVL IP
+DVL_IP = "192.168.1.3"      # DVL IP
 DVL_PORT = 50000             # DVL port to send commands to
 VM_IP = "192.168.2.10"     # VM IP on DVL subnet
 LOCAL_PORT = 27000           # Port to listen for UDP packets
@@ -31,8 +31,8 @@ class DVLSensor(Node):
         self.get_logger().info(f"UDP SO_RCVBUF actual value: {actual_buf}")
         self.sock.settimeout(2)
 
-        # self.dvl = AuvPymavlink(self)
-        # self.dvl.Connect("udpin:localhost:14552",False)
+        self.dvl = AuvPymavlink(self)
+        self.dvl.Connect("udpin:localhost:14552",False)
         self.get_logger().info('Real DVL started')
 
         try:
@@ -123,7 +123,7 @@ class DVLSensor(Node):
             dz = fields[8]
             confidence = fields[9].split('*')[0]
             
-            # self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
+            self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
             self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, dx:{dx}, dy:{dy}, dz:{dz}, confidence: {confidence}")
             
 
