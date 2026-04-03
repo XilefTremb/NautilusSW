@@ -1,3 +1,0 @@
-source;share/nautilus_sensors/environment/ament_prefix_path.sh
-source;share/nautilus_sensors/environment/path.sh
-source;share/nautilus_sensors/environment/pythonpath.sh

@@ -1,9 +1,0 @@
-setup.py
-vision/__init__.py
-vision/save_stream_depthRGB.py
-vision/stream_pure.py
-vision/yolo_vision.py
-vision.egg-info/PKG-INFO
-vision.egg-info/SOURCES.txt
-vision.egg-info/dependency_links.txt
-vision.egg-info/top_level.txt

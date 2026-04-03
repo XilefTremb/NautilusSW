@@ -1,6 +1,0 @@
-Invoking command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/devs/NautilusSW/nautilus_ws/src/nautilus_bringup -DCMAKE_INSTALL_PREFIX=/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup
-Invoked command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/devs/NautilusSW/nautilus_ws/src/nautilus_bringup -DCMAKE_INSTALL_PREFIX=/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup
-Invoking command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup -- -j4 -l4
-Invoked command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup -- -j4 -l4
-Invoking command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup
-Invoked command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/devs/NautilusSW/nautilus_ws/build/nautilus_bringup
