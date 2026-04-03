@@ -516,7 +516,7 @@
           </script>
         </material>
       </visual>
-      <sensor name='camera' type='depth'>
+      <sensor name='camera_depth' type='depth'>
         <always_on>true</always_on>
         <visualize>true</visualize>
         <update_rate>30</update_rate>

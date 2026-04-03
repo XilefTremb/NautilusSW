@@ -496,6 +496,27 @@
           </clip>
         </camera>
       </sensor>
+      <sensor name='depth_camera' type='depth'>
+        <always_on>true</always_on>
+        <visualize>true</visualize>
+	<update_rate>10</update_rate>
+	<topic>camera/depth</topic>
+
+	<camera name='depth_camera_sensor'>
+	  <horizontal_fov>1.658000000000001</horizontal_fov>
+
+	  <image>
+	    <width>640</width>
+	    <height>480</height>
+	    <format>R_FLOAT32</format>
+	  </image>
+
+	  <clip>
+	    <near>0.050000000000000003</near>
+	    <far>50</far>
+	  </clip>
+	</camera>
+      </sensor>
     </link>
     <joint name='camera_rgb_optical_joint' type='fixed'>
       <pose relative_to='camera_link'>0 0 0 -1.5707963267948959 -5.5511151231257827e-17 -1.5707963267948959</pose>
