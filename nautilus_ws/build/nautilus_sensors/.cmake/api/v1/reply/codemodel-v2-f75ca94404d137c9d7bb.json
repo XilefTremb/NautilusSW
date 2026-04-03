@@ -1,0 +1,106 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-2294b7982bc3cc836d5f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "nautilus_sensors",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_DVL_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_DVL_egg-175492b1f5dc2849b2d9.json",
+					"name" : "ament_cmake_python_build_DVL_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_vision_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_vision_egg-bcc7c3203831492536c3.json",
+					"name" : "ament_cmake_python_build_vision_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_DVL::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_DVL-e19dc56cf36583acd65d.json",
+					"name" : "ament_cmake_python_copy_DVL",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_vision::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_vision-801902a9fb3b443c05f4.json",
+					"name" : "ament_cmake_python_copy_vision",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "nautilus_sensors_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-nautilus_sensors_uninstall-b74835cc55a4cc3792ef.json",
+					"name" : "nautilus_sensors_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-1de0ba87f88f9d4253ae.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors",
+		"source" : "/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

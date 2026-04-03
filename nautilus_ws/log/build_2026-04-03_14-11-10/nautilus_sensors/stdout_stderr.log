@@ -1,0 +1,106 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/lib/ccache/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/lib/ccache/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+-- Found rclpy: 3.3.17 (/opt/ros/humble/share/rclpy/cmake)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors
+Built target ament_cmake_python_copy_DVL
+Built target ament_cmake_python_copy_vision
+running egg_info
+creating DVL.egg-info
+writing DVL.egg-info/PKG-INFO
+writing dependency_links to DVL.egg-info/dependency_links.txt
+writing top-level names to DVL.egg-info/top_level.txt
+writing manifest file 'DVL.egg-info/SOURCES.txt'
+running egg_info
+reading manifest file 'DVL.egg-info/SOURCES.txt'
+writing manifest file 'DVL.egg-info/SOURCES.txt'
+creating vision.egg-info
+writing vision.egg-info/PKG-INFO
+writing dependency_links to vision.egg-info/dependency_links.txt
+writing top-level names to vision.egg-info/top_level.txt
+writing manifest file 'vision.egg-info/SOURCES.txt'
+Built target ament_cmake_python_build_DVL_egg
+reading manifest file 'vision.egg-info/SOURCES.txt'
+writing manifest file 'vision.egg-info/SOURCES.txt'
+Built target ament_cmake_python_build_vision_egg
+-- Install configuration: ""
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/pythonpath.sh
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/pythonpath.dsv
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/top_level.txt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/dependency_links.txt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/PKG-INFO
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/SOURCES.txt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/README.md
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/__init__.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/dvl_sensor_node.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/fake_dvl.py
+Listing '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL'...
+Compiling '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/__init__.py'...
+Compiling '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/dvl_sensor_node.py'...
+Compiling '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/fake_dvl.py'...
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/top_level.txt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/dependency_links.txt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/PKG-INFO
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/SOURCES.txt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/save_stream_depthRGB.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/__init__.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/stream_pure.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/best.pt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim.pt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_vision.py
+Listing '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision'...
+Compiling '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/__init__.py'...
+Compiling '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/save_stream_depthRGB.py'...
+Compiling '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/stream_pure.py'...
+Listing '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models'...
+Compiling '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_vision.py'...
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/fake_dvl
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/dvl_sensor_node
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/yolo_vision
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/README.md
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/__init__.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/dvl_sensor_node.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/fake_dvl.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/save_stream_depthRGB.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/__init__.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/stream_pure.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/best.pt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim.pt
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_vision.py
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.xml
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/package_run_dependencies/nautilus_sensors
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/parent_prefix_path/nautilus_sensors
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/ament_prefix_path.sh
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/ament_prefix_path.dsv
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/path.sh
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/path.dsv
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.bash
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.sh
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.zsh
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.dsv
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.dsv
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/packages/nautilus_sensors
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/cmake/nautilus_sensorsConfig.cmake
+-- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/cmake/nautilus_sensorsConfig-version.cmake
+-- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.xml

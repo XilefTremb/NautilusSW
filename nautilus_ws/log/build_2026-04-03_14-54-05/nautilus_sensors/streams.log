@@ -1,0 +1,81 @@
+[0.011s] Invoking command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors': CMAKE_PREFIX_PATH=/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/sdformat_test_files:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_mission:/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors:/home/devs/ardu_ws/install/ardupilot_dds_tests:/opt/ros/humble /usr/bin/cmake --build /home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors -- -j4 -l4
+[0.069s] Built target ament_cmake_python_copy_DVL
+[0.077s] Built target ament_cmake_python_copy_vision
+[0.218s] running egg_info
+[0.228s] running egg_info
+[0.228s] writing DVL.egg-info/PKG-INFO
+[0.228s] writing dependency_links to DVL.egg-info/dependency_links.txt
+[0.229s] writing top-level names to DVL.egg-info/top_level.txt
+[0.236s] writing vision.egg-info/PKG-INFO
+[0.236s] writing dependency_links to vision.egg-info/dependency_links.txt
+[0.236s] writing top-level names to vision.egg-info/top_level.txt
+[0.259s] reading manifest file 'DVL.egg-info/SOURCES.txt'
+[0.260s] writing manifest file 'DVL.egg-info/SOURCES.txt'
+[0.268s] reading manifest file 'vision.egg-info/SOURCES.txt'
+[0.268s] writing manifest file 'vision.egg-info/SOURCES.txt'
+[0.291s] Built target ament_cmake_python_build_DVL_egg
+[0.295s] Built target ament_cmake_python_build_vision_egg
+[0.304s] Invoked command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors' returned '0': CMAKE_PREFIX_PATH=/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/sdformat_test_files:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_mission:/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors:/home/devs/ardu_ws/install/ardupilot_dds_tests:/opt/ros/humble /usr/bin/cmake --build /home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors -- -j4 -l4
+[0.306s] Invoking command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors': CMAKE_PREFIX_PATH=/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/sdformat_test_files:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_mission:/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors:/home/devs/ardu_ws/install/ardupilot_dds_tests:/opt/ros/humble /usr/bin/cmake --install /home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors
+[0.313s] -- Install configuration: ""
+[0.313s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/pythonpath.sh
+[0.313s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/pythonpath.dsv
+[0.313s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info
+[0.313s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/top_level.txt
+[0.313s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/dependency_links.txt
+[0.314s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/PKG-INFO
+[0.314s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/SOURCES.txt
+[0.314s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL
+[0.314s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/README.md
+[0.314s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/__init__.py
+[0.314s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/dvl_sensor_node.py
+[0.314s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/fake_dvl.py
+[0.338s] Listing '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL'...
+[0.341s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info
+[0.342s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/top_level.txt
+[0.342s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/dependency_links.txt
+[0.343s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/PKG-INFO
+[0.343s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/SOURCES.txt
+[0.343s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision
+[0.343s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/save_stream_depthRGB.py
+[0.343s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/__init__.py
+[0.343s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/stream_pure.py
+[0.343s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models
+[0.343s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/best.pt
+[0.343s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim.pt
+[0.343s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_vision.py
+[0.369s] Listing '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision'...
+[0.369s] Listing '/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models'...
+[0.373s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/fake_dvl
+[0.373s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/dvl_sensor_node
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/yolo_vision
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/README.md
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/__init__.py
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/dvl_sensor_node.py
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/fake_dvl.py
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/save_stream_depthRGB.py
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/__init__.py
+[0.374s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/stream_pure.py
+[0.377s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models
+[0.377s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/best.pt
+[0.377s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim.pt
+[0.377s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_vision.py
+[0.377s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.xml
+[0.377s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/package_run_dependencies/nautilus_sensors
+[0.377s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/parent_prefix_path/nautilus_sensors
+[0.377s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/ament_prefix_path.sh
+[0.378s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/ament_prefix_path.dsv
+[0.378s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/path.sh
+[0.378s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/path.dsv
+[0.378s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.bash
+[0.378s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.sh
+[0.378s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.zsh
+[0.378s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.dsv
+[0.379s] -- Installing: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.dsv
+[0.379s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/packages/nautilus_sensors
+[0.379s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/cmake/nautilus_sensorsConfig.cmake
+[0.379s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/cmake/nautilus_sensorsConfig-version.cmake
+[0.380s] -- Up-to-date: /home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.xml
+[0.381s] Invoked command in '/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors' returned '0': CMAKE_PREFIX_PATH=/home/devs/NautilusSW/nautilus_ws/install/nautilus_bringup:/home/devs/ardu_ws/install/test_ros_gz_bridge:/home/devs/ardu_ws/install/ros_ign:/home/devs/ardu_ws/install/ros_ign_gazebo_demos:/home/devs/ardu_ws/install/ros_gz:/home/devs/ardu_ws/install/ros_gz_sim_demos:/home/devs/ardu_ws/install/ardupilot_gz_bringup:/home/devs/ardu_ws/install/sdformat_urdf:/home/devs/ardu_ws/install/sdformat_test_files:/home/devs/ardu_ws/install/ros_ign_interfaces:/home/devs/ardu_ws/install/ros_ign_image:/home/devs/ardu_ws/install/ros_ign_gazebo:/home/devs/ardu_ws/install/ros_ign_bridge:/home/devs/ardu_ws/install/ros_gz_sim:/home/devs/ardu_ws/install/ros_gz_image:/home/devs/ardu_ws/install/ros_gz_bridge:/home/devs/ardu_ws/install/ros_gz_interfaces:/home/devs/ardu_ws/install/ardupilot_sitl:/home/devs/ardu_ws/install/micro_ros_agent:/home/devs/ardu_ws/install/ardupilot_sitl_models:/home/devs/ardu_ws/install/ardupilot_msgs:/home/devs/ardu_ws/install/ardupilot_gz_gazebo:/home/devs/ardu_ws/install/ardupilot_gz_description:/home/devs/ardu_ws/install/ardupilot_gz_application:/home/devs/ardu_ws/install/ardupilot_gazebo:/home/devs/NautilusSW/nautilus_ws/install/nautilus_mission:/home/devs/NautilusSW/nautilus_ws/install/nautilus_sensors:/home/devs/ardu_ws/install/ardupilot_dds_tests:/opt/ros/humble /usr/bin/cmake --install /home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors

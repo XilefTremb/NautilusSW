@@ -1,0 +1,13 @@
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/uninstall.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/nautilus_sensors_uninstall.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/ament_cmake_python_copy_DVL.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/ament_cmake_python_build_DVL_egg.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/ament_cmake_python_copy_vision.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/ament_cmake_python_build_vision_egg.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/test.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/edit_cache.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/rebuild_cache.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/list_install_components.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/install.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/install/local.dir
+/home/devs/NautilusSW/nautilus_ws/build/nautilus_sensors/CMakeFiles/install/strip.dir

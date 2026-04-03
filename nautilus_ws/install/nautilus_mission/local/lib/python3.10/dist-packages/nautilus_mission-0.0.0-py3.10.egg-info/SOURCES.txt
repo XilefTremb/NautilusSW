@@ -1,0 +1,8 @@
+setup.py
+nautilus_mission/__init__.py
+nautilus_mission/auv_pymavlink.py
+nautilus_mission/test_mission.py
+nautilus_mission.egg-info/PKG-INFO
+nautilus_mission.egg-info/SOURCES.txt
+nautilus_mission.egg-info/dependency_links.txt
+nautilus_mission.egg-info/top_level.txt
