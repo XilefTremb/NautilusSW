@@ -28,6 +28,7 @@ class AuvPymavlink:
         self.node = node
 
         self.pos_mask = int(0b100111111000)
+        self.pos_mask_no_yaw = int(0b110111111000)
         self.vel_mask = int(0b110111000111)
         self.vel_pos_mask = int(0b110111000000)
         self.ingore_all = int(0b111111111111)
@@ -44,10 +45,10 @@ class AuvPymavlink:
         }
 
         self.AUV_PROFILE = {
-            "VISO_TYPE": 3,        # MAVLink vision/odometry (DVL integration)
+            "VISO_TYPE": 1,        # MAVLink vision/odometry (DVL integration)
             "EK3_SRC1_POSXY": 6,   # ExternalNav
             "EK3_SRC1_VELXY": 6,   # ExternalNav
-            "EK3_SRC1_POSZ": 6,    # ExternalNav
+            "EK3_SRC1_POSZ": 1,    # ExternalNav
             "EK3_SRC1_VELZ": 0,    # None
             "EK3_SRC1_YAW": 1,     # Compass
             "EK3_ENABLE" : 1,

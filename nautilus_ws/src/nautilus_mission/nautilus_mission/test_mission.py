@@ -47,11 +47,16 @@ class Master(Node):
         self.auv.ResetPosEstimate()
         self.auv.Arm() 
         self.auv.ChangeMode('GUIDED')
-        self.auv.GoToWaypointLocal(0, 0, 0.8, pi/2)
-        self.auv.GoToWaypointLocal(0, 17, 0.8, pi/2)
-        self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
-        self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
-        self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
+        self.auv.GoToWaypointLocal(0, 0, 0.4, 0)
+        self.auv.GoToWaypointLocal(2, 0, 0.4, 0)
+
+
+
+        # self.auv.GoToWaypointLocal(0, 0, 0.8, pi/2)
+        # self.auv.GoToWaypointLocal(0, 17, 0.8, pi/2)
+        # self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
+        # self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
+        # self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
         
 
         # self.auv.Arm()    
