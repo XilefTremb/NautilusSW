@@ -42,7 +42,8 @@
     <xacro:IMU name="base_link_imu_sensor" link="base_link" xyz="0 0 0" rpy="0 0 0"  />
     <!--<xacro:Camera name="camera_front" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />-->
     <xacro:Camera name="camera" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />
-    <!--<xacro:CameraStero name="camera_stereo" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />-->
+    <xacro:CameraDepth name="cameraDepth" link="base_link" xyz="0.2 0 0" rpy="0 0 0" />
+    <!-- <xacro:CameraStero name="camera_stereo" link="base_link" xyz="0.2 0 0" rpy="0 0 0" /> -->
     <xacro:dvl_sensor name="dvl_front"
                   parent_link="base_link"
                   update_rate="10"
