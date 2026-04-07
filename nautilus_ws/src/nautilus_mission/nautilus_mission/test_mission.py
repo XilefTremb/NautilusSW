@@ -32,7 +32,7 @@ class Master(Node):
 
         self.auv.StartReceiver()
 
-        # self.validate_ekf()
+        self.validate_ekf()
 
         self.mission()
 

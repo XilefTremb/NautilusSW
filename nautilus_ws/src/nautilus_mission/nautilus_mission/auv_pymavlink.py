@@ -28,6 +28,7 @@ class AuvPymavlink:
         self.node = node
 
         self.pos_mask = int(0b100111111000)
+        self.pos_mask_no_yaw = int(0b110111111000)
         self.vel_mask = int(0b110111000111)
         self.vel_pos_mask = int(0b110111000000)
         self.ingore_all = int(0b111111111111)
@@ -44,7 +45,7 @@ class AuvPymavlink:
         }
 
         self.AUV_PROFILE = {
-            "VISO_TYPE": 3,        # MAVLink vision/odometry (DVL integration)
+            "VISO_TYPE": 1,        # MAVLink vision/odometry (DVL integration)
             "EK3_SRC1_POSXY": 6,   # ExternalNav
             "EK3_SRC1_VELXY": 6,   # ExternalNav
             "EK3_SRC1_POSZ": 3,    # GPS
@@ -434,6 +435,24 @@ class AuvPymavlink:
                     stable_since = None
 
             time.sleep(dt)
+
+    def SendVecCommand(self, speed, yaw, vz = 0.0):
+        vx = speed * math.cos(yaw)
+        vy = speed * math.sin(yaw)
+        with self._send_lock:
+            self.the_connection.mav.set_position_target_local_ned_send(
+                0,
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                mavutil.mavlink.MAV_FRAME_LOCAL_NED,
+                self.vel_mask,
+                0, 0, 0,
+                vx, vy, vz,
+                0, 0, 0,
+                yaw,
+                pi/2
+            )
+        self.node.get_logger().info(f"Sent vector cmd vx: {vx} vy: {vy} vz: {vz} yaw: {yaw}")
 
     def CheckDialectAndMethodAvailability(self, method):
         self.node.get_logger().info("dialect:", mavutil.mavlink.WIRE_PROTOCOL_VERSION if hasattr(mavutil.mavlink, 'WIRE_PROTOCOL_VERSION') else "unknown")
