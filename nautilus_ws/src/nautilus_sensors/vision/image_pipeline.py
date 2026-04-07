@@ -66,13 +66,22 @@ class VisionPipelineNode(Node):
             gray = cv2.cvtColor(roi_rgb, cv2.COLOR_BGR2GRAY)
             edges = cv2.Canny(gray, 50, 150)
 
+            # Clean depth
             valid_mask = np.isfinite(roi_depth)
             depth_clean = np.copy(roi_depth)
             depth_clean[~valid_mask] = 0
 
-            depth_norm = cv2.normalize(depth_clean, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-            depth_color = cv2.applyColorMap(depth_norm, cv2.COLORMAP_JET)
+            # Normalize FIRST (important for OpenCV median)
+            depth_norm = cv2.normalize(depth_clean, None, 0, 255, cv2.NORM_MINMAX)
+            depth_norm = depth_norm.astype(np.uint8)
 
+            # Apply median blur (kernel must be odd → use 5 ≈ your 4x4 idea)
+            depth_smooth = cv2.medianBlur(depth_norm, 7)
+
+            # Apply colormap
+            depth_color = cv2.applyColorMap(depth_smooth, cv2.COLORMAP_JET)
+
+            # Mask edges
             edge_mask = edges > 0
             colored_edges = np.zeros_like(roi_rgb)
             colored_edges[edge_mask] = depth_color[edge_mask]
