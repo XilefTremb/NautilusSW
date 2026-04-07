@@ -52,19 +52,6 @@ class Master(Node):
         self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
         self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
         self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
-        
-
-        # self.auv.Arm()    
-        # self.auv.ChangeMode('GUIDED')
-        # self.auv.GoToWaypointLocal(0, 0, 1, pi/2)
-
-        # self.auv.ChangeMode('POSHOLD')
-        # try:
-        #     # while True:
-        #     #     time.sleep(0.1)
-        #     #     self.auv.GoToWaypointLocal(1, 1, 1, 0)
-        #     #     self.auv.GoToWaypointLocal(0, 0, 0.5, pi/2)
-        # except KeyboardInterrupt:
 
     def ekf_good(self, ekf):
         flags = ekf.flags
