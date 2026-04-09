@@ -13,16 +13,20 @@ To start the simulation, if it is your first time cloning the git, there are a f
   - "colcon build" to build the environment
   - "source install/setup.bash" to source the NautilusWs
   - "source ~/ardu_ws/install/setup.bash" to source the ardu_ws
+
 Now you are working in the correct environment, there is one last step before you cn start using the simulation, which is to add a line in the bashrc that specifies the path of the models for the gazebo sim. To do so, you first need to open the bashrc running this command
   - "nano ~/.bashrc"
+
 Then, using arrow keys, go to the bottom of the file and add this line
   - "export GZ_SIM_RESOURCE_PATH=$HOME/ardupilot_gazebo/models:$HOME/ardupilot_gazebo/worlds:~/NautilusSW/nautilus_ws/src/nautilus_bringup/models/:${GZ_SIM_RESOURCE_PATH}"
+
 Then, to save and exit, press these two keybinds in this order :
   - "Ctrl + 0" to write
   - "Ctrl + X" to exit
 
 Now you have a correctly built environment. To run the simulation, you simply need to run this command :
   - "ros2 launch nautilus_bringup orca_comp.launch.py"
+
 This should by itself open the gazebo simulation
 
 There are also a few usefull tools that you can use to run additional code.
