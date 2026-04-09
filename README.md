@@ -24,6 +24,8 @@ Then, to save and exit, press these two keybinds in this order :
   - "Ctrl + 0" to write
   - "Ctrl + X" to exit
 
+Once you changed the bashrc, create a new terminal and run the source for ardu_ws and source for nautilus_ws and then you are ready.
+
 Now you have a correctly built environment. To run the simulation, you simply need to run this command :
   - "ros2 launch nautilus_bringup orca_comp.launch.py"
 
@@ -33,12 +35,12 @@ There are also a few usefull tools that you can use to run additional code.
   - To visualise image topics, you can start the rqt_viewer with :
   - "ros2 run rqt_image_view rat_image_view"
   - To run any python file, you can also run this
-  - "python3 /src/your_file_path/your_file.py" just put in the correct path.
+  - "python3 src/your_file_path/your_file.py" just put in the correct path.
 
 Just remember that in any new terminal you open, you always need to start by running the "source install/setup.bash". Sourcing the ardu_ws is only necessary for the terminal that runs the simulation.
 
 Specifically to run the vision pipelines, you will need 2 additional terminals to run two different python codes. The first one runs the yolo model in real time on the simulation images and publishes the bounding boxes on a topic. In a new terminal, after sourcing nautilus_ws, run :
-  - "python3 /src/nautilus_sensors/vision/yolo_vision.py"
+  - "python3 src/nautilus_sensors/vision/yolo_vision.py"
 
 The second file reads and tries to synchronise all three topics together. It then allows you to run your pipeline inside of the for loop in the callback. In yet another terminal, after sourcing nautilus_ws, run :
   - "python3 src/nautilus_sensors/vision/image_pipeline.py"
