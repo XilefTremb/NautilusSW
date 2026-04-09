@@ -8,12 +8,12 @@ import math
 from nautilus_mission.auv_pymavlink import AuvPymavlink
 
 # ===== CONFIGURATION =====
-DVL_IP = "192.168.2.3"      # DVL IP
+DVL_IP = "192.168.1.3"      # DVL IP
 DVL_PORT = 50000             # DVL port to send commands to
 VM_IP = "192.168.2.10"     # VM IP on DVL subnet
 LOCAL_PORT = 27000           # Port to listen for UDP packets
 PUBLISH_HZ = 20              # Publishing frequency (Hz)
-STREAM_CMD = "SET OUTPUT UDP {} {} ON\r".format(VM_IP, LOCAL_PORT)
+# STREAM_CMD = "SET OUTPUT UDP {} {} ON\r".format(VM_IP, LOCAL_PORT)
 
 
 class DVLSensor(Node):
@@ -22,11 +22,14 @@ class DVLSensor(Node):
 
         # Publisher
         # self.publisher = self.create_publisher(String, "dvl_pub", 10)
-        self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.timer_callback)
+        # self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.timer_callback)
 
         # UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.settimeout(0.2)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4 * 1024 * 1024)
+        actual_buf = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
+        self.get_logger().info(f"UDP SO_RCVBUF actual value: {actual_buf}")
+        self.sock.settimeout(2)
 
         self.dvl = AuvPymavlink(self)
         self.dvl.Connect("udpin:localhost:14552",False)
@@ -40,42 +43,57 @@ class DVLSensor(Node):
             self.get_logger().error(f"Failed to bind UDP socket: {e}")
             raise e
 
-        # Send initial streaming command
-        try:
-            self.sock.sendto(STREAM_CMD.encode(), (DVL_IP, DVL_PORT))
-            self.get_logger().info(f"Sent streaming command to DVL {DVL_IP}:{DVL_PORT}")
-        except Exception as e:
-            self.get_logger().error(f"Failed to send streaming command: {e}")
+        # # Send initial streaming command
+        # try:
+        #     self.sock.sendto(STREAM_CMD.encode(), (DVL_IP, DVL_PORT))
+        #     self.get_logger().info(f"Sent streaming command to DVL {DVL_IP}:{DVL_PORT}")
+        # except Exception as e:
+        #     self.get_logger().error(f"Failed to send streaming command: {e}")
 
         try:
             self.sock.sendto("SEND-DVPDL ON\r".encode(), (DVL_IP, DVL_PORT))
             self.get_logger().info(f"Sent DVPDL ON command to DVL {DVL_IP}:{DVL_PORT}")
         except Exception as e:
-            self.get_logger().error(f"Failed to send streaming command: {e}")
+            self.get_logger().error(f"Failed to send DVPDL ON command: {e}")
 
         try:
             self.sock.sendto("SEND-DVEXT OFF\r".encode(), (DVL_IP, DVL_PORT))
             self.get_logger().info(f"Sent DVEXT OFF command to DVL {DVL_IP}:{DVL_PORT}")
         except Exception as e:
-            self.get_logger().error(f"Failed to send streaming command: {e}")
+            self.get_logger().error(f"Failed to send DVEXT OFF command: {e}")
 
-    def timer_callback(self):
         try:
-            data, addr = self.sock.recvfrom(2048)
-            msg_str = data.decode("utf-8").strip()
-            # self.get_logger().info(msg_str)
-            parsed = self.parse_dvpdl(msg_str)
-            # self.publisher.publish(String(data=parsed))
-            # self.get_logger().info(f"Published: {parsed}")
-        except socket.timeout:
-            self.get_logger().warn("No UDP data received")
+            self.sock.sendto("SEND-FREEFORM ON\r".encode(), (DVL_IP, DVL_PORT))
+            self.get_logger().info(f"Sent FREEFORM ON command to DVL {DVL_IP}:{DVL_PORT}")
         except Exception as e:
-            self.get_logger().error(f"Error receiving UDP: {e}")
+            self.get_logger().error(f"Failed to send FREEFORM ON command: {e}")
+
+        try:
+            self.sock.sendto("MANUAL-MODE 0.001,5.0,0.5,56,0.1,50,20.6,-0.671,100,100\r".encode(), (DVL_IP, DVL_PORT))
+            self.get_logger().info(f"Sent MANUAL MODE command to DVL {DVL_IP}:{DVL_PORT}")
+        except Exception as e:
+            self.get_logger().error(f"Failed to send MANUAL MODE command: {e}")
+
+        self.loop()
+
+    def loop(self):
+        while True:
+            try:
+                data, addr = self.sock.recvfrom(2048)
+                msg_str = data.decode("utf-8").strip()
+                # self.get_logger().info(msg_str)
+                if msg_str.startswith("$DVPDL"):
+                    dvpdl_parsed = self.parse_dvpdl(msg_str)
+                elif msg_str.startswith("$DVTXT"):
+                    dvtxt_parsed = self.parse_dvtxt(msg_str)
+
+            except socket.timeout:
+                self.get_logger().warn("No UDP data received")
+            except Exception as e:
+                self.get_logger().error(f"Error receiving UDP: {e}")
 
     def parse_dvext(self, msg: str) -> str:
         """Minimal parsing of $DVEXT message"""
-        if not msg.startswith("$DVEXT"):
-            self.get_logger().info("Invalid message")
 
         try:
             fields = msg.split(",")
@@ -92,8 +110,6 @@ class DVLSensor(Node):
         
     def parse_dvpdl(self, msg: str) -> str:
         """Minimal parsing of $DVPDL message"""
-        if not msg.startswith("$DVPDL"):
-            self.get_logger().info("Invalid message")
 
         try:
             fields = msg.split(",")
@@ -108,9 +124,18 @@ class DVLSensor(Node):
             confidence = fields[9].split('*')[0]
             
             self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
-            self.get_logger().info(f"{dt} {dx} {dy} {dz} {droll} {dpitch} {dyaw}")
+
+            self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, dx:{dx}, dy:{dy}, dz:{dz}, confidence: {confidence}")
             
 
+        except Exception as e:
+            return f"Parse error: {e}"
+        
+    def parse_dvtxt(self, msg: str) -> str:
+        """Minimal parsing of $DVTXT message"""
+
+        try:
+            self.get_logger().info(msg)
         except Exception as e:
             return f"Parse error: {e}"
         
@@ -136,7 +161,7 @@ class DVLSensor(Node):
             confidence,
         )
     
-        self.get_logger().info(f"Sent DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
+        # self.get_logger().info(f"Sent DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
 
 
 def main(args=None):
