@@ -30,6 +30,7 @@ There are also a few usefull tools that you can use to run additional code.
   - "ros2 run rqt_image_view rat_image_view"
   - To run any python file, you can also run this
   - "python3 /src/your_file_path/your_file.py" just put in the correct path.
+Just remember that in any new terminal you open, you always need to start by running the "source install/setup.bash". Sourcing the ardu_ws is only necessary for the terminal that runs the simulation.
 
 
 
