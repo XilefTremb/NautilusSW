@@ -41,12 +41,22 @@ class Master(Node):
         self.auv.StopReceiver()
 
     def mission(self):
-        self.auv.Arm()
+        self.auv.Disarm()
+        self.auv.ChangeMode('MANUAL')
+        time.sleep(1.0)
+        self.auv.ResetPosEstimate()
+        self.auv.Arm() 
         self.auv.ChangeMode('GUIDED')
-        self.auv.GoToWaypointLocal(0, 0, 1, 0)
-        # while True:
-        #     self.auv.GoToWaypointLocal(2, 0, 0, 0)
-        #     self.auv.ResetPosEstimate()
+        self.auv.GoToWaypointLocal(0, 0, 0.8, pi/2)
+        self.auv.GoToWaypointLocal(0, 17, 0.8, pi/2)
+        self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
+        self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
+        self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
+        
+
+        # self.auv.Arm()    
+        # self.auv.ChangeMode('GUIDED')
+        # self.auv.GoToWaypointLocal(0, 0, 1, pi/2)
 
         # self.auv.ChangeMode('POSHOLD')
         
@@ -63,9 +73,6 @@ class Master(Node):
 
     def ekf_good(self, ekf):
         flags = ekf.flags
-
-        # We avoid hardcoding bit numbers; instead, interpret by behavior:
-        # If your pymavlink has these enums, use them. If not, see note below.
         required_bits = []
         for name in [
             "EKF_ATTITUDE",
@@ -127,7 +134,8 @@ class Master(Node):
 
             # if time.time() - t0 > 60:
             #     raise RuntimeError("EKF never became 'good' within 60s")
-
+        # We avoid hardcoding bit numbers; instead, interpret by behavior:
+        # If your pymavlink has these enums, use them. If not, see note below.
 def main():
     args = parse_args()
     rclpy.init()

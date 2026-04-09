@@ -44,13 +44,16 @@ class AuvPymavlink:
         }
 
         self.AUV_PROFILE = {
-            "VISO_TYPE": 1,        # MAVLink vision/odometry (DVL integration)
+            "VISO_TYPE": 3,        # MAVLink vision/odometry (DVL integration)
             "EK3_SRC1_POSXY": 6,   # ExternalNav
             "EK3_SRC1_VELXY": 6,   # ExternalNav
+            "EK3_SRC1_POSZ": 6,    # ExternalNav
+            "EK3_SRC1_VELZ": 0,    # None
+            "EK3_SRC1_YAW": 1,     # Compass
             "EK3_ENABLE" : 1,
             "AHRS_EKF_TYPE" : 3,
             "EK2_ENABLE" : 0,
-            "EK3_SRC1_POSZ": 6,    # ExternalNav (to be changed back to 1 when ran on the real vehicle)
+                # ExternalNav (to be changed back to 1 when ran on the real vehicle)
         }
 
 
@@ -110,6 +113,7 @@ class AuvPymavlink:
         while not self._rx_stop.is_set():
             try:
                 msg = self.the_connection.recv_match(blocking=True, timeout=0.5)
+                
                 if msg is None:
                     continue
 
@@ -139,6 +143,20 @@ class AuvPymavlink:
         """Non-blocking: returns latest cached LOCAL_POSITION_NED (or None)."""
         with self._state_lock:
             return self._latest_local_pos_ned
+        
+    def GetLocalPosNed(self):
+        """
+        If RX thread is running: returns cached LOCAL_POSITION_NED (non-blocking).
+        If RX thread is not running: blocks on recv_match() like your original.
+        """
+        if self._rx_thread and self._rx_thread.is_alive():
+            msg = self.GetLocalPosNedCached()
+            if msg is not None:
+                return msg
+            return None
+
+        msg = self.the_connection.recv_match(type="LOCAL_POSITION_NED", blocking=True)
+        return msg  # has x,y,z,vx,vy,vz
 
     def WaitForCommandAck(self, command_id: int, timeout_s: float = 3.0):
         deadline = time.time() + timeout_s
@@ -156,7 +174,7 @@ class AuvPymavlink:
     # -------------------- Params (startup only) --------------------
     # IMPORTANT: call these BEFORE StartReceiver(), because they use recv_match().
 
-    def SetParamAndConfirm(self, name: str, value: float, timeout_s: float = 2.0) -> bool:
+    def SetParamAndConfirm(self, name: str, value: float, timeout_s: float = 5.0) -> bool:
         if self.the_connection is None:
             raise RuntimeError("Not connected")
 
@@ -173,7 +191,7 @@ class AuvPymavlink:
 
         deadline = time.time() + timeout_s
         while time.time() < deadline:
-            msg = self.the_connection.recv_match(type="PARAM_VALUE", blocking=True, timeout=0.5)
+            msg = self.the_connection.recv_match(type="PARAM_VALUE", blocking=True, timeout=2.0)
             if msg is None:
                 continue
             d = msg.to_dict()
@@ -186,7 +204,7 @@ class AuvPymavlink:
         self.node.get_logger().info(f"[PARAM] Timeout waiting confirm for {name}")
         return False
 
-    def ApplyParamProfile(self, profile: dict, timeout_s_each: float = 2.0) -> bool:
+    def ApplyParamProfile(self, profile: dict, timeout_s_each: float = 5.0) -> bool:
         ok_all = True
         for k, v in profile.items():
             ok = self.SetParamAndConfirm(k, v, timeout_s=timeout_s_each)
@@ -215,52 +233,87 @@ class AuvPymavlink:
         self.the_connection.motors_armed_wait()
         self.node.get_logger().info("Armed!")
 
-    def ChangeMode(self, mode: str, timeout_s: float = 3.0):
-        # Check if mode is available
-        if mode not in self.the_connection.mode_mapping():
-            self.node.get_logger().info("Unknown mode : {}".format(mode))
-            self.node.get_logger().info("Try:", list(self.the_connection.mode_mapping().keys()))
-            sys.exit(1)
-
-        # Set new mode via MAV_CMD_DO_SET_MODE (same as your original)
-        CHGMODE = mavutil.mavlink.MAV_CMD_DO_SET_MODE
+    def Disarm(self):
+        ARM = mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM
         with self._send_lock:
             self.the_connection.mav.command_long_send(
                 self.the_connection.target_system,
                 self.the_connection.target_component,
-                CHGMODE,
+                ARM,
                 0,
-                1,
-                4,
+                0,
+                0,
                 0,
                 0,
                 0,
                 0,
                 0,
             )
-        self.node.get_logger().info(f"Mode {mode} was sent to controller!")
+        self.node.get_logger().info("Waiting for motors to be disarmed")
+        self.the_connection.motors_disarmed_wait()
+        self.node.get_logger().info("Disarmed!")
 
-        # If RX thread is running, wait using the ACK cache.
-        # If RX thread is NOT running (startup), we can safely recv_match() here.
+    def ChangeMode(self, mode: str, timeout_s: float = 3.0):
+        mode_map = self.the_connection.mode_mapping()
+
+        # Check if mode is available
+        if mode not in mode_map:
+            self.node.get_logger().info(f"Unknown mode: {mode}")
+            self.node.get_logger().info(f"Try: {list(mode_map.keys())}")
+            return False
+
+        mode_id = mode_map[mode]
+
+        # Clear any stale ACK for this command before sending
+        CHGMODE = mavutil.mavlink.MAV_CMD_DO_SET_MODE
+        with self._ack_cv:
+            self._last_ack_by_command.pop(CHGMODE, None)
+
+        # Send requested mode
+        with self._send_lock:
+            self.the_connection.mav.command_long_send(
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                CHGMODE,
+                0,
+                mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+                mode_id,
+                0,
+                0,
+                0,
+                0,
+                0,
+            )
+
+        self.node.get_logger().info(f"Mode change requested: {mode} (custom_mode={mode_id})")
+
+        # If RX thread is running, wait using ACK cache
         if self._rx_thread and self._rx_thread.is_alive():
             ack = self.WaitForCommandAck(CHGMODE, timeout_s=timeout_s)
             if ack is None:
                 self.node.get_logger().info("[MODE] Timeout waiting for COMMAND_ACK")
                 return False
-            self.node.get_logger().info(mavutil.mavlink.enums["MAV_RESULT"][ack["result"]].description)
-            return True
 
-        # Startup/no RX thread case:
+            result_desc = mavutil.mavlink.enums["MAV_RESULT"][ack["result"]].description
+            self.node.get_logger().info(f"[MODE] ACK: {result_desc}")
+
+            return ack["result"] == mavutil.mavlink.MAV_RESULT_ACCEPTED
+
+        # Startup / no RX thread case
         deadline = time.time() + timeout_s
         while time.time() < deadline:
             ack_msg = self.the_connection.recv_match(type="COMMAND_ACK", blocking=True, timeout=0.5)
             if ack_msg is None:
                 continue
+
             ack_msg = ack_msg.to_dict()
-            if ack_msg["command"] != CHGMODE:
+            if ack_msg.get("command") != CHGMODE:
                 continue
-            self.node.get_logger().info(mavutil.mavlink.enums["MAV_RESULT"][ack_msg["result"]].description)
-            return True
+
+            result_desc = mavutil.mavlink.enums["MAV_RESULT"][ack_msg["result"]].description
+            self.node.get_logger().info(f"[MODE] ACK: {result_desc}")
+
+            return ack_msg["result"] == mavutil.mavlink.MAV_RESULT_ACCEPTED
 
         self.node.get_logger().info("[MODE] Timeout waiting for COMMAND_ACK")
         return False
@@ -307,10 +360,20 @@ class AuvPymavlink:
                 )
             
     def ResetPosEstimate(self):
-        self.SendPosLocalReset()
         while not self.ValidateLocalNedReset():
+            self.node.get_logger().info("Reset position estimate was asked...")
             self.SendPosLocalReset()
-            time.sleep(0.5)
+            time.sleep(0.1)
+        self.node.get_logger().info("Reset position succeeded!")
+
+    def ValidateLocalNedReset(self):
+        msg = self.GetLocalPosNed()
+        self.node.get_logger().info(f"Validating local position ned was reset: {msg}")
+
+        if msg is None:
+            return False
+
+        return math.sqrt(msg.x**2 + msg.y**2 + msg.z**2) < 0.05
 
     def SendPosOffset(self, north, east, down, yaw):
         with self._send_lock:
@@ -335,28 +398,6 @@ class AuvPymavlink:
                 )
             )
         
-    def ValidateLocalNedReset(self):
-        msg = self.GetLocalPosNed()
-        if math.sqrt(msg.x**2 + msg.y**2 + msg.z**2) < 0.05:
-            return True
-        else:
-            return False
-
-    # Kept for compatibility, but now uses cache if receiver is running.
-    def GetLocalPosNed(self):
-        """
-        If RX thread is running: returns cached LOCAL_POSITION_NED (non-blocking).
-        If RX thread is not running: blocks on recv_match() like your original.
-        """
-        if self._rx_thread and self._rx_thread.is_alive():
-            msg = self.GetLocalPosNedCached()
-            if msg is not None:
-                return msg
-            return None
-
-        msg = self.the_connection.recv_match(type="LOCAL_POSITION_NED", blocking=True)
-        return msg  # has x,y,z,vx,vy,vz
-
     def ArrivedLogic(self, currentPos, target):
         dx = target[0] - currentPos.x
         dy = target[1] - currentPos.y

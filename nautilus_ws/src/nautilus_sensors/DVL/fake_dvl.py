@@ -91,8 +91,8 @@ class FakeDVL(Node):
                 pose_msg.pose.orientation.z = delta_pose_frd[6]
                 pose_msg.pose.orientation.w = 0.0        
 
-                self.pose_pub.publish(pose_msg) #timestamped important???
-                self.SendDVLAsGps(t, delta_pose_frd[0], delta_pose_frd[1],delta_pose_frd[2],delta_pose_frd[3]) #dt,dx,dy. z source is gps/baro
+                self.pose_pub.publish(pose_msg)
+                self.SendDVLAsGps(t, delta_pose_frd[0], delta_pose_frd[1],delta_pose_frd[2],delta_pose_frd[3])
 
             self.last_pose_enu = current_pose_enu
             self.last_msg = self.msg
