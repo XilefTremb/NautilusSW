@@ -37,6 +37,13 @@ There are also a few usefull tools that you can use to run additional code.
 
 Just remember that in any new terminal you open, you always need to start by running the "source install/setup.bash". Sourcing the ardu_ws is only necessary for the terminal that runs the simulation.
 
+Specifically to run the vision pipelines, you will need 2 additional terminals to run two different python codes. The first one runs the yolo model in real time on the simulation images and publishes the bounding boxes on a topic. In a new terminal, after sourcing nautilus_ws, run :
+  - "python3 /src/nautilus_sensors/vision/yolo_vision.py"
+
+The second file reads and tries to synchronise all three topics together. It then allows you to run your pipeline inside of the for loop in the callback. In yet another terminal, after sourcing nautilus_ws, run :
+  - "python3 src/nautilus_sensors/vision/image_pipeline.py"
+
+This code currently returns a image topic that shows coloured edges inside of the bounding boxes detected. if you wish to see what the ouput is, refer to the rqt_image_viewer mentionned above.
 
 
 
