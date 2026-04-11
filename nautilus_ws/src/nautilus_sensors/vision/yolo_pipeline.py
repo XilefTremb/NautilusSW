@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 import cv2
 import numpy as np
 from ultralytics import YOLO
@@ -9,6 +9,7 @@ from cv_bridge import CvBridge
 
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
+from Angle_and_Depth import find_depth, find_angle
 
 
 class YoloNode(Node):
@@ -17,6 +18,9 @@ class YoloNode(Node):
 
         self.bridge = CvBridge()
         self.model = YOLO('src/nautilus_sensors/vision/yolo_models/model_sim.pt')
+
+        # Taille du patch autour du centre pour la depth
+        self.depth_half_patch = 5
 
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, '/camera/image_raw')
@@ -32,13 +36,12 @@ class YoloNode(Node):
         self.ts.registerCallback(self.synced_callback)
 
         # ---------------- PUBLISHERS ----------------
-        self.detection_pub = self.create_publisher(
+        self.depth_angle_topic = self.create_publisher(
             Float32MultiArray,
             '/yolo/id_depth_angle',
             10
         )
-
-        self.detection_pub = self.create_publisher(
+        self.region_angle_topic = self.create_publisher(
             Float32MultiArray,
             '/yolo/region_angle',
             10
@@ -54,6 +57,64 @@ class YoloNode(Node):
 
         # YOLO inference
         results = self.model(frame, conf=0.4, verbose=False)
+
+        payload = []
+
+        for result in results:
+            if result.boxes is None:
+                continue
+
+            for box_data in result.boxes:
+                xywh = box_data.xywh[0].cpu().numpy()
+                cx = int(xywh[0])
+                cy = int(xywh[1])
+
+                object_id = int(box_data.cls[0].item())
+
+
+                # Calcul depth
+                try:
+                    depth_value = find_depth(
+                        depth_frame=depth,
+                        half=self.depth_half_patch,
+                        cy_boundingbox=cy,
+                        cx_boundingbox=cx
+                    )
+                except Exception as e:
+                    self.get_logger().warn(
+                        f'Erreur find_depth pour objet {object_id}: {e}'
+                    )
+                    depth_value = None
+
+                # Calcul angle
+                try:
+                    angle_value = find_angle(cx, depth_value)
+                except Exception as e:
+                    self.get_logger().warn(
+                        f'Erreur find_angle pour objet {object_id}: {e}'
+                    )
+                    angle_value = None
+
+                # Valeurs par défaut si invalides
+                depth_out = float(depth_value) if depth_value is not None else -1.0
+                angle_out = float(angle_value) if angle_value is not None else -999.0
+
+                # Ordre demandé : (id_objet, depth, angle)
+                payload.extend([float(object_id), depth_out, angle_out])
+
+        # Publication
+        msg = Float32MultiArray()
+        msg.data = payload
+
+        # Layout: N x 3
+        nb_objets = len(payload) // 3
+        msg.layout.dim = [
+            MultiArrayDimension(label='objects', size=nb_objets, stride=max(len(payload), 1)),
+            MultiArrayDimension(label='fields', size=3, stride=3)
+        ]
+        msg.layout.data_offset = 0
+
+        self.depth_angle_topic.publish(msg)
 
 
         # Publish annotated image
