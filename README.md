@@ -33,19 +33,25 @@ This should by itself open the gazebo simulation
 
 There are also a few usefull tools that you can use to run additional code.
   - To visualise image topics, you can start the rqt_viewer with :
-  - "ros2 run rqt_image_view rat_image_view"
+  - "ros2 run rqt_image_view rqt_image_view"
   - To run any python file, you can also run this
   - "python3 src/your_file_path/your_file.py" just put in the correct path.
 
 Just remember that in any new terminal you open, you always need to start by running the "source install/setup.bash". Sourcing the ardu_ws is only necessary for the terminal that runs the simulation.
 
-Specifically to run the vision pipelines, you will need 2 additional terminals to run two different python codes. The first one runs the yolo model in real time on the simulation images and publishes the bounding boxes on a topic. In a new terminal, after sourcing nautilus_ws, run :
+Specifically to run the vision pipelines, you will need 2 additional terminals to run two different python codes. Before running them, you might need to download a few libraries, mainly ultralytics. Because of a dependency issue, you need to make sure to install it with an older version of numpy as the newer versions are incompatible with the ros2 CVbridge making the code unable to be ran. To do so, simply run this command :
+  - "pip install ultralytics "numpy<2""
+
+The first one runs the yolo model in real time on the simulation images and publishes the bounding boxes on a topic. In a new terminal, after sourcing nautilus_ws, run :
   - "python3 src/nautilus_sensors/vision/yolo_vision.py"
 
 The second file reads and tries to synchronise all three topics together. It then allows you to run your pipeline inside of the for loop in the callback. In yet another terminal, after sourcing nautilus_ws, run :
   - "python3 src/nautilus_sensors/vision/image_pipeline.py"
 
 This code currently returns a image topic that shows coloured edges inside of the bounding boxes detected. if you wish to see what the ouput is, refer to the rqt_image_viewer mentionned above.
+
+If you want,, there is also another code that instead of splitting both the inference of the model and the kernels passed on the bouding boxes, combines all into one action. To do so, run the command :
+  - "python3 src/nautilus_sensors/vision/yolo_pipeline.py"
 
 
 
