@@ -47,6 +47,13 @@ class YoloNode(Node):
             10
         )
 
+        #A ENLEVER APRES MODIF
+        self.image_pub = self.create_publisher(
+            Image,
+            '/yolo/image_annotated',
+            10
+        )
+
         self.get_logger().info('YOLOv8 node with depth started')
 
     def synced_callback(self, rgb_msg, depth_msg):
@@ -117,10 +124,60 @@ class YoloNode(Node):
         self.depth_angle_topic.publish(msg)
 
 
+        #A ENELEVER APRES
+        annotated_frame = results[0].plot()
+
+        detections_data = []
+
+        if results[0].boxes is not None:
+            for box in results[0].boxes:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+
+                # Clamp to image bounds
+                h, w = depth.shape
+                x1, x2 = np.clip([x1, x2], 0, w - 1)
+                y1, y2 = np.clip([y1, y2], 0, h - 1)
+
+                # YOLO info
+                class_id = int(box.cls[0])
+                confidence = float(box.conf[0])
+
+                # Append structured data
+                detections_data.extend([
+                    float(x1), float(y1),
+                    float(x2), float(y2),
+                    depth_value,
+                    float(class_id),
+                    confidence
+                ])
+
+                # Draw depth on image
+                cx = (x1 + x2) // 2
+                cy = (y1 + y2) // 2
+                cv2.putText(
+                    annotated_frame,
+                    f"{depth_value:.2f}m",
+                    (cx, cy),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
+
+                cv2.putText(
+                    annotated_frame,
+                    f"{angle_value:.2f}deg",
+                    (cx, cy + 15),  # décalage vertical
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
+
         # Publish annotated image
-        # out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
-        # out_msg.header = rgb_msg.header
-        # self.image_pub.publish(out_msg)
+        out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
+        out_msg.header = rgb_msg.header
+        self.image_pub.publish(out_msg)
 
         # Publish detections
         # det_msg = Float32MultiArray()

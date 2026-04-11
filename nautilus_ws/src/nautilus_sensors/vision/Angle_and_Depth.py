@@ -17,15 +17,18 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
     x2 = min(frame_w, cx_boundingbox + half + 1)
 
     center_patch = depth_frame[y1:y2, x1:x2]
-
+    
+    center_depth = float(np.median(center_patch))
+    #print(center_depth)
+    """
     valid_center = center_patch[(center_patch > 200) & (center_patch < 5000)]
 
     if valid_center.size > 0:
         center_depth = float(np.median(valid_center))
     else:
-        print("Center depth: invalid")
+        #print("Center depth: invalid")
         center_depth = None
-
+    """
     """
     # Calcul vraie distance
     X = (cx_boundingbox - cx) * center_depth / fx
