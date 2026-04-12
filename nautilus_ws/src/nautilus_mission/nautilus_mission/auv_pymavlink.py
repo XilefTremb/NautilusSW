@@ -48,7 +48,7 @@ class AuvPymavlink:
             "VISO_TYPE": 1,        # MAVLink vision/odometry (DVL integration)
             "EK3_SRC1_POSXY": 6,   # ExternalNav
             "EK3_SRC1_VELXY": 6,   # ExternalNav
-            "EK3_SRC1_POSZ": 1,    # ExternalNav
+            "EK3_SRC1_POSZ": 3,    # GPS
             "EK3_SRC1_VELZ": 0,    # None
             "EK3_SRC1_YAW": 1,     # Compass
             "EK3_ENABLE" : 1,
