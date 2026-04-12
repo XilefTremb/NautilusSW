@@ -30,7 +30,7 @@ class AuvPymavlink:
         self.pos_mask = int(0b100111111000)
         self.pos_mask_no_yaw = int(0b110111111000)
         self.vel_mask = int(0b110111000111)
-        self.vel_pos_mask = int(0b110111000000)
+        self.vel_pos_mask = int(0b100111000000)
         self.ingore_all = int(0b111111111111)
 
         self.reset_counter = 0
@@ -374,7 +374,7 @@ class AuvPymavlink:
         if msg is None:
             return False
 
-        return math.sqrt(msg.x**2 + msg.y**2 + msg.z**2) < 0.05
+        return math.sqrt(msg.x**2 + msg.y**2) < 0.05
 
     def SendPosOffset(self, north, east, down, yaw):
         with self._send_lock:
@@ -436,23 +436,30 @@ class AuvPymavlink:
 
             time.sleep(dt)
 
-    def SendVecCommand(self, speed, yaw, vz = 0.0):
+    def GoToWaypointFRD(self, x, y, z, yaw):
+        north = x * math.cos(yaw)
+        east = y * math.sin(yaw)
+        self.GoToWaypointLocal(north, east, z, yaw)
+
+    def SendVecCommand(self, x, y, z, speed, yaw, vz = 0.0):
         vx = speed * math.cos(yaw)
         vy = speed * math.sin(yaw)
+        x = x * math.cos(yaw)
+        y = y * math.sin(yaw)
         with self._send_lock:
             self.the_connection.mav.set_position_target_local_ned_send(
                 0,
                 self.the_connection.target_system,
                 self.the_connection.target_component,
                 mavutil.mavlink.MAV_FRAME_LOCAL_NED,
-                self.vel_mask,
-                0, 0, 0,
+                self.vel_pos_mask,
+                x, y, z,
                 vx, vy, vz,
                 0, 0, 0,
                 yaw,
-                pi/2
+                0.05
             )
-        self.node.get_logger().info(f"Sent vector cmd vx: {vx} vy: {vy} vz: {vz} yaw: {yaw}")
+        self.node.get_logger().info(f"Sent vector cmd x: {x} y: {y} z: {z} vx: {vx} vy: {vy} vz: {vz} yaw: {yaw}")
 
     def CheckDialectAndMethodAvailability(self, method):
         self.node.get_logger().info("dialect:", mavutil.mavlink.WIRE_PROTOCOL_VERSION if hasattr(mavutil.mavlink, 'WIRE_PROTOCOL_VERSION') else "unknown")

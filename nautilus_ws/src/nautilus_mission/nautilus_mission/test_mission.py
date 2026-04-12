@@ -32,7 +32,7 @@ class Master(Node):
 
         self.auv.StartReceiver()
 
-        self.validate_ekf()
+        # self.validate_ekf()
 
         self.mission()
 
@@ -47,11 +47,31 @@ class Master(Node):
         self.auv.ResetPosEstimate()
         self.auv.Arm() 
         self.auv.ChangeMode('GUIDED')
-        self.auv.GoToWaypointLocal(0, 0, 0.8, pi/2)
-        self.auv.GoToWaypointLocal(0, 17, 0.8, pi/2)
-        self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
-        self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
-        self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
+       
+        self.auv.GoToWaypointFRD(0, 0, 0.4, 0.82)
+        self.auv.GoToWaypointFRD(2, 0, 0.4, 0.82)
+        # self.auv.GoToWaypointLocal(0, 17, 0.8, pi/2)
+        # self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
+        # self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
+        # self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
+        
+
+        # self.auv.Arm()    
+        # self.auv.ChangeMode('GUIDED')
+        # self.auv.GoToWaypointLocal(0, 0, 1, pi/2)
+
+        # self.auv.ChangeMode('POSHOLD')
+        
+        
+        # while True:
+        #     yaw = 0
+        #     self.auv.SendVecCommand(0, 0, 0.4, 0.5, yaw)
+        #     time.sleep(10)
+        #     yaw = pi
+        #     self.auv.SendVecCommand(0.5, yaw)
+        #     time.sleep(10)
+
+        
 
     def ekf_good(self, ekf):
         flags = ekf.flags
