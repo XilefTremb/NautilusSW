@@ -29,8 +29,8 @@ class AuvPymavlink:
 
         self.pos_mask = int(0b100111111000)
         self.pos_mask_no_yaw = int(0b110111111000)
-        self.vel_mask = int(0b110111000111)
-        self.vel_pos_mask = int(0b110111000000)
+        self.vel_mask = int(0b100111000111)
+        self.vel_pos_mask = int(0b100111000000)
         self.ingore_all = int(0b111111111111)
 
         self.reset_counter = 0
@@ -321,25 +321,17 @@ class AuvPymavlink:
 
     def SendPosLocal(self, north, east, down, yaw):
         with self._send_lock:
-            self.the_connection.mav.send(
-                mavutil.mavlink.MAVLink_set_position_target_local_ned_message(
-                    0,
-                    self.the_connection.target_system,
-                    self.the_connection.target_component,
-                    mavutil.mavlink.MAV_FRAME_LOCAL_NED,
-                    self.pos_mask,
-                    north,
-                    east,
-                    down,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    yaw,
-                    pi / 2,
-                )
+            self.the_connection.mav.set_position_target_local_ned_send(
+                0,
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                mavutil.mavlink.MAV_FRAME_LOCAL_NED,
+                self.pos_mask,
+                north, east, down,
+                0, 0, 0,
+                0, 0, 0,
+                yaw,
+                pi/2
             )
 
     def SendPosLocalReset(self):
@@ -435,6 +427,12 @@ class AuvPymavlink:
                     stable_since = None
 
             time.sleep(dt)
+
+    def GoToWaypointLocalFRD(self, x, y, down, yaw, yaw_offset):
+        north = x * math.cos(yaw_offset) + y * math.sin(yaw_offset)
+        east = x * math.sin(yaw_offset) - y * math.cos(yaw_offset)
+
+        self.GoToWaypointLocal(north, east, down, yaw)
 
     def SendVecCommand(self, speed, yaw, vz = 0.0):
         vx = speed * math.cos(yaw)

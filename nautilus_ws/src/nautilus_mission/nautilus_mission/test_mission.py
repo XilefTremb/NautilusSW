@@ -41,17 +41,30 @@ class Master(Node):
         self.auv.StopReceiver()
 
     def mission(self):
-        self.auv.Disarm()
-        self.auv.ChangeMode('MANUAL')
-        time.sleep(1.0)
-        self.auv.ResetPosEstimate()
+        # self.auv.Disarm()
+        # self.auv.ChangeMode('MANUAL')
+        # time.sleep(1.0)
+        # self.auv.ResetPosEstimate()
+        # self.auv.Arm() 
+        # self.auv.ChangeMode('GUIDED')
+        # self.auv.GoToWaypointLocal(0, 0, 0.8, pi/2)
+        # self.auv.GoToWaypointLocal(0, 17, 0.8, pi/2)
+        # self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
+        # self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
+        # self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
+
         self.auv.Arm() 
         self.auv.ChangeMode('GUIDED')
-        self.auv.GoToWaypointLocal(0, 0, 0.8, pi/2)
-        self.auv.GoToWaypointLocal(0, 17, 0.8, pi/2)
-        self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
-        self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
-        self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
+        self.auv.GoToWaypointLocal(0, 0, 0.8, pi/4)
+        time.sleep(5.0)
+        self.auv.GoToWaypointLocalFRD(2, 0, 0.8, pi/4, pi/4)
+        time.sleep(5.0)
+        self.auv.GoToWaypointLocalFRD(2, 0, 0.8, pi/4 + pi/2, pi/4)
+        time.sleep(5.0)
+        self.auv.GoToWaypointLocal(0, 0, 0.8, pi/4)
+        
+        
+        
 
     def ekf_good(self, ekf):
         flags = ekf.flags
