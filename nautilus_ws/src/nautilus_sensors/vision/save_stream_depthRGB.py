@@ -37,20 +37,29 @@ pipeline = dai.Pipeline()
 
 # Caméra RGB
 cam_rgb = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_A)
+
+manip = pipeline.create(dai.node.ImageManip)
+manip.setMaxOutputFrameSize(1500000)
+manip.initialConfig.addRotateDeg(180)
+manip.initialConfig.setFrameType(dai.ImgFrame.Type.NV12)
+
 cam_rgb_out = cam_rgb.requestOutput(
-    size=(1280, 720),
+    size=(1280, 704),
     fps=FPS,
     type=dai.ImgFrame.Type.NV12,
     # type here is RAW/NV12-ish internally; the encoder will accept it
 )
+
+cam_rgb_out.link(manip.inputImage)
 
 enc = pipeline.create(dai.node.VideoEncoder)
 enc.setDefaultProfilePreset(FPS, dai.VideoEncoderProperties.Profile.H264_MAIN)
 enc.setBitrate(7_000_000)
 enc.setKeyframeFrequency(FPS * 2)  # ~2 seconds
 
+manip.out.link(enc.input)
+
 # Link camera frames into encoder
-cam_rgb_out.link(enc.input)
 rgbQueue = cam_rgb_out.createOutputQueue(maxSize=4)
 h264_out = enc.bitstream.createOutputQueue(maxSize=16, blocking=False)
 
@@ -68,7 +77,7 @@ stereo.setRectification(True)
 stereo.setExtendedDisparity(True)
 stereo.setLeftRightCheck(True)
 
-disparityQueue = stereo.disparity.createOutputQueue()
+disparityQueue = stereo.depth.createOutputQueue()
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_DIR = os.path.join(SAVE_DIR, "rgb")
