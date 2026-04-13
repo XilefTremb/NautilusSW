@@ -20,7 +20,7 @@ class YoloNode(Node):
         self.model = YOLO('src/nautilus_sensors/vision/yolo_models/model_sim.pt')
 
         # Taille du patch autour du centre pour la depth
-        self.depth_half_patch = 5
+        self.depth_half_patch = 1
 
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, '/camera/image_raw')
@@ -102,12 +102,9 @@ class YoloNode(Node):
                     )
                     angle_value = None
 
-                # Valeurs par défaut si invalides
-                depth_out = float(depth_value) if depth_value is not None else -1.0
-                angle_out = float(angle_value) if angle_value is not None else -999.0
 
                 # Ordre demandé : (id_objet, depth, angle)
-                payload.extend([float(object_id), depth_out, angle_out])
+                payload.extend([float(object_id), depth_value, angle_value])
 
         # Publication
         msg = Float32MultiArray()

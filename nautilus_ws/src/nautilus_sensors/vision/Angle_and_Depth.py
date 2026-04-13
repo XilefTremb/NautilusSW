@@ -3,10 +3,10 @@ import cv2
 
 
 #PARAMETRES DE LA CAMERA
-cx = 623
-fx = 728
-fy = 726
-cy = 370
+cx = 320
+fx = 293
+fy = 293
+cy = 240
 
 def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
     frame_h, frame_w = depth_frame.shape
@@ -17,6 +17,8 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
     x2 = min(frame_w, cx_boundingbox + half + 1)
 
     center_patch = depth_frame[y1:y2, x1:x2]
+    #print("patch:", center_patch)
+
     
     center_depth = float(np.median(center_patch))
     #print(center_depth)
@@ -43,7 +45,7 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
 def find_angle(x_center, depth_mean):
     if depth_mean is None:
         return None
-
+    print("centre",x_center)
     # Coordonnée horizontale dans le repère caméra
     X = (x_center - cx) * depth_mean / fx
 
