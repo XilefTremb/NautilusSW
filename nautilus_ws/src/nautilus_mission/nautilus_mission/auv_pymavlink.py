@@ -30,7 +30,6 @@ class AuvPymavlink:
         self.pos_mask = int(0b100111111000)
         self.pos_mask_no_yaw = int(0b110111111000)
         self.vel_mask = int(0b100111000111)
-        self.vel_pos_mask = int(0b100111000000)
         self.ingore_all = int(0b111111111111)
 
         self.reset_counter = 0
@@ -366,7 +365,7 @@ class AuvPymavlink:
         if msg is None:
             return False
 
-        return math.sqrt(msg.x**2 + msg.y**2 + msg.z**2) < 0.05
+        return math.sqrt(msg.x**2 + msg.y**2) < 0.05
 
     def SendPosOffset(self, north, east, down, yaw):
         with self._send_lock:
@@ -448,7 +447,7 @@ class AuvPymavlink:
                 vx, vy, vz,
                 0, 0, 0,
                 yaw,
-                pi/2
+                0.05
             )
         self.node.get_logger().info(f"Sent vector cmd vx: {vx} vy: {vy} vz: {vz} yaw: {yaw}")
 
