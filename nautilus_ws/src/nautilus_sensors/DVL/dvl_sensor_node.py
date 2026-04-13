@@ -6,6 +6,7 @@ from std_msgs.msg import String
 import socket
 import math
 from nautilus_mission.auv_pymavlink import AuvPymavlink
+import time
 
 # ===== CONFIGURATION =====
 DVL_IP = "192.168.1.3"      # DVL IP
@@ -13,7 +14,6 @@ DVL_PORT = 50000             # DVL port to send commands to
 VM_IP = "192.168.2.10"     # VM IP on DVL subnet
 LOCAL_PORT = 27000           # Port to listen for UDP packets
 PUBLISH_HZ = 20              # Publishing frequency (Hz)
-# STREAM_CMD = "SET OUTPUT UDP {} {} ON\r".format(VM_IP, LOCAL_PORT)
 
 
 class DVLSensor(Node):
@@ -42,14 +42,7 @@ class DVLSensor(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to bind UDP socket: {e}")
             raise e
-
-        # # Send initial streaming command
-        # try:
-        #     self.sock.sendto(STREAM_CMD.encode(), (DVL_IP, DVL_PORT))
-        #     self.get_logger().info(f"Sent streaming command to DVL {DVL_IP}:{DVL_PORT}")
-        # except Exception as e:
-        #     self.get_logger().error(f"Failed to send streaming command: {e}")
-
+        
         try:
             self.sock.sendto("SEND-DVPDL ON\r".encode(), (DVL_IP, DVL_PORT))
             self.get_logger().info(f"Sent DVPDL ON command to DVL {DVL_IP}:{DVL_PORT}")
@@ -63,7 +56,7 @@ class DVLSensor(Node):
             self.get_logger().error(f"Failed to send DVEXT OFF command: {e}")
 
         try:
-            self.sock.sendto("SEND-FREEFORM ON\r".encode(), (DVL_IP, DVL_PORT))
+            self.sock.sendto("SEND-FREEFORM OFF\r".encode(), (DVL_IP, DVL_PORT))
             self.get_logger().info(f"Sent FREEFORM ON command to DVL {DVL_IP}:{DVL_PORT}")
         except Exception as e:
             self.get_logger().error(f"Failed to send FREEFORM ON command: {e}")
@@ -83,17 +76,19 @@ class DVLSensor(Node):
                 msg_str = data.decode("utf-8").strip()
                 # self.get_logger().info(msg_str)
                 if msg_str.startswith("$DVPDL"):
-                    dvpdl_parsed = self.parse_dvpdl(msg_str)
+                    self.parse_dvpdl(msg_str)
                 elif msg_str.startswith("$DVTXT"):
-                    dvtxt_parsed = self.parse_dvtxt(msg_str)
-
+                    self.parse_dvtxt(msg_str)
+                elif msg_str.startswith("$DVEXT"):
+                    self.parse_dvext(msg_str)
+        
             except socket.timeout:
                 self.get_logger().warn("No UDP data received")
             except Exception as e:
                 self.get_logger().error(f"Error receiving UDP: {e}")
 
     def parse_dvext(self, msg: str) -> str:
-        """Minimal parsing of $DVEXT message"""
+        """parsing of $DVEXT message"""
 
         try:
             fields = msg.split(",")
@@ -104,12 +99,14 @@ class DVLSensor(Node):
             theta = math.radians(360 - heading)
             vx = float(fields[10]) * math.cos(theta) + float(fields[11]) * math.sin(theta)
             vy = -float(fields[10]) * math.sin(theta) + float(fields[11]) * math.cos(theta)
-            return f"Lock:{lock} Roll:{roll:.2f} Pitch:{pitch:.2f} Heading:{heading:.2f} Vx:{vx:.2f} Vy:{vy:.2f}"
+            
+            self.SendYAW(heading)
+
         except Exception as e:
             return f"Parse error: {e}"
         
     def parse_dvpdl(self, msg: str) -> str:
-        """Minimal parsing of $DVPDL message"""
+        """parsing of $DVPDL message"""
 
         try:
             fields = msg.split(",")
@@ -123,25 +120,29 @@ class DVLSensor(Node):
             dz = fields[8]
             confidence = fields[9].split('*')[0]
             
-            self.SendDVLAsGps(t, dt, dx, dy, dz, confidence)
+            self.SendDVLAsGps(t, dt, droll, dpitch, dyaw, dx, dy, dz, 100.0)
 
-            self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, dx:{dx}, dy:{dy}, dz:{dz}, confidence: {confidence}")
+            self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, droll:{droll}, dpitch:{dpitch}, dyaw:{dyaw}, dx:{dx}, dy:{dy}, dz:{dz}, confidence: {confidence}")
             
 
         except Exception as e:
             return f"Parse error: {e}"
         
+        
     def parse_dvtxt(self, msg: str) -> str:
-        """Minimal parsing of $DVTXT message"""
+        """parsing of $DVTXT message"""
 
         try:
             self.get_logger().info(msg)
         except Exception as e:
             return f"Parse error: {e}"
         
-    def SendDVLAsGps(self, t, dt, dx, dy, dz, confidence=80.0):
+    def SendDVLAsGps(self, t, dt, droll, dpitch, dyaw, dx, dy, dz, confidence=80.0):
         t = float(t)
         dt = float(dt)
+        droll = float(droll)
+        dpitch = float(dpitch)
+        dyaw = float(dyaw)
         dx = float(dx)
         dy = float(dy)
         dz = float(dz)
@@ -150,7 +151,7 @@ class DVLSensor(Node):
         time_usec = int(t)
         time_delta_usec = int(dt)
 
-        angle_delta = [0.0, 0.0, 0.0]
+        angle_delta = [droll, dpitch, dyaw]
         position_delta = [dx, dy, dz]
 
         self.dvl.the_connection.mav.vision_position_delta_send(
@@ -162,6 +163,29 @@ class DVLSensor(Node):
         )
     
         # self.get_logger().info(f"Sent DVL data t:{time_usec}, dt:{time_delta_usec}, dx:{dx}, dy:{dy}, dz:{dz}")
+
+    def SendYAW(self, heading):
+        self.dvl.the_connection.mav.gps_input_send(
+            time.time(),
+            0,
+            0b11111111,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            int(heading * 100)
+        )
 
 
 def main(args=None):
