@@ -428,8 +428,8 @@ class AuvPymavlink:
             time.sleep(dt)
 
     def GoToWaypointLocalFRD(self, x, y, down, yaw, yaw_offset):
-        north = x * math.cos(yaw_offset) + y * math.sin(yaw_offset)
-        east = x * math.sin(yaw_offset) - y * math.cos(yaw_offset)
+        north = x * math.cos(yaw_offset) - y * math.sin(yaw_offset)
+        east = x * math.sin(yaw_offset) + y * math.cos(yaw_offset)
 
         self.GoToWaypointLocal(north, east, down, yaw)
 

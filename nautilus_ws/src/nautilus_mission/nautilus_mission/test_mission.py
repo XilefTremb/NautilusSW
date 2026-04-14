@@ -70,21 +70,18 @@ class Master(Node):
         # self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
         # self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
 
-        # yaw_offset = 1.0
+        yaw_offset = 1.0
 
         # self.auv.Disarm()
-        # self.auv.ChangeMode('MANUAL')
-        # time.sleep(1.0)
+        self.auv.ChangeMode('MANUAL')
+        time.sleep(1.0)
         # self.auv.ResetPosEstimate()
-        # self.auv.Arm() 
-        # self.auv.ChangeMode('GUIDED')
-        # self.auv.GoToWaypointLocal(0, 0, 0.8, yaw_offset)
-        # time.sleep(5.0)
-        # self.auv.GoToWaypointLocalFRD(2, 0, 0.8, yaw_offset, yaw_offset)
-        # time.sleep(5.0)
-        # self.auv.GoToWaypointLocalFRD(2, 0, 0.8, yaw_offset, yaw_offset)
-        # time.sleep(5.0)
-        # self.auv.GoToWaypointLocal(0, 0, 0.8, yaw_offset)
+        self.auv.Arm() 
+        self.auv.ChangeMode('GUIDED')
+        self.auv.GoToWaypointLocal(0, 0, 0.8, yaw_offset)
+        self.auv.GoToWaypointLocalFRD(2, 0, 0.8, yaw_offset, yaw_offset)
+        self.auv.GoToWaypointLocalFRD(2, 2, 0.8, yaw_offset, yaw_offset)
+        self.auv.GoToWaypointLocal(0, 0, 0.8, yaw_offset)
 
         # self.auv.Disarm()
         # self.auv.ChangeMode('ALT_HOLD')
