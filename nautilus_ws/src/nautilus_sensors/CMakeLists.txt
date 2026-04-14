@@ -32,6 +32,13 @@ install(
 )
 
 install(
+  PROGRAMS
+    vision/yolo_pipeline.py
+    DESTINATION lib/${PROJECT_NAME}
+    RENAME yolo_pipeline
+)
+
+install(
   DIRECTORY
     DVL/
   DESTINATION share/${PROJECT_NAME}/DVl

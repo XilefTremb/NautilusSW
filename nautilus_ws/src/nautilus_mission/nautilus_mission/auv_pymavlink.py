@@ -454,3 +454,53 @@ class AuvPymavlink:
     def CheckDialectAndMethodAvailability(self, method):
         self.node.get_logger().info("dialect:", mavutil.mavlink.WIRE_PROTOCOL_VERSION if hasattr(mavutil.mavlink, 'WIRE_PROTOCOL_VERSION') else "unknown")
         self.node.get_logger().info("has vision_position_delta_send:", hasattr(self.the_connection.mav, method))
+
+    def SendRCOverride(self, forward=None, lateral=None, throttle=None, yaw=None, pitch=None, roll=None):
+   
+        UINT16_MAX = 65535
+
+        def encode_ch_1_to_8(value):
+            if value is None:
+                return 0      
+            if not isinstance(value, int):
+                raise TypeError(
+                    f"Expected int or None, got {type(value).__name__}"
+                )
+            if not (0 <= value <= UINT16_MAX):
+                raise ValueError(f"RC override value {value} out of uint16 range")
+            return value
+
+        ch1_pitch    = encode_ch_1_to_8(pitch)
+        ch2_roll     = encode_ch_1_to_8(roll)
+        ch3_throttle = encode_ch_1_to_8(throttle)
+        ch4_yaw      = encode_ch_1_to_8(yaw)
+        ch5_forward  = encode_ch_1_to_8(forward)
+        ch6_lateral  = encode_ch_1_to_8(lateral)
+
+        # Unused CH7..CH18 = ignore
+        ch7 = ch8 = UINT16_MAX
+        ch9 = ch10 = ch11 = ch12 = ch13 = ch14 = ch15 = ch16 = ch17 = ch18 = 0
+
+        with self._send_lock:
+            self.the_connection.mav.rc_channels_override_send(
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                ch1_pitch,
+                ch2_roll,
+                ch3_throttle,
+                ch4_yaw,
+                ch5_forward,
+                ch6_lateral,
+                ch7,
+                ch8,
+                ch9,
+                ch10,
+                ch11,
+                ch12,
+                ch13,
+                ch14,
+                ch15,
+                ch16,
+                ch17,
+                ch18,
+            )

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -9,7 +11,7 @@ from cv_bridge import CvBridge
 
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
-from Angle_and_Depth import find_depth, find_angle
+from vision.Angle_and_Depth import find_depth, find_angle
 
 
 class YoloNode(Node):
