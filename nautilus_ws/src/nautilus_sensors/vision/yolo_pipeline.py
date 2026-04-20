@@ -10,6 +10,7 @@ from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
 from Angle_and_Depth import find_depth, find_angle
+from Angle_between_object import switch_case_sub_angle
 
 
 class YoloNode(Node):
@@ -66,6 +67,10 @@ class YoloNode(Node):
         results = self.model(frame, conf=0.4, verbose=False)
 
         payload = []
+        payload_angle_bet = []
+
+        # Dictionnaire: clé = id objet, valeur = infos pour angle_between_object
+        objets = {}
 
         for result in results:
             if result.boxes is None:
@@ -106,7 +111,24 @@ class YoloNode(Node):
                 # Ordre demandé : (id_objet, depth, angle)
                 payload.extend([float(object_id), depth_value, angle_value])
 
-        # Publication
+                #Add elements in dict for angle between object
+
+                if object_id not in objets:
+                    # premier objet de cet ID
+                    objets[object_id] = {
+                        "depth": depth_value,
+                        "angle": angle_value
+                    }
+                else:
+                    # comparer avec celui déjà stocké
+                    if depth_value < objets[object_id]["depth"]:
+                        objets[object_id] = {
+                            "depth": depth_value,
+                            "angle": angle_value
+                        }
+
+
+        #-----Publication topic profondeur + angle------
         msg = Float32MultiArray()
         msg.data = payload
 
@@ -120,8 +142,24 @@ class YoloNode(Node):
 
         self.depth_angle_topic.publish(msg)
 
+        #-----Publication topic angle et zone------
+        #Call function
+        payload_angle_bet = switch_case_sub_angle(objets)
 
-        #A ENELEVER APRES
+        msg_angle_between_angle = Float32MultiArray()
+        msg_angle_between_angle.data = payload_angle_bet
+
+        # Layout: N x 2
+        nb_objets_angle_bet = len(payload_angle_bet) // 2
+        msg_angle_between_angle.layout.dim = [
+            MultiArrayDimension(label='objects', size=nb_objets_angle_bet, stride=max(len(payload_angle_bet), 1)),
+            MultiArrayDimension(label='fields', size=2, stride=2)
+        ]
+        msg_angle_between_angle.layout.data_offset = 0
+
+        self.region_angle_topic.publish(msg_angle_between_angle)
+
+        #----------Affichage des boxes--------------------------
         annotated_frame = results[0].plot()
 
         detections_data = []
