@@ -39,10 +39,10 @@ def switch_case_sub_angle(objets):
     results_angle = []
 
     # Présence des objets
-    gate_left = 0 in objets
-    gate_right = 1 in objets
-    gate_middle = 2 in objets
-    slalom_cote = 3 in objets
+    gate_left = 1 in objets
+    gate_right = 2 in objets
+    gate_middle = 3 in objets
+    slalom_cote = 5 in objets
     slalom_middle = 4 in objets
 
     # Exemple : angle entre gate_left (0) et gate_middle (2)
