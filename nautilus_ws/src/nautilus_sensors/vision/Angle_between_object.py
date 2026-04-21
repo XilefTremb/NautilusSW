@@ -26,10 +26,6 @@ def find_angle_plane_V2(profondeurs, C, mode):
         return float(-1000) #erreur
 
     h_3 = np.abs(profondeurs[1] - profondeurs[0])
-
-    if mode == "sim":
-        h_3 = h_3*1000 #juste pour sim
-
     ratio = h_3 / C
 
     if ratio < -1.0 or ratio > 1.0:

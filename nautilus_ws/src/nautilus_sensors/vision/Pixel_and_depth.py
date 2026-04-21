@@ -14,6 +14,9 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox, mode):
 
     
     center_depth = float(np.median(center_patch))
+
+    if mode == "sim":
+        center_depth = center_depth*1000
     #print(center_depth)
     """
     valid_center = center_patch[(center_patch > 200) & (center_patch < 5000)]
