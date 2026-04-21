@@ -76,22 +76,33 @@ class YoloNode(Node):
         # Dictionnaire: clé = id objet, valeur = infos pour angle_between_object
         objets = {}
 
-        for result in results:
-            if result.boxes is None:
-                continue
+        annotated_frame = results[0].plot()
+        detections_data = []
 
-            for box_data in result.boxes:
-                xywh = box_data.xywh[0].cpu().numpy()
+        if results[0].boxes is not None:
+            for box in results[0].boxes:
+
+                # ----------- POSITION -----------
+                xywh = box.xywh[0].cpu().numpy()
                 cx = int(xywh[0])
                 cy = int(xywh[1])
 
-                object_id = int(box_data.cls[0].item())
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-                # Calcul depth
+                # Clamp to image bounds
+                h, w = depth.shape
+                x1, x2 = np.clip([x1, x2], 0, w - 1)
+                y1, y2 = np.clip([y1, y2], 0, h - 1)
+
+                # ----------- ID / CONF -----------
+                object_id = int(box.cls[0].item())
+                confidence = float(box.conf[0])
+
+                # ----------- DEPTH -----------
                 try:
                     depth_value = find_depth(
                         depth_frame=depth,
-                        half=5,
+                        half=1,
                         cy_boundingbox=cy,
                         cx_boundingbox=cx,
                         mode=self.mode
@@ -102,25 +113,55 @@ class YoloNode(Node):
                     )
                     depth_value = None
 
+                # ----------- DISTANCE CENTRE -----------
                 dist_center = find_dist_from_center(cx, self.mode)
 
-                # Ordre demandé : (id_objet, depth, angle)
-                payload.extend([float(object_id), depth_value, dist_center])
+                # ----------- PAYLOAD -----------
+                payload.extend([
+                    float(object_id),
+                    float(depth_value),
+                    float(dist_center)
+                ])
 
-                # Add elements in dict for angle between object
-                if object_id not in objets:
-                    # premier objet de cet ID
-                    objets[object_id] = {
-                        "depth": depth_value,
-                        "angle": dist_center
-                    }
-                else:
-                    # comparer avec celui déjà stocké
-                    if depth_value < objets[object_id]["depth"]:
+                # ----------- DICT POUR ANGLE BETWEEN -----------
+
+                if object_id not in objets or depth_value < objets[object_id]["depth"]:
                         objets[object_id] = {
                             "depth": depth_value,
                             "angle": dist_center
                         }
+
+                # ----------- DETECTIONS DATA -----------
+                detections_data.extend([
+                    float(x1), float(y1),
+                    float(x2), float(y2),
+                    float(depth_value) if depth_value is not None else -1.0,
+                    float(object_id),
+                    confidence
+                ])
+
+                # ----------- AFFICHAGE -----------
+                depth_text = f"{depth_value:.2f}mm" if depth_value is not None else "depth invalide"
+
+                cv2.putText(
+                    annotated_frame,
+                    depth_text,
+                    (cx, cy),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
+
+                cv2.putText(
+                    annotated_frame,
+                    f"{dist_center:.2f}px",
+                    (cx, cy + 15),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
 
         # -----Publication topic profondeur + angle------
         msg = Float32MultiArray()
@@ -137,7 +178,6 @@ class YoloNode(Node):
         self.depth_angle_topic.publish(msg)
 
         # -----Publication topic angle et zone------
-        # Call function
         payload_angle_bet = switch_case_sub_angle(objets, self.mode)
 
         msg_angle_between_angle = Float32MultiArray()
@@ -153,61 +193,10 @@ class YoloNode(Node):
 
         self.region_angle_topic.publish(msg_angle_between_angle)
 
-        # ----------Affichage des boxes--------------------------
-        annotated_frame = results[0].plot()
-
-        detections_data = []
-
-        if results[0].boxes is not None:
-            for box in results[0].boxes:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-                # Clamp to image bounds
-                h, w = depth.shape
-                x1, x2 = np.clip([x1, x2], 0, w - 1)
-                y1, y2 = np.clip([y1, y2], 0, h - 1)
-
-                # YOLO info
-                class_id = int(box.cls[0])
-                confidence = float(box.conf[0])
-
-                # Append structured data
-                detections_data.extend([
-                    float(x1), float(y1),
-                    float(x2), float(y2),
-                    depth_value,
-                    float(class_id),
-                    confidence
-                ])
-
-                # Draw depth on image
-                cx = (x1 + x2) // 2
-                cy = (y1 + y2) // 2
-                cv2.putText(
-                    annotated_frame,
-                    f"{depth_value:.2f}mm",
-                    (cx, cy),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 255, 0),
-                    1
-                )
-
-                cv2.putText(
-                    annotated_frame,
-                    f"{dist_center:.2f}px",
-                    (cx, cy + 15),  # décalage vertical
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 255, 0),
-                    1
-                )
-
         # Publish annotated image
         out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
         out_msg.header = rgb_msg.header
         self.image_pub.publish(out_msg)
-
 
 def main(args=None):
     rclpy.init(args=args)
