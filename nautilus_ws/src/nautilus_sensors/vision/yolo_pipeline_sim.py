@@ -13,17 +13,16 @@ from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
 from Pixel_and_depth import *
 from Angle_between_object import *
-from pathlib import Path
+
 
 class YoloNode(Node):
     def __init__(self):
         super().__init__('yolo_node')
 
         self.bridge = CvBridge()
+        self.model = YOLO(
+            '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_sim.pt')
 
-        model_path = Path(__file__).resolve().parent / "yolo_models" / "model_sim.pt"
-        self.model = YOLO(str(model_path))
-        
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
@@ -76,8 +75,7 @@ class YoloNode(Node):
         # Dictionnaire: clé = id objet, valeur = infos pour angle_between_object
         objets = {}
 
-        annotated_frame = results[0].plot()
-        detections_data = []
+        annotated_frame = frame.copy()
 
         if results[0].boxes is not None:
             for box in results[0].boxes:
@@ -89,13 +87,13 @@ class YoloNode(Node):
 
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-                # Clamp to image bounds
+                # Clamp image
                 h, w = depth.shape
                 x1, x2 = np.clip([x1, x2], 0, w - 1)
                 y1, y2 = np.clip([y1, y2], 0, h - 1)
 
                 # ----------- ID / CONF -----------
-                object_id = int(box.cls[0].item())
+                object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
 
                 # ----------- DEPTH -----------
@@ -108,60 +106,64 @@ class YoloNode(Node):
                         mode=self.mode
                     )
                 except Exception as e:
-                    self.get_logger().warn(
-                        f'Erreur find_depth pour objet {object_id}: {e}'
-                    )
+                    self.get_logger().warn(f'Erreur find_depth pour objet {object_id}: {e}')
                     depth_value = None
 
-                # ----------- DISTANCE CENTRE -----------
+                # ----------- ANGLE / DIST -----------
                 dist_center = find_dist_from_center(cx, self.mode)
 
-                # ----------- PAYLOAD -----------
-                payload.extend([
-                    float(object_id),
-                    float(depth_value),
-                    float(dist_center)
-                ])
-
                 # ----------- DICT POUR ANGLE BETWEEN -----------
-
                 if object_id not in objets or depth_value < objets[object_id]["depth"]:
-                        objets[object_id] = {
-                            "depth": depth_value,
-                            "angle": dist_center
-                        }
+                    objets[object_id] = {
+                        "depth": depth_value,
+                        "angle": dist_center
+                    }
+                
+                if depth_value<5000:
+                    # ----------- PAYLOAD -----------
+                    payload.extend([float(object_id), depth_value, dist_center])
 
-                # ----------- DETECTIONS DATA -----------
-                detections_data.extend([
-                    float(x1), float(y1),
-                    float(x2), float(y2),
-                    float(depth_value) if depth_value is not None else -1.0,
-                    float(object_id),
-                    confidence
-                ])
+                    # ----------- AFFICHAGE -----------
+                    # ----------- DRAW BOX -----------
+                    cv2.rectangle(
+                        annotated_frame,
+                        (x1, y1),
+                        (x2, y2),
+                        (0, 255, 0),
+                        2
+                    )
 
-                # ----------- AFFICHAGE -----------
-                depth_text = f"{depth_value:.2f}mm" if depth_value is not None else "depth invalide"
+                    label = f"{object_id} | {confidence:.2f}"
+                    cv2.putText(
+                        annotated_frame,
+                        label,
+                        (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (0, 255, 0),
+                        1
+                    )
 
-                cv2.putText(
-                    annotated_frame,
-                    depth_text,
-                    (cx, cy),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 255, 0),
-                    1
-                )
+                    # ----------- TES INFOS -----------
+                    cv2.putText(
+                        annotated_frame,
+                        f"{depth_value:.2f}mm",
+                        (cx, cy),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (0, 255, 0),
+                        1
+                    )
 
-                cv2.putText(
-                    annotated_frame,
-                    f"{dist_center:.2f}px",
-                    (cx, cy + 15),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5,
-                    (0, 255, 0),
-                    1
-                )
+                    cv2.putText(
+                        annotated_frame,
+                        f"{dist_center:.2f}px",
+                        (cx, cy + 15),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (0, 255, 0),
+                        1
+                    )
 
         # -----Publication topic profondeur + angle------
         msg = Float32MultiArray()
@@ -178,6 +180,7 @@ class YoloNode(Node):
         self.depth_angle_topic.publish(msg)
 
         # -----Publication topic angle et zone------
+        # Call function
         payload_angle_bet = switch_case_sub_angle(objets, self.mode)
 
         msg_angle_between_angle = Float32MultiArray()
@@ -197,6 +200,7 @@ class YoloNode(Node):
         out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
         out_msg.header = rgb_msg.header
         self.image_pub.publish(out_msg)
+
 
 def main(args=None):
     rclpy.init(args=args)
