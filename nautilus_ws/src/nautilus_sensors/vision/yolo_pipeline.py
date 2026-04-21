@@ -11,8 +11,8 @@ from cv_bridge import CvBridge
 
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
-from vision.Angle_and_Depth import *
-from vision.Angle_between_object import *
+from Pixel_and_depth import *
+from Angle_between_object import *
 
 class YoloNode(Node):
     def __init__(self):
@@ -20,9 +20,6 @@ class YoloNode(Node):
 
         self.bridge = CvBridge()
         self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
-
-        # Taille du patch autour du centre pour la depth
-        self.depth_half_patch = 1
 
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
@@ -43,20 +40,25 @@ class YoloNode(Node):
             '/yolo/id_depth_angle',
             10
         )
+
         self.region_angle_topic = self.create_publisher(
             Float32MultiArray,
             '/yolo/region_angle',
             10
         )
 
-        #A ENLEVER APRES MODIF
         self.image_pub = self.create_publisher(
             Image,
             '/yolo/image_annotated',
             10
         )
 
-        self.get_logger().info('YOLOv8 node with depth started')
+        self.get_logger().info('YOLOv8 node with depth started for real world')
+
+        # ---------------- mode ----------------
+        self.mode = "real"
+
+
 
     def synced_callback(self, rgb_msg, depth_msg):
 
@@ -84,14 +86,14 @@ class YoloNode(Node):
 
                 object_id = int(box_data.cls[0].item())
 
-
                 # Calcul depth
                 try:
                     depth_value = find_depth(
                         depth_frame=depth,
-                        half=self.depth_half_patch,
+                        half=5,
                         cy_boundingbox=cy,
-                        cx_boundingbox=cx
+                        cx_boundingbox=cx,
+                        mode = self.mode
                     )
                 except Exception as e:
                     self.get_logger().warn(
@@ -99,36 +101,24 @@ class YoloNode(Node):
                     )
                     depth_value = None
 
-                # # Calcul angle
-                # try:
-                #     angle_value = find_angle(cx, depth_value)
-                # except Exception as e:
-                #     self.get_logger().warn(
-                #         f'Erreur find_angle pour objet {object_id}: {e}'
-                #     )
-                #     angle_value = None
-
-                # Calcul adist_center
-              
-                dist_center = find_dist_from_center(cx)
+                dist_center = find_dist_from_center(cx, self.mode)
 
                 # Ordre demandé : (id_objet, depth, angle)
                 payload.extend([float(object_id), depth_value, dist_center])
 
                 #Add elements in dict for angle between object
-
                 if object_id not in objets:
                     # premier objet de cet ID
                     objets[object_id] = {
                         "depth": depth_value,
-                        "angle": angle_value
+                        "angle": dist_center
                     }
                 else:
                     # comparer avec celui déjà stocké
                     if depth_value < objets[object_id]["depth"]:
                         objets[object_id] = {
                             "depth": depth_value,
-                            "angle": angle_value
+                            "angle": dist_center
                         }
 
 
@@ -146,9 +136,10 @@ class YoloNode(Node):
 
         self.depth_angle_topic.publish(msg)
 
+
         #-----Publication topic angle et zone------
         #Call function
-        payload_angle_bet = switch_case_sub_angle(objets)
+        payload_angle_bet = switch_case_sub_angle(objets, self.mode)
 
         msg_angle_between_angle = Float32MultiArray()
         msg_angle_between_angle.data = payload_angle_bet
@@ -217,11 +208,6 @@ class YoloNode(Node):
         out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
         out_msg.header = rgb_msg.header
         self.image_pub.publish(out_msg)
-
-        # Publish detections
-        # det_msg = Float32MultiArray()
-        # det_msg.data = detections_data
-        # self.detection_pub.publish(det_msg)
 
 
 def main(args=None):
