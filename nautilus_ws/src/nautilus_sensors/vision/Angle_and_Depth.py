@@ -3,10 +3,17 @@ import cv2
 
 
 #PARAMETRES DE LA CAMERA
-cx = 320
-fx = 293
-fy = 293
-cy = 240
+#SIMULATION
+# cx = 320
+# fx = 293
+# fy = 293
+# cy = 240
+
+#OAK-D S1
+cx = 640
+fx = 728
+fy = 726
+cy = 370
 
 def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
     frame_h, frame_w = depth_frame.shape
@@ -43,7 +50,7 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
 
 
 def find_angle(x_center, depth_mean):
-    if depth_mean is None:
+    if depth_mean is None or int(depth_mean) == 0:
         return None
     #print("centre",x_center)
     # Coordonnée horizontale dans le repère caméra
@@ -54,3 +61,6 @@ def find_angle(x_center, depth_mean):
     yaw_deg = np.degrees(yaw)
 
     return yaw_deg
+
+def find_dist_from_center(x_center):
+    return float(x_center - cx)

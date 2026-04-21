@@ -23,6 +23,13 @@ install(
   RENAME test_mission
 )
 
+install(
+  PROGRAMS
+    nautilus_mission/vision_controller.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME vision_controller
+)
+
 ament_python_install_package(${PROJECT_NAME})
 
 # --------------------------------------------------------------------------- #

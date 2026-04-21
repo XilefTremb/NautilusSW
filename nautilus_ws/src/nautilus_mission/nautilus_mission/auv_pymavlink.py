@@ -47,7 +47,7 @@ class AuvPymavlink:
             "VISO_TYPE": 1,        # MAVLink vision/odometry (DVL integration)
             "EK3_SRC1_POSXY": 6,   # ExternalNav
             "EK3_SRC1_VELXY": 6,   # ExternalNav
-            "EK3_SRC1_POSZ": 3,    # GPS
+            "EK3_SRC1_POSZ": 1,    # Baro
             "EK3_SRC1_VELZ": 0,    # None
             "EK3_SRC1_YAW": 1,     # Compass
             "EK3_ENABLE" : 1,
@@ -143,6 +143,16 @@ class AuvPymavlink:
         """Non-blocking: returns latest cached LOCAL_POSITION_NED (or None)."""
         with self._state_lock:
             return self._latest_local_pos_ned
+
+    def GetAttitudeCached(self):
+        """Non-blocking: returns latest cached ATTITUDE (or None)."""
+        with self._state_lock:
+            return self._latest_attitude
+        
+    def GetAttitudeCached(self):
+        """Non-blocking: returns latest cached ATTITUDE (or None)."""
+        with self._state_lock:
+            return self._latest_attitude
         
     def GetLocalPosNed(self):
         """
@@ -157,6 +167,34 @@ class AuvPymavlink:
 
         msg = self.the_connection.recv_match(type="LOCAL_POSITION_NED", blocking=True)
         return msg  # has x,y,z,vx,vy,vz
+    
+    def GetAttitude(self):
+        """
+        If RX thread is running: returns cached ATTITUDE (non-blocking).
+        If RX thread is not running: blocks on recv_match() like your original.
+        """
+        if self._rx_thread and self._rx_thread.is_alive():
+            msg = self.GetAttitudeCached()
+            if msg is not None:
+                return msg
+            return None
+
+        msg = self.the_connection.recv_match(type="ATTITUDE", blocking=True)
+        return msg 
+
+    def GetAttitude(self):
+        """
+        If RX thread is running: returns cached ATTITUDE (non-blocking).
+        If RX thread is not running: blocks on recv_match() like your original.
+        """
+        if self._rx_thread and self._rx_thread.is_alive():
+            msg = self.GetAttitudeCached()
+            if msg is not None:
+                return msg
+            return None
+
+        msg = self.the_connection.recv_match(type="ATTITUDE", blocking=True)
+        return msg 
 
     def WaitForCommandAck(self, command_id: int, timeout_s: float = 3.0):
         deadline = time.time() + timeout_s
@@ -428,8 +466,8 @@ class AuvPymavlink:
             time.sleep(dt)
 
     def GoToWaypointLocalFRD(self, x, y, down, yaw, yaw_offset):
-        north = x * math.cos(yaw_offset) + y * math.sin(yaw_offset)
-        east = x * math.sin(yaw_offset) - y * math.cos(yaw_offset)
+        north = x * math.cos(yaw_offset) - y * math.sin(yaw_offset)
+        east = x * math.sin(yaw_offset) + y * math.cos(yaw_offset)
 
         self.GoToWaypointLocal(north, east, down, yaw)
 
@@ -454,3 +492,53 @@ class AuvPymavlink:
     def CheckDialectAndMethodAvailability(self, method):
         self.node.get_logger().info("dialect:", mavutil.mavlink.WIRE_PROTOCOL_VERSION if hasattr(mavutil.mavlink, 'WIRE_PROTOCOL_VERSION') else "unknown")
         self.node.get_logger().info("has vision_position_delta_send:", hasattr(self.the_connection.mav, method))
+
+    def SendRCOverride(self, forward=None, lateral=None, throttle=None, yaw=None, pitch=None, roll=None):
+   
+        UINT16_MAX = 65535
+
+        def encode_ch_1_to_8(value):
+            if value is None:
+                return 0      
+            if not isinstance(value, int):
+                raise TypeError(
+                    f"Expected int or None, got {type(value).__name__}"
+                )
+            if not (0 <= value <= UINT16_MAX):
+                raise ValueError(f"RC override value {value} out of uint16 range")
+            return value
+
+        ch1_pitch    = encode_ch_1_to_8(pitch)
+        ch2_roll     = encode_ch_1_to_8(roll)
+        ch3_throttle = encode_ch_1_to_8(throttle)
+        ch4_yaw      = encode_ch_1_to_8(yaw)
+        ch5_forward  = encode_ch_1_to_8(forward)
+        ch6_lateral  = encode_ch_1_to_8(lateral)
+
+        # Unused CH7..CH18 = ignore
+        ch7 = ch8 = UINT16_MAX
+        ch9 = ch10 = ch11 = ch12 = ch13 = ch14 = ch15 = ch16 = ch17 = ch18 = 0
+
+        with self._send_lock:
+            self.the_connection.mav.rc_channels_override_send(
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                ch1_pitch,
+                ch2_roll,
+                ch3_throttle,
+                ch4_yaw,
+                ch5_forward,
+                ch6_lateral,
+                ch7,
+                ch8,
+                ch9,
+                ch10,
+                ch11,
+                ch12,
+                ch13,
+                ch14,
+                ch15,
+                ch16,
+                ch17,
+                ch18,
+            )

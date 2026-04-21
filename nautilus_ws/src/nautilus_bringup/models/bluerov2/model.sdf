@@ -481,7 +481,7 @@
       <sensor name='rgbd_camera' type='rgbd_camera'>
         <always_on>true</always_on>
         <visualize>true</visualize>
-        <update_rate>10</update_rate>
+        <update_rate>5</update_rate>
         <topic>camera</topic>
 
         <camera name='oakd_rgbd_camera'>

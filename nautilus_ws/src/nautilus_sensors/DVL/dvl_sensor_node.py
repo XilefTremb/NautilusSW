@@ -120,7 +120,7 @@ class DVLSensor(Node):
             dz = fields[8]
             confidence = fields[9].split('*')[0]
             
-            self.SendDVLAsGps(t, dt, droll, dpitch, dyaw, dx, dy, dz, 100.0)
+            self.SendDVLAsGps(t, dt, droll, dpitch, dyaw, dx, dy, dz, confidence)
 
             self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, droll:{droll}, dpitch:{dpitch}, dyaw:{dyaw}, dx:{dx}, dy:{dy}, dz:{dz}, confidence: {confidence}")
             
