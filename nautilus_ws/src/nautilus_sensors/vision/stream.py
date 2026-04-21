@@ -40,6 +40,9 @@ class DualOakNode(Node):
         super().__init__("dual_oak_node")
 
         self.get_logger().info("Starting Dual OAK ROS2 Node...")
+        
+        self.declare_parameter("save_images", True)
+        self.save_images = self.get_parameter("save_images").value
 
         # ROS Bridge
         self.bridge = CvBridge()
@@ -287,7 +290,7 @@ class DualOakNode(Node):
         # =================================================
         # SYNCHRONIZED SAVE
         # =================================================
-        if now - self.last_save_time >= SAVE_INTERVAL:
+        if self.save_images and (now - self.last_save_time >= SAVE_INTERVAL):
             if (
                 self.rgb_oakd_latest is not None and
                 self.rgb_oak1_latest is not None and
