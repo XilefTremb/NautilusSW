@@ -45,7 +45,7 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
 def find_angle(x_center, depth_mean):
     if depth_mean is None:
         return None
-    print("centre",x_center)
+    #print("centre",x_center)
     # Coordonnée horizontale dans le repère caméra
     X = (x_center - cx) * depth_mean / fx
 
