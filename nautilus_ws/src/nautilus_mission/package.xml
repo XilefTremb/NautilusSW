@@ -12,8 +12,7 @@
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
 
-  <exec_depend>nautilus_sensors</exec_depend>
-  <exec_depend>nautilus_bringup</exec_depend>
+  <exec_depend>nautilus_controls</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -6,21 +6,21 @@ find_package(ament_cmake REQUIRED)
 find_package(rclpy REQUIRED)
 
 # Install Python package modules
-ament_python_install_package("controls")
+ament_python_install_package("nautilus_controls")
 
 # Install executable Python scripts
 
 install(
   PROGRAMS
-    controls/dvl_sensor_node.py
+    nautilus_controls/cube_interface.py
   DESTINATION lib/${PROJECT_NAME}
-  RENAME dvl_sensor_node
+  RENAME cube_interface
 )
 
 install(
   DIRECTORY
-    controls/
-  DESTINATION share/${PROJECT_NAME}/controls
+    nautilus_controls/
+  DESTINATION share/${PROJECT_NAME}/nautilus_controls
 )
 
 # # Install resource index + package.xml
