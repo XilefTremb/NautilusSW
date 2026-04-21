@@ -20,7 +20,7 @@ from gi.repository import Gst
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 15
-SAVE_INTERVAL = 20.0  # seconds
+SAVE_INTERVAL = 100.0  # seconds
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
@@ -101,6 +101,8 @@ class DualOakNode(Node):
         )
 
         self.gst_pipeline.set_state(Gst.State.PLAYING)
+
+
 
     # =====================================================
     # PIPELINES

@@ -69,24 +69,28 @@ class Master(Node):
         # self.auv.GoToWaypointLocal(-1.5, 17, 0.8, pi)
         # self.auv.GoToWaypointLocal(0, 0, 0.8, (pi + pi/2))
         # self.auv.GoToWaypointLocal(0, 0, 0.1, (pi + pi/2))
-
-        yaw_offset = 1.0
-
-        # self.auv.Disarm()
-        self.auv.ChangeMode('MANUAL')
         time.sleep(1.0)
-        # self.auv.ResetPosEstimate()
+
+        yaw_offset = self.auv.GetAttitude().yaw
+
+        self.auv.ChangeMode('ALT_HOLD')
+        self.auv.ResetPosEstimate()
         self.auv.Arm() 
         self.auv.ChangeMode('GUIDED')
-        self.auv.GoToWaypointLocal(0, 0, 0.8, yaw_offset)
-        self.auv.GoToWaypointLocalFRD(2, 0, 0.8, yaw_offset, yaw_offset)
-        self.auv.GoToWaypointLocalFRD(2, 2, 0.8, yaw_offset, yaw_offset)
-        self.auv.GoToWaypointLocal(0, 0, 0.8, yaw_offset)
+        self.auv.GoToWaypointLocal(0, 0, 0.4, yaw_offset)
+        yaw_offset = self.auv.GetAttitude().yaw
+
+
+        self.auv.GoToWaypointLocalFRD(2, 0, 0.4, yaw_offset, yaw_offset)
+        self.auv.GoToWaypointLocalFRD(2, 0, 0.4, yaw_offset-pi/2, yaw_offset)
+        time.sleep(2)
+        self.auv.GoToWaypointLocalFRD(2, -1, 0.4, yaw_offset, yaw_offset)
+        self.auv.GoToWaypointLocal(0, 0, 0.4, yaw_offset)
 
         # self.auv.Disarm()
         # self.auv.ChangeMode('ALT_HOLD')
         # self.auv.Arm()
-        # self.should_send_cmd = False
+        # self.should_send_cmd = True
 
         
     def cmd_callback(self, msg):

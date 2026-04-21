@@ -47,7 +47,7 @@ class AuvPymavlink:
             "VISO_TYPE": 1,        # MAVLink vision/odometry (DVL integration)
             "EK3_SRC1_POSXY": 6,   # ExternalNav
             "EK3_SRC1_VELXY": 6,   # ExternalNav
-            "EK3_SRC1_POSZ": 3,    # GPS
+            "EK3_SRC1_POSZ": 1,    # Baro
             "EK3_SRC1_VELZ": 0,    # None
             "EK3_SRC1_YAW": 1,     # Compass
             "EK3_ENABLE" : 1,
@@ -143,6 +143,11 @@ class AuvPymavlink:
         """Non-blocking: returns latest cached LOCAL_POSITION_NED (or None)."""
         with self._state_lock:
             return self._latest_local_pos_ned
+
+    def GetAttitudeCached(self):
+        """Non-blocking: returns latest cached ATTITUDE (or None)."""
+        with self._state_lock:
+            return self._latest_attitude
         
     def GetLocalPosNed(self):
         """
@@ -157,6 +162,20 @@ class AuvPymavlink:
 
         msg = self.the_connection.recv_match(type="LOCAL_POSITION_NED", blocking=True)
         return msg  # has x,y,z,vx,vy,vz
+
+    def GetAttitude(self):
+        """
+        If RX thread is running: returns cached ATTITUDE (non-blocking).
+        If RX thread is not running: blocks on recv_match() like your original.
+        """
+        if self._rx_thread and self._rx_thread.is_alive():
+            msg = self.GetAttitudeCached()
+            if msg is not None:
+                return msg
+            return None
+
+        msg = self.the_connection.recv_match(type="ATTITUDE", blocking=True)
+        return msg 
 
     def WaitForCommandAck(self, command_id: int, timeout_s: float = 3.0):
         deadline = time.time() + timeout_s
