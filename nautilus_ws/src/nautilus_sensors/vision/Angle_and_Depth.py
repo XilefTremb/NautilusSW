@@ -3,10 +3,18 @@ import cv2
 
 
 #PARAMETRES DE LA CAMERA
-cx = 320
-fx = 293
-fy = 293
-cy = 240
+#SIMULATION
+# cx = 320
+# fx = 293
+# fy = 293
+# cy = 240
+
+#OAK-D S1
+cx = 640
+fx = 728
+fy = 726
+cy = 370
+
 
 def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
     frame_h, frame_w = depth_frame.shape
