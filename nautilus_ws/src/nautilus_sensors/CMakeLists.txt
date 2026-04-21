@@ -26,9 +26,9 @@ install(
 
 install(
   PROGRAMS
-    vision/yolo_vision.py
-  DESTINATION lib/${PROJECT_NAME}
-  RENAME yolo_vision
+    vision/save_stream_both_cam_topics.py
+    DESTINATION lib/${PROJECT_NAME}
+    RENAME save_stream_both_cam_topics
 )
 
 install(
@@ -36,6 +36,13 @@ install(
     vision/yolo_pipeline.py
     DESTINATION lib/${PROJECT_NAME}
     RENAME yolo_pipeline
+)
+
+install(
+  PROGRAMS
+    vision/yolo_pipeline_sim.py
+    DESTINATION lib/${PROJECT_NAME}
+    RENAME yolo_pipeline_sim
 )
 
 install(
