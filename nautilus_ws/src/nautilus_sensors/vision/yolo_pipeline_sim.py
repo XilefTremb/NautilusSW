@@ -11,8 +11,8 @@ from cv_bridge import CvBridge
 
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
-from Pixel_and_depth import *
-from Angle_between_object import *
+from vision.Pixel_and_depth import *
+from vision.Angle_between_object import *
 from pathlib import Path
 
 class YoloNode(Node):
@@ -21,7 +21,7 @@ class YoloNode(Node):
 
         self.bridge = CvBridge()
 
-        model_path = Path(__file__).resolve().parent / "yolo_models" / "model_sim.pt"
+        model_path = 'src/nautilus_sensors/vision/yolo_models/model_sim.pt'
         self.model = YOLO(str(model_path))
         
         # ---------------- SUBSCRIBERS ----------------
@@ -105,7 +105,8 @@ class YoloNode(Node):
                 dist_center = find_dist_from_center(cx, self.mode)
 
                 # Ordre demandé : (id_objet, depth, angle)
-                payload.extend([float(object_id), depth_value, dist_center])
+                if depth_value < 5000:
+                    payload.extend([float(object_id), depth_value, dist_center])
 
                 # Add elements in dict for angle between object
                 if object_id not in objets:

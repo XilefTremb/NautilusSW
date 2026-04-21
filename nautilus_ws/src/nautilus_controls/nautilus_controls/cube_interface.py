@@ -48,24 +48,45 @@ class CubeInterface(Node):
         # ----------------------------------------------------------------------
         # Should be a ros2 callback that is based on the state topics reception?
 
-        value = 1 # Read state that is coming from the state machine
+        state = 1 # Read state that is coming from the state machine
 
-        match value:
+        match state:
             case 1:
-                self.get_logger().info("State Center Gate")
-                self.should_send_cmd = True
-                self.CenterGate()
+                self.Dive()
 
             case 2:
-                self.get_logger().info("State Go Forward")
+                self.Rotate()
+
+            case 3:
+                self.CenterGate()
+        
+            case 4:
+                # Not implemented yet, TO BE DONE
+                self.get_logger().info("Entered Go Forward state")
+
+    def Dive(self):
+        # -------------------------------
+        # Dive the vehicle to wanted depth
+
+        self.get_logger().info("Entered Dive state")
+        time.sleep(0.1) # To be completed         
+
+    def Rotate(self):
+        # -------------------------------
+        # Rotate the vehicle undefinitely
+
+        self.get_logger().info("Entered Rotating state")
+        time.sleep(0.1) # To be completed
 
     def CenterGate(self):
         # ------------------------------------------------
         # Logic for CenterGate state called by StateReader
 
+        self.get_logger().info("Entered Center gate state")
+
         self.latest_cmd = 1500.0
         self.cmd_received = False
-        self.should_send_cmd = False
+        self.should_send_cmd = True
 
         self.sub = self.create_subscription(
             Int16,

@@ -10,9 +10,9 @@ class AnglePidNode(Node):
         super().__init__('angle_pid_node')
 
         # PID gains
-        self.kp = 0.1
-        self.ki = 0.0
-        self.kd = 0.01
+        self.kp = 0.5
+        self.ki = 0.03
+        self.kd = 0.05
 
         # Desired angle
         self.setpoint = 0.0
@@ -49,7 +49,7 @@ class AnglePidNode(Node):
         objects = [data[i:i+3] for i in range(0, len(data), 3)]
         current_angle = None
         for obj in objects:
-            if int(obj[0]) == 5:
+            if int(obj[0]) == 1:
                 current_angle = obj[2]
                 now = self.get_clock().now()
 
@@ -79,7 +79,7 @@ class AnglePidNode(Node):
             )
 
             # Convert PID output to command around 1500
-            cmd = self.cmd_center + output
+            cmd = self.cmd_center - output
 
             # Clamp command
             cmd = int(max(self.cmd_min, min(self.cmd_max, cmd)))

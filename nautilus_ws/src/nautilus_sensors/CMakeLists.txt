@@ -26,9 +26,9 @@ install(
 
 install(
   PROGRAMS
-    vision/save_stream_both_cam_topics.py
+    vision/stream.py
   DESTINATION lib/${PROJECT_NAME}
-  RENAME save_stream_both_cam_topics
+  RENAME stream
 )
 
 install(

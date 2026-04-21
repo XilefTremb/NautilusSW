@@ -18,6 +18,13 @@ install(
 )
 
 install(
+  PROGRAMS
+    nautilus_controls/vision_controller.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME vision_controller
+)
+
+install(
   DIRECTORY
     nautilus_controls/
   DESTINATION share/${PROJECT_NAME}/nautilus_controls
