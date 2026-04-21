@@ -8,6 +8,9 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 from cv_bridge import CvBridge
+import torch
+print(torch.cuda.is_available())
+print(torch.cuda.get_device_name(0))
 
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
@@ -20,6 +23,8 @@ class YoloNode(Node):
 
         self.bridge = CvBridge()
         self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+        
+        
 
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
