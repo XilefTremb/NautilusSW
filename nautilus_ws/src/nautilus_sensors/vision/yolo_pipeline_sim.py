@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -9,22 +11,24 @@ from cv_bridge import CvBridge
 
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
-from Angle_and_Depth import find_depth, find_angle
+from vision.Angle_and_Depth import *
+from vision.Angle_between_object import *
 
 
 class YoloNode(Node):
     def __init__(self):
-        super().__init__('yolo_node_Realtime')
+        super().__init__('yolo_node')
 
         self.bridge = CvBridge()
-        self.model = YOLO('src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+        self.model = YOLO(
+            '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
 
         # Taille du patch autour du centre pour la depth
-        self.depth_half_patch = 5
+        self.depth_half_patch = 1
 
         # ---------------- SUBSCRIBERS ----------------
-        self.rgb_sub = Subscriber(self, Image, '/oakd/camera/image_raw')
-        self.depth_sub = Subscriber(self, Image, '/oakd/camera/depth/image_raw')
+        self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
+        self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
 
         # ApproximateTimeSynchronizer with allow_headerless=True
         self.ts = ApproximateTimeSynchronizer(
@@ -47,7 +51,7 @@ class YoloNode(Node):
             10
         )
 
-        #A ENLEVER APRES MODIF
+        # A ENLEVER APRES MODIF
         self.image_pub = self.create_publisher(
             Image,
             '/yolo/image_annotated',
@@ -66,9 +70,11 @@ class YoloNode(Node):
         results = self.model(frame, conf=0.4, verbose=False)
 
         payload = []
-        
-        self.get_logger().info('debug')
-        
+        payload_angle_bet = []
+
+        # Dictionnaire: clé = id objet, valeur = infos pour angle_between_object
+        objets = {}
+
         for result in results:
             if result.boxes is None:
                 continue
@@ -79,7 +85,6 @@ class YoloNode(Node):
                 cy = int(xywh[1])
 
                 object_id = int(box_data.cls[0].item())
-
 
                 # Calcul depth
                 try:
@@ -95,20 +100,39 @@ class YoloNode(Node):
                     )
                     depth_value = None
 
-                # Calcul angle
-                try:
-                    angle_value = find_angle(cx, depth_value)
-                except Exception as e:
-                    self.get_logger().warn(
-                        f'Erreur find_angle pour objet {object_id}: {e}'
-                    )
-                    angle_value = None
+                # # Calcul angle
+                # try:
+                #     angle_value = find_angle(cx, depth_value)
+                # except Exception as e:
+                #     self.get_logger().warn(
+                #         f'Erreur find_angle pour objet {object_id}: {e}'
+                #     )
+                #     angle_value = None
 
+                # Calcul adist_center
+
+                dist_center = find_dist_from_center(cx)
 
                 # Ordre demandé : (id_objet, depth, angle)
-                payload.extend([float(object_id), depth_value, angle_value])
+                payload.extend([float(object_id), depth_value, dist_center])
 
-        # Publication
+                # Add elements in dict for angle between object
+
+                if object_id not in objets:
+                    # premier objet de cet ID
+                    objets[object_id] = {
+                        "depth": depth_value,
+                        "angle": angle_value
+                    }
+                else:
+                    # comparer avec celui déjà stocké
+                    if depth_value < objets[object_id]["depth"]:
+                        objets[object_id] = {
+                            "depth": depth_value,
+                            "angle": angle_value
+                        }
+
+        # -----Publication topic profondeur + angle------
         msg = Float32MultiArray()
         msg.data = payload
 
@@ -122,8 +146,24 @@ class YoloNode(Node):
 
         self.depth_angle_topic.publish(msg)
 
+        # -----Publication topic angle et zone------
+        # Call function
+        payload_angle_bet = switch_case_sub_angle(objets)
 
-        #A ENELEVER APRES
+        msg_angle_between_angle = Float32MultiArray()
+        msg_angle_between_angle.data = payload_angle_bet
+
+        # Layout: N x 2
+        nb_objets_angle_bet = len(payload_angle_bet) // 2
+        msg_angle_between_angle.layout.dim = [
+            MultiArrayDimension(label='objects', size=nb_objets_angle_bet, stride=max(len(payload_angle_bet), 1)),
+            MultiArrayDimension(label='fields', size=2, stride=2)
+        ]
+        msg_angle_between_angle.layout.data_offset = 0
+
+        self.region_angle_topic.publish(msg_angle_between_angle)
+
+        # ----------Affichage des boxes--------------------------
         annotated_frame = results[0].plot()
 
         detections_data = []
@@ -155,7 +195,7 @@ class YoloNode(Node):
                 cy = (y1 + y2) // 2
                 cv2.putText(
                     annotated_frame,
-                    f"{depth_value:.2f}m",
+                    f"{depth_value:.2f}mm",
                     (cx, cy),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5,
@@ -165,7 +205,7 @@ class YoloNode(Node):
 
                 cv2.putText(
                     annotated_frame,
-                    f"{angle_value:.2f}deg",
+                    f"{dist_center:.2f}px",
                     (cx, cy + 15),  # décalage vertical
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5,
