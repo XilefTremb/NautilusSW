@@ -26,7 +26,7 @@ install(
 
 install(
   PROGRAMS
-    vision/yolo_vision.py
+    vision/yolo_pipeline_sim.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME yolo_vision
 )

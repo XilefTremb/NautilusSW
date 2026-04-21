@@ -13,16 +13,17 @@ from message_filters import Subscriber, ApproximateTimeSynchronizer
 from std_msgs.msg import Header
 from Pixel_and_depth import *
 from Angle_between_object import *
-
+from pathlib import Path
 
 class YoloNode(Node):
     def __init__(self):
         super().__init__('yolo_node')
 
         self.bridge = CvBridge()
-        self.model = YOLO(
-            '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
 
+        model_path = Path(__file__).resolve().parent / "yolo_models" / "model_sim.pt"
+        self.model = YOLO(str(model_path))
+        
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
