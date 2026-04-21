@@ -20,7 +20,7 @@ from gi.repository import Gst
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 15
-SAVE_INTERVAL = 100.0  # seconds
+SAVE_INTERVAL = 1000.0  # seconds
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
@@ -144,11 +144,6 @@ class DualOakNode(Node):
 
         cam_rgb_out.link(manip.inputImage)
 
-        rgb_queue = cam_rgb_out.createOutputQueue(
-            maxSize=4,
-            blocking=False
-        )
-
         # Encoder
         enc = pipeline.create(dai.node.VideoEncoder)
         enc.setDefaultProfilePreset(
@@ -186,6 +181,11 @@ class DualOakNode(Node):
         stereo.setLeftRightCheck(True)
 
         depth_queue = stereo.depth.createOutputQueue(
+            maxSize=4,
+            blocking=False
+        )
+        
+        rgb_queue = cam_rgb_out.createOutputQueue(
             maxSize=4,
             blocking=False
         )
@@ -243,6 +243,7 @@ class DualOakNode(Node):
             rgb_pkt = dev["rgb"].tryGet()
             if rgb_pkt is not None:
                 frame = rgb_pkt.getCvFrame()
+                frame = cv2.rotate(frame, cv2.ROTATE_180)
 
                 if dev["type"] == "oakd":
                     self.rgb_oakd_latest = frame
@@ -266,12 +267,15 @@ class DualOakNode(Node):
                     data = h264_pkt.getData()
                     if data is not None and data.size > 0:
                         buf = Gst.Buffer.new_wrapped(data.tobytes())
-                        self.appsrc.emit("push-buffer", buf)
+                        ret = self.appsrc.emit("push-buffer", buf)
+                        if ret != Gst.FlowReturn.OK:
+                            continue
 
                 # Depth
                 depth_pkt = dev["depth"].tryGet()
                 if depth_pkt is not None:
                     self.depth_latest = depth_pkt.getFrame()
+                    self.depth_latest = cv2.rotate(self.depth_latest, cv2.ROTATE_180)
 
                     # Publish Depth ROS topic
                     depth_msg = self.bridge.cv2_to_imgmsg(

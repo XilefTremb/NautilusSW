@@ -1,6 +1,6 @@
 import numpy as np
 
-
+"""
 def find_angle_plane(boxes):
     profondeurs = []
     angles = []
@@ -17,13 +17,19 @@ def find_angle_plane(boxes):
     result = 90 - angle
 
     return result
+    
+"""
 
-def find_angle_plane_V2(profondeurs, C):
+def find_angle_plane_V2(profondeurs, C, mode):
 
     if any(p is None for p in profondeurs):
         return float(-1000) #erreur
 
-    h_3 = np.abs(profondeurs[1] - profondeurs[0])*1000 #juste pour sim
+    h_3 = np.abs(profondeurs[1] - profondeurs[0])
+
+    if mode == "sim":
+        h_3 = h_3*1000 #juste pour sim
+
     ratio = h_3 / C
 
     if ratio < -1.0 or ratio > 1.0:
@@ -35,7 +41,7 @@ def find_angle_plane_V2(profondeurs, C):
     return 90 - angle
 
 
-def switch_case_sub_angle(objets):
+def switch_case_sub_angle(objets, mode):
     results_angle = []
 
     # Présence des objets
@@ -55,21 +61,21 @@ def switch_case_sub_angle(objets):
     # Exemple : angle entre gate_left et gate_middle 
     if gate_left and gate_middle:
         profondeurs = [objets[gate_left_id]["depth"], objets[gate_middle_id]["depth"]]
-        angle_calc = find_angle_plane_V2(profondeurs, 1524)
+        angle_calc = find_angle_plane_V2(profondeurs, 1524, mode)
 
         results_angle.extend([float(1), angle_calc])
 
     # Exemple : angle entre gate_right et gate_middle
     if gate_right and gate_middle:
         profondeurs = [objets[gate_right_id]["depth"], objets[gate_middle_id]["depth"]]
-        angle_calc = find_angle_plane_V2(profondeurs, 1524)
+        angle_calc = find_angle_plane_V2(profondeurs, 1524, mode)
 
         results_angle.extend([float(2), angle_calc])
 
     # Exemple : angle entre slalom_cote et slalom_middle 
     if slalom_cote and slalom_middle:
         profondeurs = [objets[slalim_cote_id]["depth"], objets[slalom_middle_id]["depth"]]
-        angle_calc = find_angle_plane_V2(profondeurs, 1500)
+        angle_calc = find_angle_plane_V2(profondeurs, 1500, mode)
 
         results_angle.extend([float(3), angle_calc])
 

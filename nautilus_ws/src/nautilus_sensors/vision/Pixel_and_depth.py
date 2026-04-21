@@ -1,21 +1,7 @@
 import numpy as np
 import cv2
 
-
-#PARAMETRES DE LA CAMERA
-#SIMULATION
-# cx = 320
-# fx = 293
-# fy = 293
-# cy = 240
-
-#OAK-D S1
-cx = 640
-fx = 728
-fy = 726
-cy = 370
-
-def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
+def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox, mode):
     frame_h, frame_w = depth_frame.shape
 
     y1 = max(0, cy_boundingbox - half)
@@ -49,10 +35,12 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
     return center_depth
 
 
-def find_angle(x_center, depth_mean):
+def find_angle(x_center, depth_mean, mode):
+
+    cx, fx, fy, cy = params_cams(mode)
+
     if depth_mean is None or int(depth_mean) == 0:
         return None
-    #print("centre",x_center)
     # Coordonnée horizontale dans le repère caméra
     X = (x_center - cx) * depth_mean / fx
 
@@ -62,5 +50,29 @@ def find_angle(x_center, depth_mean):
 
     return yaw_deg
 
-def find_dist_from_center(x_center):
+def find_dist_from_center(x_center, mode):
+    cx, fx, fy, cy = params_cams(mode)
+
     return float(x_center - cx)
+
+def params_cams(mode):
+
+    if mode == "sim":
+        # SIMULATION
+        cx = 320
+        fx = 293
+        fy = 293
+        cy = 240
+
+        return cx, fx, fy, cy
+
+    if mode == "real":
+        # OAK-D S1
+        cx = 640
+        fx = 728
+        fy = 726
+        cy = 370
+
+        return cx, fx, fy, cy
+
+    return None
