@@ -20,7 +20,7 @@ from gi.repository import Gst
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 15
-SAVE_INTERVAL = 1000.0  # seconds
+SAVE_INTERVAL = 1.0  # seconds
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
@@ -57,6 +57,12 @@ class DualOakNode(Node):
         self.depth_pub = self.create_publisher(
             Image,
             "/oakd/camera/depth/image_raw",
+            10
+        )
+        
+        self.rgb1_pub = self.create_publisher(
+            Image,
+            "/oak1/camera/image_raw",
             10
         )
 
@@ -260,6 +266,11 @@ class DualOakNode(Node):
 
                 else:
                     self.rgb_oak1_latest = frame
+                    rgb1_msg = self.bridge.cv2_to_imgmsg(
+                        frame,
+                        encoding="bgr8"
+                    )
+                    self.rgb1_pub.publish(rgb1_msg)
 
             # ---------------- OAK-D ONLY ----------------
             if dev["type"] == "oakd":
