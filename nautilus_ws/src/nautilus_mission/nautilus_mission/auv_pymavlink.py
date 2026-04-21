@@ -149,6 +149,11 @@ class AuvPymavlink:
         with self._state_lock:
             return self._latest_attitude
         
+    def GetAttitudeCached(self):
+        """Non-blocking: returns latest cached ATTITUDE (or None)."""
+        with self._state_lock:
+            return self._latest_attitude
+        
     def GetLocalPosNed(self):
         """
         If RX thread is running: returns cached LOCAL_POSITION_NED (non-blocking).
@@ -162,6 +167,20 @@ class AuvPymavlink:
 
         msg = self.the_connection.recv_match(type="LOCAL_POSITION_NED", blocking=True)
         return msg  # has x,y,z,vx,vy,vz
+    
+    def GetAttitude(self):
+        """
+        If RX thread is running: returns cached ATTITUDE (non-blocking).
+        If RX thread is not running: blocks on recv_match() like your original.
+        """
+        if self._rx_thread and self._rx_thread.is_alive():
+            msg = self.GetAttitudeCached()
+            if msg is not None:
+                return msg
+            return None
+
+        msg = self.the_connection.recv_match(type="ATTITUDE", blocking=True)
+        return msg 
 
     def GetAttitude(self):
         """

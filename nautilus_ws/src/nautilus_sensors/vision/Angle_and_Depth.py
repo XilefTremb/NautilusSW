@@ -14,6 +14,10 @@ cx = 640
 fx = 728
 fy = 726
 cy = 370
+<<<<<<< HEAD
+=======
+
+>>>>>>> 008c84136599c697279ce27db1248e81849606c6
 
 def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
     frame_h, frame_w = depth_frame.shape
