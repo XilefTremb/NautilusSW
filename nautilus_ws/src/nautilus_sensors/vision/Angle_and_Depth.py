@@ -14,10 +14,6 @@ cx = 640
 fx = 728
 fy = 726
 cy = 370
-<<<<<<< HEAD
-=======
-
->>>>>>> 008c84136599c697279ce27db1248e81849606c6
 
 def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
     frame_h, frame_w = depth_frame.shape
@@ -56,7 +52,7 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox):
 def find_angle(x_center, depth_mean):
     if depth_mean is None or int(depth_mean) == 0:
         return None
-    # print("centre",x_center)
+    #print("centre",x_center)
     # Coordonnée horizontale dans le repère caméra
     X = (x_center - cx) * depth_mean / fx
 
