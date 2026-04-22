@@ -40,13 +40,13 @@ class YoloNode(Node):
         # ---------------- PUBLISHERS ----------------
         self.depth_angle_topic = self.create_publisher(
             Float32MultiArray,
-            '/yolo/id_depth_angle',
+            '/yolo/obj_depth_dist',
             10
         )
 
         self.region_angle_topic = self.create_publisher(
             Float32MultiArray,
-            '/yolo/region_angle',
+            '/yolo/obj_angle',
             10
         )
 
