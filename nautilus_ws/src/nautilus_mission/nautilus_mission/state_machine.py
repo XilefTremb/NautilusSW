@@ -5,6 +5,8 @@ import time
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray, Int8
+from nautilus_bringup.RobotState import RobotState
+from nautilus_bringup.ObjectID import ObjectID
 
 
 class StateMachine(Node):
@@ -30,7 +32,6 @@ class StateMachine(Node):
             10
         )
         
-        self.timer = self.create_timer(1.0 / self.freq, self.StateSender)
 
         self.StateMachine()
 
@@ -54,6 +55,9 @@ class StateMachine(Node):
         # TO BE DONE
         # while not self.IsCentered():
         #     self.state = 3
+
+        self.state = RobotState.CENTER_GATE
+        self.StateSender()
 
     def StateSender(self):
         # Publish the state at a certain frequency
