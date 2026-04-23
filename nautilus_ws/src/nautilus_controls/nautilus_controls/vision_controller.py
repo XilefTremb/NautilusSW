@@ -30,7 +30,7 @@ class AnglePidNode(Node):
         # Subscriber
         self.sub = self.create_subscription(
             Float32MultiArray,
-            '/yolo/id_depth_angle',
+            '/yolo/obj_depth_dist',
             self.angle_callback,
             10
         )
