@@ -2,24 +2,50 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Int8
+from std_msgs.msg import Float32, Int16
 
 
-class VisionControllerNode(Node):
-    def __init__(self):
-        super().__init__('vision_controller_node')
+class VisionPidNode(Node):
+    def __init__(self, error_topic: str, cmd_topic: str, kp = 0.5, ki = 0.03, kd = 0.05):
+        super().__init__('vision_pid_node')
 
+        self.error_topic = error_topic
+        self.cmd_topic = cmd_topic
+
+        # PID gains
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+
+        # Command limits
+        self.cmd_center = 1500.0
+        self.cmd_min = 1300.0
+        self.cmd_max = 1700.0
+
+        # PID state
+        self.integral = 0.0
+        self.prev_error = 0.0
+        self.prev_time = None
+
+        # Subscriber
         self.sub = self.create_subscription(
-            Int8,
-            '/mission/state',
-            self.state_callback,
+            Float32,
+            error_topic,
+            self.error_callback,
             10
         )
 
-        self.get_logger().info('Vision controller node started.')
+        # Publisher
+        self.pub = self.create_publisher(
+            Int16,
+            cmd_topic,
+            10
+        )
 
-    def state_callback(self, msg):
-        self.state = msg.data
+        self.get_logger().info('Vision PID node started.')
+
+    def error_callback(self, msg):
+        error = msg.data
         # objects = [data[i:i+3] for i in range(0, len(data), 3)]
         # error = None
         # for obj in objects:

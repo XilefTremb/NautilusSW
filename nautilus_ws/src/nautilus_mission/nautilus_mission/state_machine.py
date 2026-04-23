@@ -18,8 +18,8 @@ class StateMachine(Node):
         # Subscriber - to the output of the YOLO pipeline
         self.sub = self.create_subscription(
             Float32MultiArray,
-            '/yolo/id_depth_angle',
-            self.ImgIdParserCallback,
+            '/yolo/obj_depth_dist',
+            self.ObjDetectionCallback,
             10
         )
 
@@ -43,7 +43,12 @@ class StateMachine(Node):
 
         # Second state: Find the gate or search for it
         while not self.IsGatePresent():
-            self.state = 2
+            continue
+
+        self.state = 3 
+        self.StateSender()
+
+        
 
         # Third state: Center the vehicle on the gate
         # TO BE DONE
@@ -57,12 +62,12 @@ class StateMachine(Node):
         self.pub.publish(msg)
         self.get_logger().info(f"Published state: {self.state}")
 
-    def ImgIdParserCallback(self, msg):
+    def ObjDetectionCallback(self, msg):
         data = msg.data
         self.objects = [data[i:i+3] for i in range(0, len(data), 3)]
 
     def IsGatePresent(self):
-        present = any(int(obj[0]) == 1 for obj in self.objects)
+        present = any(int(obj[0]) == 1 for obj in self.objects) and any(int(obj[0]) == 3 for obj in self.objects)
         self.get_logger().info("A gate was found!")
         return present
         
