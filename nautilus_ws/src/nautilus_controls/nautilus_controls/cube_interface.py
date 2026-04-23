@@ -7,7 +7,10 @@ from nautilus_controls.auv_pymavlink import AuvPymavlink
 import rclpy
 from rclpy.node import Node
 from pymavlink import mavutil
-from std_msgs.msg import Int16
+from std_msgs.msg import Int16, Int8
+from nautilus_bringup.RobotState import RobotState
+from nautilus_bringup.ObjectID import ObjectID
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -25,8 +28,6 @@ class CubeInterface(Node):
 
         self.Startup(args)
 
-        self.StateReader()
-
         # self.get_logger().info("Stopping...")
         
         # self.auv.StopReceiver()
@@ -42,13 +43,19 @@ class CubeInterface(Node):
         self.get_logger().info(f"Applying {'SITL' if args.sitl else 'AUV'} parameter profile...")
         self.auv.ApplyParamProfile(profile)
 
-        self.auv.StartReceiver()
+        self.create_subscription(Int8, 
+                                 "/mission/state", 
+                                 self.StateReader,
+                                 1)
 
-    def StateReader(self):
+        self.auv.StartReceiver()
+    
+
+    def StateReader(self, msg):
         # ----------------------------------------------------------------------
         # Should be a ros2 callback that is based on the state topics reception?
 
-        state = 1 # Read state that is coming from the state machine
+        state = RobotState(msg.data)
 
         match state:
             case 1:
@@ -57,7 +64,7 @@ class CubeInterface(Node):
             case 2:
                 self.Rotate()
 
-            case 3:
+            case RobotState.CENTER_GATE:
                 self.CenterGate()
         
             case 4:
