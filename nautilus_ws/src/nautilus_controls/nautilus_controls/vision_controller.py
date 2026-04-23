@@ -2,20 +2,20 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32MultiArray, Int16
+from std_msgs.msg import Float32, Int16
 
 
-class AnglePidNode(Node):
-    def __init__(self):
-        super().__init__('angle_pid_node')
+class VisionPidNode(Node):
+    def __init__(self, error_topic: str, cmd_topic: str):
+        super().__init__('vision_pid_node')
+
+        self.error_topic = error_topic
+        self.cmd_topic = cmd_topic
 
         # PID gains
         self.kp = 0.5
         self.ki = 0.03
         self.kd = 0.05
-
-        # Desired angle
-        self.setpoint = 0.0
 
         # Command limits
         self.cmd_center = 1500.0
@@ -29,31 +29,31 @@ class AnglePidNode(Node):
 
         # Subscriber
         self.sub = self.create_subscription(
-            Float32MultiArray,
-            '/yolo/id_depth_angle',
-            self.angle_callback,
+            Float32,
+            error_topic,
+            self.error_callback,
             10
         )
 
         # Publisher
         self.pub = self.create_publisher(
             Int16,
-            '/control/cmd_img_yaw',
+            cmd_topic,
             10
         )
 
-        self.get_logger().info('Angle PID node started.')
+        self.get_logger().info('Vision PID node started.')
 
-    def angle_callback(self, msg):
-        data = msg.data
-        objects = [data[i:i+3] for i in range(0, len(data), 3)]
-        current_angle = None
-        for obj in objects:
-            if int(obj[0]) == 1:
-                current_angle = obj[2]
-                now = self.get_clock().now()
+    def error_callback(self, msg):
+        error = msg.data
+        # objects = [data[i:i+3] for i in range(0, len(data), 3)]
+        # error = None
+        # for obj in objects:
+        #     if int(obj[0]) == 1:
+        #         error = obj[2]
+        now = self.get_clock().now()
 
-        if current_angle is not None:
+        if error is not None:
             if self.prev_time is None:
                 self.prev_time = now
                 return
@@ -61,9 +61,6 @@ class AnglePidNode(Node):
             dt = (now - self.prev_time).nanoseconds / 1e9
             if dt <= 0.0:
                 return
-
-            # Error
-            error = self.setpoint - current_angle
 
             # Integral
             self.integral += error * dt
@@ -90,7 +87,7 @@ class AnglePidNode(Node):
             self.pub.publish(cmd_msg)
 
             self.get_logger().info(
-                f'angle={current_angle:.2f}, error={error:.2f}, cmd={cmd}'
+                f'error={error:.2f}, cmd={cmd}'
             )
 
             # Save state
@@ -100,7 +97,7 @@ class AnglePidNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = AnglePidNode()
+    node = VisionPidNode(error_topic='/yolo/obj_depth_dist', cmd_topic='/control/cmg_img_yaw')
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
