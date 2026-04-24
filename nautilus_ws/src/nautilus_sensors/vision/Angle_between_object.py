@@ -42,8 +42,8 @@ def find_angle_plane_V2(profondeurs, C, mode):
 
     return 90 - angle
 
-def dist_center_gate(cx, left_x, right_x):
-    return cx - int((left_x - right_x)/2) 
+def find_dist_center_gate(cx, left_x, right_x):
+    return min(left_x, right_x) + abs(int((left_x - right_x)/2)) - cx 
 
 
 def switch_case_sub_angle(objects, mode):
@@ -57,15 +57,15 @@ def switch_case_sub_angle(objects, mode):
 
     # Exemple : angle entre gate_left et gate_middle 
     if gate_left and gate_middle:
-        left_obj = objects[ObjectID.GATE_LEG_LEFT]
+        left_obj = objects[ObjectID.GATE_LEG_L]
         right_obj = objects[ObjectID.GATE_LEG_CENTER]
 
         profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1524, mode)
         cx, _, _, _= params_cams(mode)
-        dist_center_gate = dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
+        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
 
-        results_angle.extend([float(1), angle_calc, dist_center_gate])
+        results_angle.extend([float(1), angle_calc, float(dist_center_gate)])
 
     # # Exemple : angle entre gate_right et gate_middle
     if gate_right and gate_middle:
@@ -75,9 +75,9 @@ def switch_case_sub_angle(objects, mode):
         profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1524, mode)
         cx, _, _, _= params_cams(mode)
-        dist_center_gate = dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
+        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
 
-        results_angle.extend([float(2), angle_calc, dist_center_gate])
+        results_angle.extend([float(2), angle_calc, float(dist_center_gate)])
  
     # # Exemple : angle entre slalom_cote et slalom_middle 
     if slalom_side and slalom_middle:
@@ -88,8 +88,8 @@ def switch_case_sub_angle(objects, mode):
         profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1500, mode)
         cx, _, _, _= params_cams(mode)
-        dist_center_gate = dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
+        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
 
-        results_angle.extend([float(3), angle_calc, dist_center_gate])
+        results_angle.extend([float(3), angle_calc, float(dist_center_gate)])
 
     return results_angle
