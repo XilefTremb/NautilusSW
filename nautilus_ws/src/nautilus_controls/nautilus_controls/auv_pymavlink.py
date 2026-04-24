@@ -499,7 +499,7 @@ class AuvPymavlink:
 
         def encode_ch_1_to_8(value):
             if value is None:
-                return 0      
+                return UINT16_MAX     
             if not isinstance(value, int):
                 raise TypeError(
                     f"Expected int or None, got {type(value).__name__}"

@@ -25,6 +25,19 @@ install(
 )
 
 install(
+  PROGRAMS
+    nautilus_controls/pid_node.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME pid_node
+)
+
+install(
+  DIRECTORY
+    launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
+
+install(
   DIRECTORY
     nautilus_controls/
   DESTINATION share/${PROJECT_NAME}/nautilus_controls

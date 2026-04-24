@@ -2,14 +2,15 @@
 
 import argparse
 import time
-from math import pi
+import math
 from nautilus_controls.auv_pymavlink import AuvPymavlink
 import rclpy
 from rclpy.node import Node
 from pymavlink import mavutil
-from std_msgs.msg import Int16, Int8
+from std_msgs.msg import Int16, Int8, Float32
 from nautilus_bringup.RobotState import RobotState
 from nautilus_bringup.ObjectID import ObjectID
+import numpy as np
 
 
 def parse_args():
@@ -26,7 +27,35 @@ class CubeInterface(Node):
 
         super().__init__('CubeInterface')
 
+        self.cmd_timeout_s = 2.0
+        
+        self.last_yaw_cmd = None
+        self.last_yaw_cmd_time = None
+        self.last_lateral_cmd = None
+        self.last_lateral_cmd_time = None
+        self.last_yaw_error = None
+
         self.Startup(args)
+
+        self.yaw_cmd_sub = self.create_subscription(
+            Int16,
+            '/control/cmd/yaw',
+            self.yaw_cmd_callback,
+            10)
+        
+        self.lateral_cmd_sub = self.create_subscription(
+            Int16,
+            '/control/cmd/lateral',
+            self.lateral_cmd_callback,
+            10)
+        
+        self.vision_yaw_error_sub = self.create_subscription(
+            Float32,
+            '/control/vision_errors/yaw',
+            self.yaw_error_callback,
+            10)
+        
+        self.create_timer(1.0/40.0, self.timer_callback)
 
         # self.get_logger().info("Stopping...")
         
@@ -43,80 +72,74 @@ class CubeInterface(Node):
         self.get_logger().info(f"Applying {'SITL' if args.sitl else 'AUV'} parameter profile...")
         self.auv.ApplyParamProfile(profile)
 
-        self.create_subscription(Int8, 
-                                 "/mission/state", 
-                                 self.StateReader,
-                                 1)
-
         self.auv.StartReceiver()
+
+    def yaw_cmd_callback(self, msg):
+        self.last_yaw_cmd = msg.data
+        self.last_yaw_cmd_time = self.get_clock().now()
+
+    def lateral_cmd_callback(self, msg):
+        self.last_lateral_cmd = msg.data
+        self.last_lateral_cmd_time = self.get_clock().now()
+
+    def yaw_error_callback(self, msg):
+        self.last_yaw_error = msg.data
     
+    def is_fresh(self, last_time):
+        if last_time is None:
+            return False
 
-    def StateReader(self, msg):
-        # ----------------------------------------------------------------------
-        # Should be a ros2 callback that is based on the state topics reception?
+        age_s = (self.get_clock().now() - last_time).nanoseconds * 1e-9
+        return age_s < self.cmd_timeout_s
+    
+    def timer_callback(self):
+        yaw_active = self.is_fresh(self.last_yaw_cmd_time)
+        lateral_active = self.is_fresh(self.last_lateral_cmd_time)
 
-        state = RobotState(msg.data)
-
-        match state:
-            case 1:
-                self.Dive()
-
-            case 2:
-                self.Rotate()
-
-            case RobotState.CENTER_GATE:
-                self.CenterGate()
+        yaw_cmd = None
+        lateral_cmd = None
+        forward_cmd = None
+        right_cmd = None
         
-            case 4:
-                # Not implemented yet, TO BE DONE
-                self.get_logger().info("Entered Go Forward state")
-
-    def Dive(self):
-        # -------------------------------
-        # Dive the vehicle to wanted depth
-
-        self.get_logger().info("Entered Dive state")
-        time.sleep(0.1) # To be completed         
-
-    def Rotate(self):
-        # -------------------------------
-        # Rotate the vehicle undefinitely
-
-        self.get_logger().info("Entered Rotating state")
-        time.sleep(0.1) # To be completed
-
-    def CenterGate(self):
-        # ------------------------------------------------
-        # Logic for CenterGate state called by StateReader
-
-        self.get_logger().info("Entered Center gate state")
-
-        self.latest_cmd = 1500.0
-        self.cmd_received = False
-        self.should_send_cmd = True
-
-        self.sub = self.create_subscription(
-            Int16,
-            '/control/cmd_img_yaw',
-            self.cmd_callback,
-            10
-        )
-
-        self.timer = self.create_timer((1/40), self.control_loop)
-
-    def cmd_callback(self, msg):
-        self.latest_cmd = msg.data
-        self.cmd_received = True
-
-    def control_loop(self):
-        if not self.cmd_received:
-            self.get_logger().info('No cmd received yet')
+        # Do nothing if neither topic has published recently
+        if not yaw_active and not lateral_active:
+            self.get_logger().info('no fresh cmd')
             return
 
-        if self.should_send_cmd:
-            cmd = self.latest_cmd
-            self.get_logger().info(f'Sending cmd: {cmd}')
-            self.auv.SendRCOverride(yaw = cmd)        
+        if yaw_active:
+            yaw_cmd = int(self.last_yaw_cmd)
+
+        if lateral_active:
+            lateral_cmd = int(self.last_lateral_cmd)
+            forward_cmd, right_cmd = self.split_pwm_by_angle(lateral_cmd, self.last_yaw_error) 
+            
+        self.auv.SendRCOverride(
+            forward=forward_cmd,
+            lateral=right_cmd,
+            yaw=yaw_cmd,
+        )
+        self.get_logger().info(f"sent cmd yaw : {yaw_cmd}, forward: {forward_cmd}, lateral : {right_cmd}")
+
+    
+    def clamp_pwm(self, x):
+        return max(1100, min(1900, x))
+
+    def split_pwm_by_angle(self, pwm, angle_deg):
+        # Convert PWM to signed command
+        magnitude = pwm - 1500   # range: -400 to +400
+
+        angle = math.radians(angle_deg)
+
+        forward_offset = magnitude * math.sin(angle)
+        lateral_offset = magnitude * math.cos(angle)
+
+        forward_pwm = int(1500 + forward_offset)
+        lateral_pwm = int(1500 + lateral_offset)
+
+        forward_pwm = self.clamp_pwm(forward_pwm)
+        lateral_pwm = self.clamp_pwm(lateral_pwm)
+
+        return forward_pwm, lateral_pwm
 
 def main():
     args = parse_args()

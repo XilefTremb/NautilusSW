@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 
 import rclpy
+from rclpy.parameter import Parameter
 from rclpy.node import Node
 from std_msgs.msg import Float32, Int16
 
 
 class VisionPidNode(Node):
-    def __init__(self, error_topic: str, cmd_topic: str, kp = 0.5, ki = 0.03, kd = 0.05):
+    def __init__(self):
         super().__init__('vision_pid_node')
 
-        self.error_topic = error_topic
-        self.cmd_topic = cmd_topic
+     
+        self.declare_parameter('input_topic', Parameter.Type.STRING)
+        self.declare_parameter('output_topic', Parameter.Type.STRING)
+        self.declare_parameter('kp', Parameter.Type.DOUBLE)
+        self.declare_parameter('ki', Parameter.Type.DOUBLE)
+        self.declare_parameter('kd', Parameter.Type.DOUBLE)
 
-        # PID gains
-        self.kp = kp
-        self.ki = ki
-        self.kd = kd
+        # --- Get parameters ---
+        self.input_topic = self.get_parameter('input_topic').value
+        self.output_topic = self.get_parameter('output_topic').value
+        self.kp = self.get_parameter('kp').value
+        self.ki = self.get_parameter('ki').value
+        self.kd = self.get_parameter('kd').value
 
         # Command limits
         self.cmd_center = 1500.0
@@ -30,7 +37,7 @@ class VisionPidNode(Node):
         # Subscriber
         self.sub = self.create_subscription(
             Float32,
-            error_topic,
+            self.input_topic,
             self.error_callback,
             10
         )
@@ -38,7 +45,7 @@ class VisionPidNode(Node):
         # Publisher
         self.pub = self.create_publisher(
             Int16,
-            cmd_topic,
+            self.output_topic,
             10
         )
 
@@ -76,7 +83,7 @@ class VisionPidNode(Node):
             )
 
             # Convert PID output to command around 1500
-            cmd = self.cmd_center - output
+            cmd = self.cmd_center + output
 
             # Clamp command
             cmd = int(max(self.cmd_min, min(self.cmd_max, cmd)))
@@ -97,7 +104,7 @@ class VisionPidNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = VisionPidNode(error_topic='/yolo/obj_depth_dist', cmd_topic='/control/cmg_img_yaw')
+    node = VisionPidNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

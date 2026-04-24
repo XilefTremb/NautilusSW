@@ -40,12 +40,12 @@ class VisionControllerNode(Node):
 
         self.yaw_error_pub = self.create_publisher(
             Float32,
-            '/control/vision_yaw_error',
+            '/control/vision_errors/yaw',
             10)
         
-        self.x_error_pub = self.create_publisher(
+        self.lateral_error_pub = self.create_publisher(
             Float32,
-            '/control/vision_x_error',
+            '/control/vision_errors/lateral',
             10
         )
 
@@ -64,7 +64,7 @@ class VisionControllerNode(Node):
             if int(self.gate_objects[0][0]) == 1:
                 msg = Float32()
                 msg.data = self.gate_objects[0][1]
-                self.x_error_pub.publish(msg)
+                self.lateral_error_pub.publish(msg)
 
                 msg = Float32()
                 msg.data = self.gate_objects[0][2]
