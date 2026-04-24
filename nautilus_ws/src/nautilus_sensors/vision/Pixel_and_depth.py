@@ -1,19 +1,22 @@
 import numpy as np
 import cv2
 
-def find_depth(depth_frame, half, bbox_y, bbox_x, mode):
+def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
     frame_h, frame_w = depth_frame.shape
 
-    y1 = max(0, bbox_y- half)
-    y2 = min(frame_h, bbox_y+ half + 1)
-    x1 = max(0, bbox_x- half)
-    x2 = min(frame_w, bbox_x+ half + 1)
+    y1 = max(0, bbox_cy- half)
+    y2 = min(frame_h, bbox_cy+ half + 1)
+    x1 = max(0, bbox_cx- half)
+    x2 = min(frame_w, bbox_cx+ half + 1)
 
     center_patch = depth_frame[y1:y2, x1:x2]
     #print("patch:", center_patch)
 
     
     center_depth = float(np.median(center_patch))
+
+    if mode == "sim":
+        center_depth = center_depth*1000
     #print(center_depth)
     """
     valid_center = center_patch[(center_patch > 200) & (center_patch < 5000)]

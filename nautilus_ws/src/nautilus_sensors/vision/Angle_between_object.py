@@ -28,10 +28,6 @@ def find_angle_plane_V2(profondeurs, C, mode):
         return float(-1000) #erreur
 
     h_3 = np.abs(profondeurs[1] - profondeurs[0])
-
-    if mode == "sim":
-        h_3 = h_3*1000 #juste pour sim
-
     ratio = h_3 / C
 
     if ratio < -1.0 or ratio > 1.0:
@@ -63,7 +59,7 @@ def switch_case_sub_angle(objects, mode):
         profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1524, mode)
         cx, _, _, _= params_cams(mode)
-        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
+        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_cx"], right_obj["bbox_cx"])
 
         results_angle.extend([float(1), angle_calc, float(dist_center_gate)])
 
@@ -75,7 +71,7 @@ def switch_case_sub_angle(objects, mode):
         profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1524, mode)
         cx, _, _, _= params_cams(mode)
-        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
+        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_cx"], right_obj["bbox_cx"])
 
         results_angle.extend([float(2), angle_calc, float(dist_center_gate)])
  
@@ -88,7 +84,7 @@ def switch_case_sub_angle(objects, mode):
         profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1500, mode)
         cx, _, _, _= params_cams(mode)
-        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
+        dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_cx"], right_obj["bbox_cx"])
 
         results_angle.extend([float(3), angle_calc, float(dist_center_gate)])
 

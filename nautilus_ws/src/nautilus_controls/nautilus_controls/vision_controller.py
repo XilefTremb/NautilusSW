@@ -60,14 +60,15 @@ class VisionControllerNode(Node):
             self.current_gate_detection_callback = self.CENTER_GATE_CALLBACK
 
     def CENTER_GATE_CALLBACK(self, msg):
-        if int(self.gate_objects[0][0]) == 1:
-            msg = Float32()
-            msg.data = self.gate_objects[0][1]
-            self.x_error_pub.publish(msg)
+        if len(self.gate_objects) > 0:
+            if int(self.gate_objects[0][0]) == 1:
+                msg = Float32()
+                msg.data = self.gate_objects[0][1]
+                self.x_error_pub.publish(msg)
 
-            msg = Float32()
-            msg.data = self.gate_objects[0][2]
-            self.yaw_error_pub.publish(msg)
+                msg = Float32()
+                msg.data = self.gate_objects[0][2]
+                self.yaw_error_pub.publish(msg)
 
     
     def EMPTY_CALLBACK(self,msg):
