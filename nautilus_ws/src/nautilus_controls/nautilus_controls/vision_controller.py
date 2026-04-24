@@ -2,76 +2,72 @@
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32, Int8
+from std_msgs.msg import Float32MultiArray, Int8
+from nautilus_bringup.RobotState import RobotState
+from nautilus_bringup.ObjectID import ObjectID
 
 
 class VisionControllerNode(Node):
     def __init__(self):
         super().__init__('vision_controller_node')
 
-        self.sub = self.create_subscription(
+        self.current_detection_callback = self.EMPTY_CALLBACK
+        self.current_gate_detection_callback = self.EMPTY_CALLBACK
+        self.state = None
+        self.objects = None
+        self.gate_objects = None
+
+        self.state_sub = self.create_subscription(
             Int8,
             '/mission/state',
             self.state_callback,
             10
         )
 
+        self.obj_detection_sub = self.create_subscription(
+            Float32MultiArray,
+            '/yolo/obj_depth_dist',
+            self._obj_detection_wrapper,
+            10
+        )
+
+        self.gate_detection_sub = self.create_subscription(
+            Float32MultiArray,
+            '/yolo/obj_angle',
+            self._gate_detection_wrapper,
+            10
+        )
+
+
         self.get_logger().info('Vision controller node started.')
 
     def state_callback(self, msg):
-        self.state = msg.data
-        # objects = [data[i:i+3] for i in range(0, len(data), 3)]
-        # error = None
-        # for obj in objects:
-        #     if int(obj[0]) == 1:
-        #         error = obj[2]
-        now = self.get_clock().now()
 
-        if error is not None:
-            if self.prev_time is None:
-                self.prev_time = now
-                return
+        self.state = RobotState(msg.data)
 
-            dt = (now - self.prev_time).nanoseconds / 1e9
-            if dt <= 0.0:
-                return
+        if self.state == RobotState.CENTER_GATE:
+            self.current_gate_detection_callback = self.CENTER_GATE_CALLBACK
 
-            # Integral
-            self.integral += error * dt
+    def CENTER_GATE_CALLBACK(self, msg):
+        
 
-            # Derivative
-            derivative = (error - self.prev_error) / dt
+    
+    def EMPTY_CALLBACK(self,msg):
+        pass
 
-            # PID output
-            output = (
-                self.kp * error +
-                self.ki * self.integral +
-                self.kd * derivative
-            )
+    def _obj_detection_wrapper(self, msg):
+        self.objects = [msg.data[i:i+3] for i in range(0, len(msg.data), 3)]
+        self.current_detections_callback(msg)
+    
+    def _gate_detection_wrapper(self, msg):
+        self.gate_objects = [msg.data[i:i+3] for i in range(0, len(msg.data), 3)]
+        self.current_gate_detection_callback(msg)
 
-            # Convert PID output to command around 1500
-            cmd = self.cmd_center - output
-
-            # Clamp command
-            cmd = int(max(self.cmd_min, min(self.cmd_max, cmd)))
-
-            # Publish
-            cmd_msg = Int16()
-            cmd_msg.data = cmd
-            self.pub.publish(cmd_msg)
-
-            self.get_logger().info(
-                f'error={error:.2f}, cmd={cmd}'
-            )
-
-            # Save state
-            self.prev_error = error
-            self.prev_time = now
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = VisionPidNode(error_topic='/yolo/obj_depth_dist', cmd_topic='/control/cmg_img_yaw')
+    node = VisionControllerNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

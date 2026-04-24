@@ -1,4 +1,6 @@
 import numpy as np
+from nautilus_bringup.ObjectID import ObjectID
+from vision.Pixel_and_depth import params_cams
 
 """
 def find_angle_plane(boxes):
@@ -40,43 +42,54 @@ def find_angle_plane_V2(profondeurs, C, mode):
 
     return 90 - angle
 
+def dist_center_gate(cx, left_x, right_x):
+    return cx - int((left_x - right_x)/2) 
 
-def switch_case_sub_angle(objets, mode):
+
+def switch_case_sub_angle(objects, mode):
     results_angle = []
 
-    # Présence des objets
-
-    gate_left_id =1
-    gate_right_id = 2
-    gate_middle_id = 3
-    slalim_cote_id = 5
-    slalom_middle_id = 4
-
-    gate_left = gate_left_id in objets
-    gate_right = gate_right_id in objets
-    gate_middle = gate_middle_id in objets
-    slalom_cote = slalim_cote_id in objets
-    slalom_middle = slalom_middle_id in objets
+    gate_left = ObjectID.GATE_LEG_L in objects
+    gate_right = ObjectID.GATE_LEG_R in objects
+    gate_middle = ObjectID.GATE_LEG_CENTER in objects
+    slalom_side = ObjectID.SLALOM_SIDE in objects
+    slalom_middle = ObjectID.SLALOM_CENTER in objects
 
     # Exemple : angle entre gate_left et gate_middle 
     if gate_left and gate_middle:
-        profondeurs = [objets[gate_left_id]["depth"], objets[gate_middle_id]["depth"]]
+        left_obj = objects[ObjectID.GATE_LEG_LEFT]
+        right_obj = objects[ObjectID.GATE_LEG_CENTER]
+
+        profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1524, mode)
+        cx, _, _, _= params_cams(mode)
+        dist_center_gate = dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
 
-        results_angle.extend([float(1), angle_calc])
+        results_angle.extend([float(1), angle_calc, dist_center_gate])
 
-    # Exemple : angle entre gate_right et gate_middle
+    # # Exemple : angle entre gate_right et gate_middle
     if gate_right and gate_middle:
-        profondeurs = [objets[gate_right_id]["depth"], objets[gate_middle_id]["depth"]]
+        left_obj = objects[ObjectID.GATE_LEG_CENTER]
+        right_obj = objects[ObjectID.GATE_LEG_R]
+
+        profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1524, mode)
+        cx, _, _, _= params_cams(mode)
+        dist_center_gate = dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
 
-        results_angle.extend([float(2), angle_calc])
+        results_angle.extend([float(2), angle_calc, dist_center_gate])
+ 
+    # # Exemple : angle entre slalom_cote et slalom_middle 
+    if slalom_side and slalom_middle:
+        # TODO: may have to treat case if side slalom is on the left or right of center slalom
+        left_obj = objects[ObjectID.SLALOM_SIDE]
+        right_obj = objects[ObjectID.SLALOM_CENTER]
 
-    # Exemple : angle entre slalom_cote et slalom_middle 
-    if slalom_cote and slalom_middle:
-        profondeurs = [objets[slalim_cote_id]["depth"], objets[slalom_middle_id]["depth"]]
+        profondeurs = [left_obj["depth"], right_obj["depth"]]
         angle_calc = find_angle_plane_V2(profondeurs, 1500, mode)
+        cx, _, _, _= params_cams(mode)
+        dist_center_gate = dist_center_gate(cx, left_obj["bbox_x"], right_obj["bbox_x"])
 
-        results_angle.extend([float(3), angle_calc])
+        results_angle.extend([float(3), angle_calc, dist_center_gate])
 
     return results_angle

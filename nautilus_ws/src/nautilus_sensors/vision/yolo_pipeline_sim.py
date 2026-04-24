@@ -38,7 +38,7 @@ class YoloNode(Node):
         self.ts.registerCallback(self.synced_callback)
 
         # ---------------- PUBLISHERS ----------------
-        self.depth_angle_topic = self.create_publisher(
+        self.obj_depth_dist_pub = self.create_publisher(
             Float32MultiArray,
             '/yolo/obj_depth_dist',
             10
@@ -74,7 +74,7 @@ class YoloNode(Node):
         payload_angle_bet = []
 
         # Dictionnaire: clé = id objet, valeur = infos pour angle_between_object
-        objets = {}
+        objects = {}
 
         for result in results:
             if result.boxes is None:
@@ -82,8 +82,8 @@ class YoloNode(Node):
 
             for box_data in result.boxes:
                 xywh = box_data.xywh[0].cpu().numpy()
-                cx = int(xywh[0])
-                cy = int(xywh[1])
+                x = int(xywh[0])
+                y = int(xywh[1])
 
                 object_id = int(box_data.cls[0].item())
 
@@ -92,69 +92,67 @@ class YoloNode(Node):
                     depth_value = find_depth(
                         depth_frame=depth,
                         half=5,
-                        cy_boundingbox=cy,
-                        cx_boundingbox=cx,
+                        bbox_y=y,
+                        bbox_x=x,
                         mode=self.mode
                     )
                 except Exception as e:
                     self.get_logger().warn(
-                        f'Erreur find_depth pour objet {object_id}: {e}'
+                        f'Erreur find_depth for object {object_id}: {e}'
                     )
                     depth_value = None
 
-                dist_center = find_dist_from_center(cx, self.mode)
+                dist_center = find_dist_from_center(x, self.mode)
 
-                # Ordre demandé : (id_objet, depth, angle)
                 if depth_value < 5000:
                     payload.extend([float(object_id), depth_value, dist_center])
 
                 # Add elements in dict for angle between object
-                if object_id not in objets:
+                if object_id not in objects:
                     # premier objet de cet ID
-                    objets[object_id] = {
+                    objects[object_id] = {
                         "depth": depth_value,
-                        "angle": dist_center
+                        "bbox_x": x
                     }
                 else:
-                    # comparer avec celui déjà stocké
-                    if depth_value < objets[object_id]["depth"]:
-                        objets[object_id] = {
+                    # compare with already stored object
+                    if depth_value < objects[object_id]["depth"]:
+                        objects[object_id] = {
                             "depth": depth_value,
-                            "angle": dist_center
+                            "bbox_x": x
                         }
 
-        # -----Publication topic profondeur + angle------
         msg = Float32MultiArray()
         msg.data = payload
 
         # Layout: N x 3
-        nb_objets = len(payload) // 3
+        nb_objects = len(payload) // 3
         msg.layout.dim = [
-            MultiArrayDimension(label='objects', size=nb_objets, stride=max(len(payload), 1)),
+            MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
             MultiArrayDimension(label='fields', size=3, stride=3)
         ]
         msg.layout.data_offset = 0
 
-        self.depth_angle_topic.publish(msg)
+        self.obj_depth_dist_pub.publish(msg)
 
         # -----Publication topic angle et zone------
         # Call function
-        payload_angle_bet = switch_case_sub_angle(objets, self.mode)
+        payload_angle_bet = switch_case_sub_angle(objects, self.mode)
 
-        msg_angle_between_angle = Float32MultiArray()
-        msg_angle_between_angle.data = payload_angle_bet
+        msg_angle_between_object = Float32MultiArray()
+        msg_angle_between_object.data = payload_angle_bet
 
-        # Layout: N x 2
-        nb_objets_angle_bet = len(payload_angle_bet) // 2
-        msg_angle_between_angle.layout.dim = [
-            MultiArrayDimension(label='objects', size=nb_objets_angle_bet, stride=max(len(payload_angle_bet), 1)),
-            MultiArrayDimension(label='fields', size=2, stride=2)
+        # Layout: N x 3
+        nb_objects_angle_bet = len(payload_angle_bet) // 3
+        msg_angle_between_object.layout.dim = [
+            MultiArrayDimension(label='objects', size=nb_objects_angle_bet, stride=max(len(payload_angle_bet), 1)),
+            MultiArrayDimension(label='fields', size=3, stride=3)
         ]
-        msg_angle_between_angle.layout.data_offset = 0
+        msg_angle_between_object.layout.data_offset = 0
 
-        self.region_angle_topic.publish(msg_angle_between_angle)
+        self.region_angle_topic.publish(msg_angle_between_object)
 
-        # ----------Affichage des boxes--------------------------
+        # ----------display boxes--------------------------
         annotated_frame = results[0].plot()
 
         detections_data = []

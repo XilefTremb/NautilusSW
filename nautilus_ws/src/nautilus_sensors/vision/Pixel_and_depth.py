@@ -1,13 +1,13 @@
 import numpy as np
 import cv2
 
-def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox, mode):
+def find_depth(depth_frame, half, bbox_y, bbox_x, mode):
     frame_h, frame_w = depth_frame.shape
 
-    y1 = max(0, cy_boundingbox - half)
-    y2 = min(frame_h, cy_boundingbox + half + 1)
-    x1 = max(0, cx_boundingbox - half)
-    x2 = min(frame_w, cx_boundingbox + half + 1)
+    y1 = max(0, bbox_y- half)
+    y2 = min(frame_h, bbox_y+ half + 1)
+    x1 = max(0, bbox_x- half)
+    x2 = min(frame_w, bbox_x+ half + 1)
 
     center_patch = depth_frame[y1:y2, x1:x2]
     #print("patch:", center_patch)
@@ -26,8 +26,8 @@ def find_depth(depth_frame, half, cy_boundingbox, cx_boundingbox, mode):
     """
     """
     # Calcul vraie distance
-    X = (cx_boundingbox - cx) * center_depth / fx
-    Y = (cy_boundingbox - cy) * center_depth / fy
+    X = (bbox_x- cx) * center_depth / fx
+    Y = (bbox_y- cy) * center_depth / fy
 
     true_distance = np.sqrt(X**2 + Y**2 + center_depth**2)
     """
