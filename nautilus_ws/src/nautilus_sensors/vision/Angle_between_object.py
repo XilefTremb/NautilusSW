@@ -2,26 +2,6 @@ import numpy as np
 from nautilus_bringup.ObjectID import ObjectID
 from vision.Pixel_and_depth import params_cams
 
-"""
-def find_angle_plane(boxes):
-    profondeurs = []
-    angles = []
-    C = 1442
-
-    for box in boxes:
-        profondeurs.append(box["depth"])
-        angles.append(box["angle"])
-
-    h_3 = np.abs(profondeurs[1] - profondeurs[0])
-    angle = np.arccos(h_3/C)
-    angle = np.degrees(angle)
-
-    result = 90 - angle
-
-    return result
-    
-"""
-
 def find_angle_plane_V2(middle_depth, side_depth, C, middle_x, side_x, mode):
 
     h_3 = middle_depth - side_depth
