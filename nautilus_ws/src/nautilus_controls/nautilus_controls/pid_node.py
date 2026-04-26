@@ -16,6 +16,7 @@ class VisionPidNode(Node):
         self.declare_parameter('kp', Parameter.Type.DOUBLE)
         self.declare_parameter('ki', Parameter.Type.DOUBLE)
         self.declare_parameter('kd', Parameter.Type.DOUBLE)
+        self.declare_parameter('flip_output', False)
 
         # --- Get parameters ---
         self.input_topic = self.get_parameter('input_topic').value
@@ -23,6 +24,10 @@ class VisionPidNode(Node):
         self.kp = self.get_parameter('kp').value
         self.ki = self.get_parameter('ki').value
         self.kd = self.get_parameter('kd').value
+        if self.get_parameter('flip_output').value:
+            self.output_sign = -1
+        else:
+            self.output_sign = 1
 
         # Command limits
         self.cmd_center = 1500.0
@@ -81,6 +86,8 @@ class VisionPidNode(Node):
                 self.ki * self.integral +
                 self.kd * derivative
             )
+
+            output *= self.output_sign
 
             # Convert PID output to command around 1500
             cmd = self.cmd_center + output

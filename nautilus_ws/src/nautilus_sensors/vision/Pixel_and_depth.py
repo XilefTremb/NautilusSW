@@ -62,10 +62,10 @@ def params_cams(mode):
 
     if mode == "sim":
         # SIMULATION
-        cx = 320
+        cx = 160
         fx = 293
         fy = 293
-        cy = 240
+        cy = 120
 
         return cx, fx, fy, cy
 

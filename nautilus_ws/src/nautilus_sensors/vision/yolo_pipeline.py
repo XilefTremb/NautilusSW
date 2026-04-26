@@ -35,7 +35,7 @@ class YoloNode(Node):
         self.bridge = CvBridge()
         if self.mode == 'sim':
             self.model = YOLO(
-                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_sim_openvino_model', task='detect')
+                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_sim_low_res_openvino_model', task='detect')
         else:
             self.model = YOLO(
                 '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
@@ -82,7 +82,7 @@ class YoloNode(Node):
         depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='32FC1')
 
         # YOLO inference
-        results = self.model(frame, conf=0.4, verbose=False, imgsz=640)
+        results = self.model(frame, conf=0.4, verbose=False, imgsz=320)
 
         payload = []
         payload_angle_bet = []

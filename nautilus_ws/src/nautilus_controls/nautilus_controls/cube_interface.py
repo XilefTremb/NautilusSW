@@ -33,7 +33,7 @@ class CubeInterface(Node):
         self.last_yaw_cmd_time = None
         self.last_lateral_cmd = None
         self.last_lateral_cmd_time = None
-        self.last_yaw_error = None
+        self.last_lateral_error = None
 
         self.Startup(args)
 
@@ -49,10 +49,10 @@ class CubeInterface(Node):
             self.lateral_cmd_callback,
             10)
         
-        self.vision_yaw_error_sub = self.create_subscription(
+        self.vision_lateral_error_sub = self.create_subscription(
             Float32,
-            '/control/vision_errors/yaw',
-            self.yaw_error_callback,
+            '/control/vision_errors/lateral',
+            self.lateral_error_callback,
             10)
         
         self.create_timer(1.0/40.0, self.timer_callback)
@@ -82,8 +82,8 @@ class CubeInterface(Node):
         self.last_lateral_cmd = msg.data
         self.last_lateral_cmd_time = self.get_clock().now()
 
-    def yaw_error_callback(self, msg):
-        self.last_yaw_error = msg.data
+    def lateral_error_callback(self, msg):
+        self.last_lateral_error = msg.data
     
     def is_fresh(self, last_time):
         if last_time is None:
@@ -111,7 +111,7 @@ class CubeInterface(Node):
 
         if lateral_active:
             lateral_cmd = int(self.last_lateral_cmd)
-            forward_cmd, right_cmd = self.split_pwm_by_angle(lateral_cmd, self.last_yaw_error) 
+            forward_cmd, right_cmd = self.split_pwm_by_angle(lateral_cmd, self.last_lateral_error) 
             
         self.auv.SendRCOverride(
             forward=forward_cmd,
@@ -130,7 +130,7 @@ class CubeInterface(Node):
 
         angle = math.radians(angle_deg)
 
-        forward_offset = magnitude * math.sin(angle)
+        forward_offset = -magnitude * math.sin(angle)
         lateral_offset = magnitude * math.cos(angle)
 
         forward_pwm = int(1500 + forward_offset)
