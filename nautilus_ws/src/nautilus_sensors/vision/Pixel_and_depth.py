@@ -75,7 +75,7 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
         center_patch = filter_depth_bbox(depth_frame, x1, y1, x2, y2, 5, half)
         if center_patch is None or center_patch.size == 0:
             return -1000
-    
+
     else:
         center_patch = depth_frame[y1:y2, x1:x2]
 
