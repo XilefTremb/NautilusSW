@@ -127,8 +127,15 @@ def global_median_forward_cam(depth_frame, mode):
 
     if valid_values.size == 0:
         return 0
+    
+    global_depth = np.median(valid_values)
 
-    return np.median(valid_values)
+    if mode == "sim":
+        global_depth = global_depth*1000
+        if not np.isfinite(global_depth) or global_depth > 12000:
+            global_depth = 12000
+
+    return global_depth
 
 def params_cams(mode):
 
