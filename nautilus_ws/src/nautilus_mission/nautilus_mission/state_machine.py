@@ -4,9 +4,9 @@ import argparse
 import time
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32MultiArray, Int8
+from std_msgs.msg import Float32MultiArray, Int8, Int16
 from nautilus_bringup.RobotState import RobotState
-from nautilus_bringup.ObjectID import ObjectID
+from nautilus_bringup.ObjectID import ObjectID, GateLikeObjectID
 
 
 class StateMachine(Node):
@@ -15,66 +15,130 @@ class StateMachine(Node):
         super().__init__('StateMachine')
 
         self.state = None
-        self.freq = 2.0
+        self.target_gate_ID = None
+        self.gate_objects = None
+        self.objects = None
+        self.last_target_gate_detection = None
 
         # Subscriber - to the output of the YOLO pipeline
-        self.sub = self.create_subscription(
+        self.detection_sub = self.create_subscription(
             Float32MultiArray,
             '/yolo/obj_depth_dist',
             self.ObjDetectionCallback,
             10
         )
 
+        # Subscriber - to the output of the YOLO pipeline
+        self.gate_detection_sub = self.create_subscription(
+            Float32MultiArray,
+            '/yolo/obj_angle',
+            self.GateDetectionCallback,
+            10
+        )
+
         # Publisher - for the current state
-        self.pub = self.create_publisher(
+        self.state_pub = self.create_publisher(
             Int8,
             '/mission/state',
             10
         )
         
+        # Publisher - for the target gate
+        self.target_gate_pub = self.create_publisher(
+            Int8,
+            '/mission/target_gate',
+            10
+        )
 
-        self.StateMachine()
+        self.forward_cmd_pub = self.create_publisher(
+            Int16,
+            '/control/cmd/forward',
+            10
+        )
+
+        self.timer1 = self.create_timer(1/10, self.StateMachine)
+        self.timer2 = self.create_timer(1/10, self.ForwardCmdPub)
+
+        self.state = RobotState.SEARCH
+        self.StateSender()
+
+        self.target_gate_ID = GateLikeObjectID.GATE_LEFT_MID
+        self.TargetGateSender()
 
     def StateMachine(self):
+        if self.state == RobotState.SEARCH:
+            if self.IsGatePresent():
+                self.state = RobotState.CENTER_GATE
+                self.StateSender()
+            else:
+                self.get_logger().info('Target gate is not in view')
 
-        # First state: Dive to the right depth
-        # TO BE DONE
-        # while not self.IsDived():
-        #     self.state = 1
+        elif self.state == RobotState.CENTER_GATE:
+            if self.IsGateCentered():
+                self.state = RobotState.APPROACH_GATE
+                self.StateSender()
 
-        # Second state: Find the gate or search for it
-        while not self.IsGatePresent():
-            continue
-
-        self.state = 3 
-        self.StateSender()
-
+        elif self.state == RobotState.APPROACH_GATE:
+            if self.IsGateApproached():
+                self.state = RobotState.TRAVERSE_GATE
+                self.StateSender()
         
-
-        # Third state: Center the vehicle on the gate
-        # TO BE DONE
-        # while not self.IsCentered():
-        #     self.state = 3
-
-        self.state = RobotState.CENTER_GATE
-        self.StateSender()
+        elif self.state == RobotState.TRAVERSE_GATE:
+            pass
 
     def StateSender(self):
-        # Publish the state at a certain frequency
         msg = Int8()
         msg.data = self.state
-        self.pub.publish(msg)
-        self.get_logger().info(f"Published state: {self.state}")
+        self.state_pub.publish(msg)
+        self.get_logger().info(f"Published state: {self.state.name}")
 
+    def TargetGateSender(self):
+        msg = Int8()
+        msg.data = self.target_gate_ID
+        self.state_pub.publish(msg)
+        self.get_logger().info(f"Published target gate: {self.target_gate_ID.name}")
+
+    def ForwardCmdPub(self):
+        if self.state == RobotState.TRAVERSE_GATE:
+            msg = Int16()
+            msg.data = 1600
+            self.forward_cmd_pub.publish(msg)
+    
     def ObjDetectionCallback(self, msg):
         data = msg.data
         self.objects = [data[i:i+3] for i in range(0, len(data), 3)]
 
+    def GateDetectionCallback(self, msg):
+        data = msg.data
+        self.gate_objects = [data[i:i+3] for i in range(0, len(data), 3)]
+        if self.target_gate_ID is not None:
+            self.last_target_gate_detection = next((o for o in self.gate_objects if GateLikeObjectID(o[0]) == self.target_gate_ID), None)
+
     def IsGatePresent(self):
-        present = any(int(obj[0]) == 1 for obj in self.objects) and any(int(obj[0]) == 3 for obj in self.objects)
-        self.get_logger().info("A gate was found!")
-        return present
-        
+        if self.last_target_gate_detection is not None:
+            self.get_logger().info(f"Gate like object {self.target_gate_ID.name} was found!")
+            return True
+        else:
+            return False
+    
+    def IsGateCentered(self):
+        if self.last_target_gate_detection is not None:
+            if abs(self.last_target_gate_detection[1]) < 5 and abs(self.last_target_gate_detection[2]) < 30:   
+                self.get_logger().info(f"Gate like object {self.target_gate_ID.name} is centered!")
+                return True
+            else:
+                return False
+            
+    def IsGateApproached(self):
+        if self.objects is not None:
+            obj = next((o for o in self.objects if int(o[0]) == ObjectID.REQUIN), None)
+
+            if obj is not None and obj[1] < 1500:
+                self.get_logger().info("Gate was approached!")
+                return True
+            else:
+                return False
+            
 def main(args=None):
     rclpy.init(args=args)
     node = StateMachine()

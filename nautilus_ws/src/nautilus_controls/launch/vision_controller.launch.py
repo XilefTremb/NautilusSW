@@ -17,6 +17,20 @@ def generate_launch_description():
             }]
         ),
 
+         Node(
+            package='nautilus_controls',
+            executable='pid_node',
+            name='pid_forward',
+            parameters=[{
+                'input_topic': '/control/vision_errors/forward',
+                'output_topic': '/control/cmd/forward',
+                'kp': 2.5,
+                'ki': 0.0,
+                'kd': 1.0,
+                'flip_output': True
+            }]
+        ),
+
         Node(
             package='nautilus_controls',
             executable='pid_node',
