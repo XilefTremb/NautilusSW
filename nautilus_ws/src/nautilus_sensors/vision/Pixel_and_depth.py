@@ -91,7 +91,6 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
 
 
 def find_angle(x_center, depth_mean, mode):
-
     cx, fx, fy, cy = params_cams(mode)
 
     if depth_mean is None or int(depth_mean) == 0:
@@ -111,10 +110,9 @@ def find_dist_from_center(x_center, mode):
     return float(x_center - cx)
 
 def global_median_forward_cam(depth_frame, mode):
-    img = np.squeeze(depth_frame)
     cx, fx, fy, cy = params_cams(mode)
 
-    h, w = img.shape
+    h, w = depth_frame.shape
 
     # Définir la zone autour du centre
     x1 = max(0, int(cx - cx/2))
@@ -122,7 +120,7 @@ def global_median_forward_cam(depth_frame, mode):
     y1 = max(0, int(cy - cy/2))
     y2 = min(h, int(cy + cy/2))
 
-    patch = img[y1:y2, x1:x2]
+    patch = depth_frame[y1:y2, x1:x2]
 
     # enlever les zéros
     valid_values = patch[patch != 0]
