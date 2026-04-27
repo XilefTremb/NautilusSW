@@ -27,13 +27,14 @@ class CubeInterface(Node):
 
         super().__init__('CubeInterface')
 
-        self.cmd_timeout_s = 2.0
+        self.cmd_timeout_s = 0.5
         
         self.last_yaw_cmd = None
         self.last_yaw_cmd_time = None
         self.last_lateral_cmd = None
         self.last_lateral_cmd_time = None
-        self.last_lateral_error = None
+        self.last_forward_cmd = None
+        self.last_forward_cmd_time = None
 
         self.Startup(args)
 
@@ -49,10 +50,16 @@ class CubeInterface(Node):
             self.lateral_cmd_callback,
             10)
         
+        self.forward_cmd_sub = self.create_subscription(
+            Int16,
+            '/control/cmd/forward',
+            self.forward_cmd_callback,
+            10)
+        
         self.vision_lateral_error_sub = self.create_subscription(
-            Float32,
-            '/control/vision_errors/lateral',
-            self.lateral_error_callback,
+            Int8,
+            '/mission/state',
+            self.state_callback,
             10)
         
         self.create_timer(1.0/40.0, self.timer_callback)
@@ -74,6 +81,9 @@ class CubeInterface(Node):
 
         self.auv.StartReceiver()
 
+    def state_callback(self, msg):
+        self.state = RobotState(msg.data)
+
     def yaw_cmd_callback(self, msg):
         self.last_yaw_cmd = msg.data
         self.last_yaw_cmd_time = self.get_clock().now()
@@ -82,8 +92,9 @@ class CubeInterface(Node):
         self.last_lateral_cmd = msg.data
         self.last_lateral_cmd_time = self.get_clock().now()
 
-    def lateral_error_callback(self, msg):
-        self.last_lateral_error = msg.data
+    def forward_cmd_callback(self, msg):
+        self.last_forward_cmd = msg.data
+        self.last_forward_cmd_time = self.get_clock().now()
     
     def is_fresh(self, last_time):
         if last_time is None:
@@ -95,51 +106,32 @@ class CubeInterface(Node):
     def timer_callback(self):
         yaw_active = self.is_fresh(self.last_yaw_cmd_time)
         lateral_active = self.is_fresh(self.last_lateral_cmd_time)
+        forward_active = self.is_fresh(self.last_forward_cmd_time)
 
         yaw_cmd = None
         lateral_cmd = None
         forward_cmd = None
-        right_cmd = None
         
         # Do nothing if neither topic has published recently
-        if not yaw_active and not lateral_active:
+        if not yaw_active and not lateral_active and not forward_active:
             self.get_logger().info('no fresh cmd')
             return
 
         if yaw_active:
             yaw_cmd = int(self.last_yaw_cmd)
 
+        if forward_active:
+            forward_cmd = int(self.last_forward_cmd)
+
         if lateral_active:
             lateral_cmd = int(self.last_lateral_cmd)
-            forward_cmd, right_cmd = self.split_pwm_by_angle(lateral_cmd, self.last_lateral_error) 
-            
+
         self.auv.SendRCOverride(
             forward=forward_cmd,
-            lateral=right_cmd,
+            lateral=lateral_cmd,
             yaw=yaw_cmd,
         )
-        self.get_logger().info(f"sent cmd yaw : {yaw_cmd}, forward: {forward_cmd}, lateral : {right_cmd}")
-
-    
-    def clamp_pwm(self, x):
-        return max(1100, min(1900, x))
-
-    def split_pwm_by_angle(self, pwm, angle_deg):
-        # Convert PWM to signed command
-        magnitude = pwm - 1500   # range: -400 to +400
-
-        angle = math.radians(angle_deg)
-
-        forward_offset = -magnitude * math.sin(angle)
-        lateral_offset = magnitude * math.cos(angle)
-
-        forward_pwm = int(1500 + forward_offset)
-        lateral_pwm = int(1500 + lateral_offset)
-
-        forward_pwm = self.clamp_pwm(forward_pwm)
-        lateral_pwm = self.clamp_pwm(lateral_pwm)
-
-        return forward_pwm, lateral_pwm
+        self.get_logger().info(f"sent cmd yaw : {yaw_cmd}, forward: {forward_cmd}, lateral : {lateral_cmd}")
 
 def main():
     args = parse_args()
