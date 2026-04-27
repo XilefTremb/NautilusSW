@@ -4,7 +4,7 @@ import argparse
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32
 import cv2
 import numpy as np
 from ultralytics import YOLO
@@ -74,6 +74,12 @@ class YoloNode(Node):
             10
         )
 
+        self.mean_depth_forward_cam = self.create_publisher(
+            Int32,
+            '/yolo/mean_depth_forward_cam',
+            10
+        )
+
         self.get_logger().info(f'YOLOv8 node with depth started, mode : {self.mode}')
 
 
@@ -129,19 +135,19 @@ class YoloNode(Node):
                 # ----------- ANGLE / DIST -----------
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
-                # ----------- DICT POUR ANGLE BETWEEN -----------
+                # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
                     objects[object_id] = {
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
                     }
-                
+
+                #Threshold for depth
                 if depth_value<5000:
                     # ----------- PAYLOAD -----------
                     payload.extend([float(object_id), depth_value, dist_center])
 
-                    # ----------- AFFICHAGE -----------
-                    # ----------- DRAW BOX -----------
+                    # ----------- DRAW BOX AND INFO -----------
                     cv2.rectangle(
                         annotated_frame,
                         (x1, y1),
@@ -161,7 +167,6 @@ class YoloNode(Node):
                         1
                     )
 
-                    # ----------- TES INFOS -----------
                     cv2.putText(
                         annotated_frame,
                         f"{depth_value:.2f}mm",
@@ -182,6 +187,7 @@ class YoloNode(Node):
                         1
                     )
 
+        # ----------- PUBLISH DEPTH AND PIXEL -----------
         msg = Float32MultiArray()
         msg.data = payload
 
@@ -195,7 +201,7 @@ class YoloNode(Node):
 
         self.obj_depth_dist_pub.publish(msg)
 
-        # -----Publication topic angle et zone------
+        # -----PUBLISH ANGLE BETWEEN OBJECT------
         # Call function
         payload_angle_bet = switch_case_sub_angle(objects, self.mode)
 
@@ -212,10 +218,17 @@ class YoloNode(Node):
 
         self.region_angle_topic.publish(msg_angle_between_object)
 
-        # Publish annotated image
+        # ----------- PUBLISH ANNOTED IMAGE -----------
         out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
         out_msg.header = rgb_msg.header
         self.image_pub.publish(out_msg)
+
+        # ----------- GET AND PUBLISH DEPTH GLOBAL -----------
+        depth_global_mean = global_median_forward_cam(depth, self.mode)
+        msg_depth_global_mean = Int32()
+        msg_depth_global_mean.data = int(depth_global_mean)
+
+        self.mean_depth_forward_cam.publish(msg_depth_global_mean)
 
 
 def main():

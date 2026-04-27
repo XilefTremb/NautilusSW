@@ -91,15 +91,14 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
 
 
 def find_angle(x_center, depth_mean, mode):
-
     cx, fx, fy, cy = params_cams(mode)
 
     if depth_mean is None or int(depth_mean) == 0:
         return None
-    # Coordonnée horizontale dans le repère caméra
+    #X pos
     X = (x_center - cx) * depth_mean / fx
 
-    # Yaw pour aligner l'objet avec le centre
+    #Yaw compare with middle cam
     yaw = np.arctan2(X, depth_mean)
     yaw_deg = np.degrees(yaw)
 
@@ -109,6 +108,34 @@ def find_dist_from_center(x_center, mode):
     cx, fx, fy, cy = params_cams(mode)
 
     return float(x_center - cx)
+
+def global_median_forward_cam(depth_frame, mode):
+    cx, fx, fy, cy = params_cams(mode)
+
+    h, w = depth_frame.shape
+
+    #Zone
+    x1 = max(0, int(cx - cx/2))
+    x2 = min(w, int(cx + cx/2))
+    y1 = max(0, int(cy - cy/2))
+    y2 = min(h, int(cy + cy/2))
+
+    patch = depth_frame[y1:y2, x1:x2]
+
+    #Remove zeros median
+    valid_values = patch[patch != 0]
+
+    if valid_values.size == 0:
+        return 0
+    
+    global_depth = np.median(valid_values)
+
+    if mode == "sim":
+        global_depth = global_depth*1000
+        if not np.isfinite(global_depth) or global_depth > 12000:
+            global_depth = 12000
+
+    return global_depth
 
 def params_cams(mode):
 
