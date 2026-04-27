@@ -29,8 +29,10 @@ class YoloNode(Node):
         super().__init__('yolo_node')
         if args.sim:
             self.mode = 'sim'
+            self.half_for_depth_patch = 1
         else:
             self.mode = 'real'
+            self.half_for_depth_patch = 5
 
         self.bridge = CvBridge()
         if self.mode == 'sim':
@@ -115,7 +117,7 @@ class YoloNode(Node):
                 try:
                     depth_value = find_depth(
                         depth_frame=depth,
-                        half=1,
+                        half=self.half_for_depth_patch,
                         bbox_cy=bbox_cy,
                         bbox_cx=bbox_cx,
                         mode=self.mode
