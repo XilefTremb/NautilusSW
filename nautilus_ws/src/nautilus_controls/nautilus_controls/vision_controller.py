@@ -18,11 +18,14 @@ class VisionControllerNode(Node):
         self.current_gate_detection_callback = self.empty_callback
 
         self.state = None
+        self.previous_state = None
         self.objects = None
         self.gate_objects = None
 
         self.target_gate_id = None
+        self.previous_target_gate_id = None
         self.target_object_id = None
+        self.previous_target_object_id = None
 
         self.last_target_gate_detection = None
         self.last_target_object_detection = None
@@ -40,6 +43,7 @@ class VisionControllerNode(Node):
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
         self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
+        self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
 
         self.get_logger().info('Vision controller node started.')
 
@@ -52,19 +56,39 @@ class VisionControllerNode(Node):
         elif self.state == RobotState.APPROACH_GATE:
             self.current_gate_detection_callback = self.approach_gate_callback
 
-        elif self.state == RobotState.CIRCLE_MARKER:
+        elif self.state == RobotState.TRAVERSE_GATE:
             self.current_gate_detection_callback = self.empty_callback
+
+        elif self.state == RobotState.CIRCLE_MARKER:
             self.current_object_detection_callback = self.circle_marker_callback
 
-        self.get_logger().info(f'Set state to : {self.state.name}')
+        if self.previous_state != self.state:
+            if self.previous_state is not None:
+                self.get_logger().info(f'Set state from {self.previous_state.name} to : {self.state.name}')
+            else:
+                self.get_logger().info(f'Set state from {self.previous_state} to : {self.state.name}')
+
+        self.previous_state = self.state
 
     def target_gate_callback(self, msg):
         self.target_gate_id = GateLikeObjectID(msg.data)
-        self.get_logger().info(f'Set target gate to : {self.target_gate_id.name}')
+        if self.previous_target_gate_id != self.target_gate_id:
+            if self.previous_target_gate_id is not None:
+                self.get_logger().info(f'Set target gate from : {self.previous_target_gate_id.name} to : {self.target_gate_id.name}')
+            else:
+                self.get_logger().info(f'Set target gate from : {self.previous_target_gate_id} to : {self.target_gate_id.name}')
+
+        self.previous_target_gate_id = self.target_gate_id
 
     def target_object_callback(self, msg):
         self.target_object_id = ObjectID(msg.data)
-        self.get_logger().info(f'Set target object to : {self.target_object_id.name}')
+        if self.previous_target_object_id != self.target_object_id:
+            if self.previous_target_object_id is not None:
+                self.get_logger().info(f'Set target object from : {self.previous_target_object_id.name} to : {self.target_object_id.name}')
+            else:
+                self.get_logger().info(f'Set target object from : {self.previous_target_object_id} to : {self.target_object_id.name}')
+
+        self.previous_target_object_id = self.target_object_id
 
     def center_gate_callback(self, msg):
         if self.last_target_gate_detection is None:
@@ -101,12 +125,16 @@ class VisionControllerNode(Node):
             return
 
         yaw_msg = Float32()
-        yaw_msg.data = self.last_target_object_detection[2] + 80
+        yaw_msg.data = self.last_target_object_detection[2] - 80
         self.yaw_error_pub.publish(yaw_msg)
 
         forward_msg = Int16()
-        forward_msg.data = 1550
+        forward_msg.data = 1525
         self.forward_cmd_pub.publish(forward_msg)
+
+        lateral_msg = Int16()
+        lateral_msg.data = 1480
+        self.lateral_cmd_pub.publish(lateral_msg)
 
     def empty_callback(self, msg):
         pass

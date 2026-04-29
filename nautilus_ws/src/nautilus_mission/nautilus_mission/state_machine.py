@@ -2,11 +2,14 @@
 
 import argparse
 import time
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray, Int8, Int16
+
 from nautilus_bringup.RobotState import RobotState
 from nautilus_bringup.ObjectID import ObjectID, GateLikeObjectID
+from nautilus_mission.state import State
 
 
 class StateMachine(Node):
@@ -14,7 +17,8 @@ class StateMachine(Node):
 
         super().__init__('state_machine')
 
-        self.state = None
+        self._state = State()
+
         self.target_gate_id = None
         self.target_object_id = None
 
@@ -53,7 +57,6 @@ class StateMachine(Node):
 
         # Initial state
         self.state = RobotState.SEARCH
-        self.get_logger().info(f'Set state to : {self.state}')
 
         self.target_gate_id = GateLikeObjectID.GATE_LEFT_MID
         self.get_logger().info(f'Set target gate to : {self.target_gate_id.name}')
@@ -62,34 +65,37 @@ class StateMachine(Node):
         if self.state == RobotState.SEARCH:
             if self.is_gate_present():
                 self.state = RobotState.CENTER_GATE
-                self.get_logger().info(f'Set state to : {self.state}')
             else:
                 self.get_logger().info('Target gate is not in view')
 
         elif self.state == RobotState.CENTER_GATE:
             if self.is_gate_centered():
+                time.sleep(2)
                 self.state = RobotState.APPROACH_GATE
-                self.get_logger().info(f'Set state to : {self.state}')
                 self.target_object_id = ObjectID.REQUIN
                 self.get_logger().info(f'Set target object to : {self.target_object_id.name}')
 
         elif self.state == RobotState.APPROACH_GATE:
             if self.is_target_approached(1500):
                 self.state = RobotState.TRAVERSE_GATE
-                self.get_logger().info(f'Set state to : {self.state}')
-                self.target_object_id = ObjectID.GATE_LEG_L
-                self.get_logger().info(f'Set target object to : {self.target_object_id.name}')
-
                 msg = Int16()
                 msg.data = 15000
                 self.depth_threshold_pub.publish(msg)
 
         elif self.state == RobotState.TRAVERSE_GATE:
-            if self.is_target_approached(2000):
-                msg = Int16()
-                msg.data = 5000
-                self.depth_threshold_pub.publish(msg)
-                self.state = RobotState.CIRCLE_MARKER
+            forward_msg = Int16()
+            forward_msg.data = 1600
+            self.forward_cmd_pub.publish(forward_msg)
+
+            if self.state.lifespan > 10.0:
+                self.target_object_id = ObjectID.GATE_LEG_L
+                self.get_logger().info(f'Set target object to : {self.target_object_id.name}')
+
+                if self.is_target_approached(5000):
+                    msg = Int16()
+                    msg.data = 5000
+                    self.depth_threshold_pub.publish(msg)
+                    self.state = RobotState.CIRCLE_MARKER
 
         elif self.state == RobotState.CIRCLE_MARKER:
             pass
@@ -97,8 +103,8 @@ class StateMachine(Node):
     def state_targets_sender(self):
         msg = Int8()
 
-        if self.state is not None:
-            msg.data = self.state
+        if self.state._state is not None:
+            msg.data = self.state.value
             self.state_pub.publish(msg)
 
         if self.target_gate_id is not None:
@@ -154,6 +160,15 @@ class StateMachine(Node):
                 self.get_logger().info(f"Target object : {self.target_object_id.name} is in range!")
                 return True
         return False
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, new_state):
+        self._state.set(new_state)
+        self.get_logger().info(f'Set state to : {new_state.name}')
 
 
 def main(args=None):
