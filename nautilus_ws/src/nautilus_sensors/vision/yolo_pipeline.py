@@ -42,7 +42,7 @@ class YoloNode(Node):
             self.model = YOLO(
                 '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
             
-        self.depth_threshold = 5000
+        #self.depth_threshold = 5000
 
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
@@ -122,11 +122,22 @@ class YoloNode(Node):
                 object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
 
+                # ----------- DEFINE DEPTH ZONE -----------
+                depth_zone_h = abs(y2-y1)
+                depth_zone_w = abs(x2-x1)
+
+                if depth_zone_w > depth_zone_h:
+                    half = 0.40 * depth_zone_h
+                else:
+                    half = 0.40 * depth_zone_w
+
+                half = max(1, min(8, np.ceil(half)))
+
                 # ----------- DEPTH -----------
                 try:
                     depth_value = find_depth(
                         depth_frame=depth,
-                        half=self.half_for_depth_patch,
+                        half=int(half),
                         bbox_cy=bbox_cy,
                         bbox_cx=bbox_cx,
                         mode=self.mode
