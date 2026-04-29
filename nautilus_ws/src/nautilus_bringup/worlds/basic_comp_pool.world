@@ -380,8 +380,8 @@
       <pose>-5 -7 -1.5 0 0 0</pose>
     </include>
     <include>
-      <uri>model://robosub_buoy</uri>
-      <name>robosub_buoy</name>
+      <uri>model://robosub_gate_leg</uri>
+      <name>robosub_gate_leg</name>
       <pose>10 -7 -1.5 0 0 0</pose>
     </include>
 

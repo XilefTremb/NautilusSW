@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+	<model name="robosub_gate_leg">
+		<static>true</static>
+    	<pose>0 0 0 0 0 0</pose>
+		<link name="robosub_gate_leg">
+			<pose>0 0 0 0 0 0</pose>
+			<collision name="robosub_gate_leg_col">
+				<pose>0 0 0 0 0 0</pose>
+				<geometry>
+					<mesh>
+						<uri>model://robosub_gate_leg/meshes/gate_leg.dae</uri>
+					</mesh>
+				</geometry>
+			</collision>
+			<visual name="robosub_gate_leg_vis">
+				<pose>0 0 0 0 0 0</pose>
+				<geometry>
+					<mesh>
+						<uri>model://robosub_gate_leg/meshes/gate_leg.dae</uri>
+					</mesh>
+				</geometry>
+			</visual>
+
+		</link>
+	</model>
+</sdf>
