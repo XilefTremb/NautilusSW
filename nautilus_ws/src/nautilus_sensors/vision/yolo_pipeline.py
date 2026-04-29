@@ -79,7 +79,7 @@ class YoloNode(Node):
         )
 
         self.mean_depth_forward_cam = self.create_publisher(
-            Int32,
+            Int16,
             '/yolo/mean_depth_forward_cam',
             10
         )
@@ -228,7 +228,7 @@ class YoloNode(Node):
 
         # ----------- GET AND PUBLISH DEPTH GLOBAL -----------
         depth_global_mean = global_median_forward_cam(depth, self.mode)
-        msg_depth_global_mean = Int32()
+        msg_depth_global_mean = Int16()
         msg_depth_global_mean.data = int(depth_global_mean)
 
         self.mean_depth_forward_cam.publish(msg_depth_global_mean)

@@ -28,20 +28,12 @@ class StateMachine(Node):
         self.last_target_gate_detection = None
         self.last_target_object_detection = None
 
-        # Subscribers
-        self.detection_sub = self.create_subscription(
-            Float32MultiArray,
-            '/yolo/obj_depth_dist',
-            self.obj_detection_callback,
-            10
-        )
+        self.mean_depth_forward_cam = None
 
-        self.gate_detection_sub = self.create_subscription(
-            Float32MultiArray,
-            '/yolo/obj_angle',
-            self.gate_detection_callback,
-            10
-        )
+        # Subscribers
+        self.detection_sub = self.create_subscription(Float32MultiArray, '/yolo/obj_depth_dist', self.obj_detection_callback, 10)
+        self.gate_detection_sub = self.create_subscription(Float32MultiArray, '/yolo/obj_angle', self.gate_detection_callback, 10)
+        self.mean_depth_sub = self.create_subscription(Int16, '/yolo/mean_depth_forward_cam', self.mean_depth_callback, 10)
 
         # Publishers
         self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
@@ -52,7 +44,6 @@ class StateMachine(Node):
 
         # Timers
         self.timer_state_machine = self.create_timer(1/10, self.state_machine)
-        self.timer_forward_cmd = self.create_timer(1/10, self.forward_cmd_pub_callback)
         self.timer_state_sender = self.create_timer(1, self.state_targets_sender)
 
         # Initial state
@@ -72,8 +63,8 @@ class StateMachine(Node):
             if self.is_gate_centered():
                 time.sleep(2)
                 self.state = RobotState.APPROACH_GATE
-                self.target_object_id = ObjectID.REQUIN
-                self.get_logger().info(f'Set target object to : {self.target_object_id.name}')
+                self.target_object_id = [ObjectID.REQUIN]
+                self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
 
         elif self.state == RobotState.APPROACH_GATE:
             if self.is_target_approached(1500):
@@ -88,8 +79,8 @@ class StateMachine(Node):
             self.forward_cmd_pub.publish(forward_msg)
 
             if self.state.lifespan > 10.0:
-                self.target_object_id = ObjectID.GATE_LEG_L
-                self.get_logger().info(f'Set target object to : {self.target_object_id.name}')
+                self.target_object_id = [ObjectID.GATE_LEG_L]
+                self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
 
                 if self.is_target_approached(5000):
                     msg = Int16()
@@ -98,7 +89,27 @@ class StateMachine(Node):
                     self.state = RobotState.CIRCLE_MARKER
 
         elif self.state == RobotState.CIRCLE_MARKER:
-            pass
+            if self.state.lifespan > 10.0 and self.mean_depth_forward_cam >= 20000:
+                msg = Int16()
+                msg.data = 15000
+                self.depth_threshold_pub.publish(msg)
+                self.state = RobotState.RETURN_GATE
+            
+        elif self.state == RobotState.RETURN_GATE:
+            forward_msg = Int16()
+            forward_msg.data = 1600
+            self.forward_cmd_pub.publish(forward_msg)
+
+            if self.state.lifespan > 10.0:
+                self.target_object_id = [ObjectID.GATE_LEG_CENTER, ObjectID.GATE_LEG_R]
+                self.get_logger().info(f'Set target gate to : {self.target_object_id[0].name}')
+
+                if self.is_target_approached(5000):
+                    msg = Int16()
+                    msg.data = 5000
+                    self.depth_threshold_pub.publish(msg)
+                    self.state = RobotState.CENTER_GATE
+
 
     def state_targets_sender(self):
         msg = Int8()
@@ -111,15 +122,12 @@ class StateMachine(Node):
             msg.data = self.target_gate_id
             self.target_gate_pub.publish(msg)
 
-        if self.target_object_id is not None:
-            msg.data = self.target_object_id
+        if self.last_target_object_detection is not None:
+            msg.data = int(self.last_target_object_detection[0])
             self.target_object_pub.publish(msg)
-
-    def forward_cmd_pub_callback(self):
-        if self.state == RobotState.TRAVERSE_GATE:
-            msg = Int16()
-            msg.data = 1600
-            self.forward_cmd_pub.publish(msg)
+    
+    def mean_depth_callback(self, msg):
+            self.mean_depth_forward_cam = msg.data
 
     def obj_detection_callback(self, msg):
         data = msg.data
@@ -127,7 +135,7 @@ class StateMachine(Node):
 
         if self.target_object_id is not None:
             self.last_target_object_detection = next(
-                (o for o in self.objects if ObjectID(o[0]) == self.target_object_id),
+                (o for o in self.objects if ObjectID(o[0]) in self.target_object_id),
                 None
             )
 
@@ -157,7 +165,7 @@ class StateMachine(Node):
     def is_target_approached(self, distance):
         if self.last_target_object_detection is not None:
             if self.last_target_object_detection[1] < distance:
-                self.get_logger().info(f"Target object : {self.target_object_id.name} is in range!")
+                self.get_logger().info(f"Target object : {self.target_object_id[0].name} is in range!")
                 return True
         return False
 

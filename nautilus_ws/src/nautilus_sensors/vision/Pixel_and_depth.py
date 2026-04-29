@@ -132,8 +132,8 @@ def global_median_forward_cam(depth_frame, mode):
 
     if mode == "sim":
         global_depth = global_depth*1000
-        if not np.isfinite(global_depth) or global_depth > 12000:
-            global_depth = 12000
+        if not np.isfinite(global_depth) or global_depth > 20000:
+            global_depth = 20000
 
     return global_depth
 
