@@ -100,10 +100,6 @@ class VisionPidNode(Node):
             cmd_msg.data = cmd
             self.pub.publish(cmd_msg)
 
-            self.get_logger().info(
-                f'error={error:.2f}, cmd={cmd}'
-            )
-
             # Save state
             self.prev_error = error
             self.prev_time = now
