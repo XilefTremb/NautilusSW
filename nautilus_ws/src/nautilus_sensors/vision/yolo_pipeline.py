@@ -122,11 +122,22 @@ class YoloNode(Node):
                 object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
 
+                # ----------- DEFINE DEPTH ZONE -----------
+                depth_zone_h = abs(y2-y1)
+                depth_zone_w = abs(x2-x1)
+
+                if depth_zone_w > depth_zone_h:
+                    half = 0.40 * depth_zone_w
+                else:
+                    half = 0.40 * depth_zone_h
+
+                half = max(1, min(8, np.ceil(half)))
+
                 # ----------- DEPTH -----------
                 try:
                     depth_value = find_depth(
                         depth_frame=depth,
-                        half=self.half_for_depth_patch,
+                        half=half,
                         bbox_cy=bbox_cy,
                         bbox_cx=bbox_cx,
                         mode=self.mode
