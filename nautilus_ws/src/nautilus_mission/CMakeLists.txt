@@ -18,16 +18,9 @@ install(
 
 install(
   PROGRAMS
-    nautilus_mission/test_mission.py
+    nautilus_mission/state_machine.py
   DESTINATION lib/${PROJECT_NAME}
-  RENAME test_mission
-)
-
-install(
-  PROGRAMS
-    nautilus_mission/vision_controller.py
-  DESTINATION lib/${PROJECT_NAME}
-  RENAME vision_controller
+  RENAME state_machine
 )
 
 ament_python_install_package(${PROJECT_NAME})

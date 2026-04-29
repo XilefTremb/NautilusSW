@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
+from vision.blue_filter import blue_filter
 
 import cv2
 import depthai as dai
@@ -21,6 +24,8 @@ UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 15
 SAVE_INTERVAL = 1.0  # seconds
+SAVE_INTERVAL = 1000.0  # seconds
+START_BLUE_FILTER = True
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
@@ -253,6 +258,11 @@ class DualOakNode(Node):
             if rgb_pkt is not None:
                 frame = rgb_pkt.getCvFrame()
                 frame = cv2.rotate(frame, cv2.ROTATE_180)
+
+                if 
+                :
+                    frame = blue_filter(frame)
+                    
 
                 if dev["type"] == "oakd":
                     self.rgb_oakd_latest = frame

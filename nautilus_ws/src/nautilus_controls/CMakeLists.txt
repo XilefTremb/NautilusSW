@@ -1,53 +1,46 @@
 cmake_minimum_required(VERSION 3.8)
-project(nautilus_sensors)
+project(nautilus_controls)
 
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclpy REQUIRED)
 
 # Install Python package modules
-ament_python_install_package("DVL")
-ament_python_install_package("vision")
+ament_python_install_package("nautilus_controls")
 
 # Install executable Python scripts
+
 install(
   PROGRAMS
-    DVL/fake_dvl.py
+    nautilus_controls/cube_interface.py
   DESTINATION lib/${PROJECT_NAME}
-  RENAME fake_dvl
+  RENAME cube_interface
 )
 
 install(
   PROGRAMS
-    DVL/dvl_sensor_node.py
+    nautilus_controls/vision_controller.py
   DESTINATION lib/${PROJECT_NAME}
-  RENAME dvl_sensor_node
+  RENAME vision_controller
 )
 
 install(
   PROGRAMS
-    vision/stream.py
+    nautilus_controls/pid_node.py
   DESTINATION lib/${PROJECT_NAME}
-  RENAME stream
-)
-
-install(
-  PROGRAMS
-    vision/yolo_pipeline.py
-  DESTINATION lib/${PROJECT_NAME}
-  RENAME yolo_pipeline
+  RENAME pid_node
 )
 
 install(
   DIRECTORY
-    DVL/
-  DESTINATION share/${PROJECT_NAME}/DVl
+    launch/
+  DESTINATION share/${PROJECT_NAME}/launch
 )
 
 install(
   DIRECTORY
-    vision/
-  DESTINATION share/${PROJECT_NAME}/vision
+    nautilus_controls/
+  DESTINATION share/${PROJECT_NAME}/nautilus_controls
 )
 
 # # Install resource index + package.xml
