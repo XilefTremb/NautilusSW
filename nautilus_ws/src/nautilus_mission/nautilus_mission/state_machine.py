@@ -56,6 +56,12 @@ class StateMachine(Node):
             10
         )
 
+        self.depth_threshold_pub = self.create_publisher(
+            Int16,
+            '/yolo/depth_threshold',
+            10
+        )
+
         self.timer1 = self.create_timer(1/10, self.StateMachine)
         self.timer2 = self.create_timer(1/10, self.ForwardCmdPub)
 
@@ -84,7 +90,9 @@ class StateMachine(Node):
                 self.StateSender()
         
         elif self.state == RobotState.TRAVERSE_GATE:
-            pass
+            msg = Int16()
+            msg.data = 15000
+            self.depth_threshold_pub.publish(msg)
 
     def StateSender(self):
         msg = Int8()

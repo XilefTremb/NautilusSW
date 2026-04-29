@@ -4,7 +4,7 @@ import argparse
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int16
 import cv2
 import numpy as np
 from ultralytics import YOLO
@@ -41,10 +41,14 @@ class YoloNode(Node):
         else:
             self.model = YOLO(
                 '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+            
+        self.depth_threshold = 5000
 
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
+
+        self.depth_threshold_sub = self.create_subscription(Int16, '/yolo/depth_threshold', self.depth_threshold_callback, 10)
 
         # ApproximateTimeSynchronizer with allow_headerless=True
         self.ts = ApproximateTimeSynchronizer(
@@ -95,7 +99,6 @@ class YoloNode(Node):
         payload = []
         payload_angle_bet = []
 
-        # Dictionnaire: clé = id objet, valeur = infos pour angle_between_object
         objects = {}
 
         annotated_frame = frame.copy()
@@ -143,7 +146,7 @@ class YoloNode(Node):
                     }
 
                 #Threshold for depth
-                if depth_value<5000:
+                if depth_value<self.depth_threshold:
                     # ----------- PAYLOAD -----------
                     payload.extend([float(object_id), depth_value, dist_center])
 
@@ -229,6 +232,10 @@ class YoloNode(Node):
         msg_depth_global_mean.data = int(depth_global_mean)
 
         self.mean_depth_forward_cam.publish(msg_depth_global_mean)
+
+    def depth_threshold_callback(self, msg):
+        self.depth_threshold = msg.data
+        self.get_logger().info(f'Updated depth threshold to {self.depth_threshold}')
 
 
 def main():
