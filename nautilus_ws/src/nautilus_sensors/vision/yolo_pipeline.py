@@ -42,7 +42,7 @@ class YoloNode(Node):
             self.model = YOLO(
                 '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
             
-        #self.depth_threshold = 5000
+        self.depth_threshold = 5000
 
         # ---------------- SUBSCRIBERS ----------------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')

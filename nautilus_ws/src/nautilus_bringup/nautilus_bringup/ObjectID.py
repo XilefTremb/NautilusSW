@@ -28,6 +28,12 @@ class ObjectID(IntEnum):
     REQUIN = 6
     POISSON = 7
 
+#Prequal model ids
+    # GATE_LEG = 2
+    # GATE_TOTAL = 3
+    # MARQUEUR = 4
+    # LUMIERE = 5
+
 class GateLikeObjectID(IntEnum):
     GATE_LEFT_MID = 1
     GATE_MID_RIGHT = 2

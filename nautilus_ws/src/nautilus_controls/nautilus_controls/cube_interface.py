@@ -104,7 +104,7 @@ class CubeInterface(Node):
         forward_cmd = int(self.last_forward_cmd) if self.is_fresh(self.last_forward_cmd_time) else None
 
         if yaw_cmd is None and lateral_cmd is None and forward_cmd is None:
-            # self.get_logger().info('No fresh command')
+            self.get_logger().info('No fresh command')
             return
 
         self.auv.send_rc_override(

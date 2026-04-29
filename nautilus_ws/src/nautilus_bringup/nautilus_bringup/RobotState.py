@@ -9,6 +9,7 @@ class RobotState(IntEnum):
     TRAVERSE_GATE = 5
     CIRCLE_MARKER = 6
     RETURN_GATE = 7
+    APPROACH_ANY = 8
 
 
     
