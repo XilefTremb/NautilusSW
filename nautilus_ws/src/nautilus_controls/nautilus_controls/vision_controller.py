@@ -62,6 +62,9 @@ class VisionControllerNode(Node):
         elif self.state == RobotState.CIRCLE_MARKER:
             self.current_object_detection_callback = self.circle_marker_callback
 
+        elif self.state == RobotState.RETURN_GATE:
+            self.current_object_detection_callback = self.approach_object_callback
+
         if self.previous_state != self.state:
             if self.previous_state is not None:
                 self.get_logger().info(f'Set state from {self.previous_state.name} to : {self.state.name}')
@@ -114,6 +117,16 @@ class VisionControllerNode(Node):
         if self.last_target_gate_detection is not None:
             yaw_msg = Float32()
             yaw_msg.data = self.last_target_gate_detection[2]
+            self.yaw_error_pub.publish(yaw_msg)
+
+        forward_msg = Int16()
+        forward_msg.data = 1600
+        self.forward_cmd_pub.publish(forward_msg)
+
+    def approach_object_callback(self, msg):
+        if self.last_target_object_detection is not None:
+            yaw_msg = Float32()
+            yaw_msg.data = self.last_target_object_detection[2]
             self.yaw_error_pub.publish(yaw_msg)
 
         forward_msg = Int16()
