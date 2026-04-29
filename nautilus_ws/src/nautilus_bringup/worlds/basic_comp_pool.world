@@ -382,7 +382,7 @@
     <include>
       <uri>model://robosub_gate_leg</uri>
       <name>robosub_gate_leg</name>
-      <pose>10 -7 -1.5 0 0 0</pose>
+      <pose>10 -7 -0.5 0 0 0</pose>
     </include>
 
 
