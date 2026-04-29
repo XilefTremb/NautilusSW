@@ -127,9 +127,9 @@ class YoloNode(Node):
                 depth_zone_w = abs(x2-x1)
 
                 if depth_zone_w > depth_zone_h:
-                    half = 0.40 * depth_zone_w
-                else:
                     half = 0.40 * depth_zone_h
+                else:
+                    half = 0.40 * depth_zone_w
 
                 half = max(1, min(8, np.ceil(half)))
 
