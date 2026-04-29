@@ -23,6 +23,7 @@ from gi.repository import Gst
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 15
+SAVE_INTERVAL = 1.0  # seconds
 SAVE_INTERVAL = 1000.0  # seconds
 START_BLUE_FILTER = True
 
@@ -44,6 +45,9 @@ class DualOakNode(Node):
         super().__init__("dual_oak_node")
 
         self.get_logger().info("Starting Dual OAK ROS2 Node...")
+        
+        self.declare_parameter("save_images", False)
+        self.save_images = self.get_parameter("save_images").value
 
         # ROS Bridge
         self.bridge = CvBridge()
@@ -58,6 +62,12 @@ class DualOakNode(Node):
         self.depth_pub = self.create_publisher(
             Image,
             "/oakd/camera/depth/image_raw",
+            10
+        )
+        
+        self.rgb1_pub = self.create_publisher(
+            Image,
+            "/oak1/camera/image_raw",
             10
         )
 
@@ -249,7 +259,8 @@ class DualOakNode(Node):
                 frame = rgb_pkt.getCvFrame()
                 frame = cv2.rotate(frame, cv2.ROTATE_180)
 
-                if START_BLUE_FILTER:
+                if 
+                :
                     frame = blue_filter(frame)
                     
 
@@ -265,6 +276,11 @@ class DualOakNode(Node):
 
                 else:
                     self.rgb_oak1_latest = frame
+                    rgb1_msg = self.bridge.cv2_to_imgmsg(
+                        frame,
+                        encoding="bgr8"
+                    )
+                    self.rgb1_pub.publish(rgb1_msg)
 
             # ---------------- OAK-D ONLY ----------------
             if dev["type"] == "oakd":
@@ -295,7 +311,7 @@ class DualOakNode(Node):
         # =================================================
         # SYNCHRONIZED SAVE
         # =================================================
-        if now - self.last_save_time >= SAVE_INTERVAL:
+        if self.save_images and (now - self.last_save_time >= SAVE_INTERVAL):
             if (
                 self.rgb_oakd_latest is not None and
                 self.rgb_oak1_latest is not None and
