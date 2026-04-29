@@ -1,8 +1,0 @@
-setup.py
-DVL/__init__.py
-DVL/dvl_sensor_node.py
-DVL/fake_dvl.py
-DVL.egg-info/PKG-INFO
-DVL.egg-info/SOURCES.txt
-DVL.egg-info/dependency_links.txt
-DVL.egg-info/top_level.txt

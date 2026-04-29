@@ -1,8 +1,0 @@
-setup.py
-nautilus_bringup/ObjectID.py
-nautilus_bringup/RobotState.py
-nautilus_bringup/__init__.py
-nautilus_bringup.egg-info/PKG-INFO
-nautilus_bringup.egg-info/SOURCES.txt
-nautilus_bringup.egg-info/dependency_links.txt
-nautilus_bringup.egg-info/top_level.txt
