@@ -1,0 +1,338 @@
+[0.736s] [34mcolcon[0m [1;30mDEBUG[0m [32mCommand line arguments: ['/usr/bin/colcon', 'build'][0m
+[0.737s] [34mcolcon[0m [1;30mDEBUG[0m [32mParsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=6, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0xffff849a9870>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0xffff849a9300>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0xffff849a9300>>, mixin_verb=('build',))[0m
+[0.918s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(colcon_meta) check parameters
+[0.918s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(recursive) check parameters
+[0.919s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(ignore) check parameters
+[0.919s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(path) check parameters
+[0.919s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(colcon_meta) discover
+[0.919s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(recursive) discover
+[0.919s] [34mcolcon.colcon_core.package_discovery[0m [1;30mINFO[0m Crawling recursively for packages in '/home/nautilus/NautilusSW/nautilus_ws'
+[0.919s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.920s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'ignore'
+[0.920s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'ignore_ament_install'
+[0.920s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['colcon_pkg']
+[0.920s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'colcon_pkg'
+[0.920s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['colcon_meta']
+[0.921s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'colcon_meta'
+[0.921s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['ros']
+[0.921s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'ros'
+[0.955s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['cmake', 'python']
+[0.955s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'cmake'
+[0.955s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'python'
+[0.955s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['python_setup_py']
+[0.955s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'python_setup_py'
+[0.956s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.956s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(build) by extension 'ignore'
+[0.956s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(build) ignored
+[0.956s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.956s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(install) by extension 'ignore'
+[0.956s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(install) ignored
+[0.957s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.957s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(log) by extension 'ignore'
+[0.957s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(log) ignored
+[0.957s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extensions ['ignore', 'ignore_ament_install']
+[0.957s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extension 'ignore'
+[0.957s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extension 'ignore_ament_install'
+[0.957s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extensions ['colcon_pkg']
+[0.957s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extension 'colcon_pkg'
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extensions ['colcon_meta']
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extension 'colcon_meta'
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extensions ['ros']
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extension 'ros'
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extensions ['cmake', 'python']
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extension 'cmake'
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extension 'python'
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extensions ['python_setup_py']
+[0.958s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src) by extension 'python_setup_py'
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extensions ['ignore', 'ignore_ament_install']
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extension 'ignore'
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extension 'ignore_ament_install'
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extensions ['colcon_pkg']
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extension 'colcon_pkg'
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extensions ['colcon_meta']
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extension 'colcon_meta'
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extensions ['ros']
+[0.959s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_bringup) by extension 'ros'
+[0.965s] [34mcolcon.colcon_core.package_identification[0m [1;30mDEBUG[0m [32mPackage 'src/nautilus_bringup' with type 'ros.ament_cmake' and name 'nautilus_bringup'[0m
+[0.965s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extensions ['ignore', 'ignore_ament_install']
+[0.967s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extension 'ignore'
+[0.968s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extension 'ignore_ament_install'
+[0.968s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extensions ['colcon_pkg']
+[0.968s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extension 'colcon_pkg'
+[0.968s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extensions ['colcon_meta']
+[0.968s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extension 'colcon_meta'
+[0.968s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extensions ['ros']
+[0.968s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_controls) by extension 'ros'
+[0.969s] [34mcolcon.colcon_core.package_identification[0m [1;30mDEBUG[0m [32mPackage 'src/nautilus_controls' with type 'ros.ament_cmake' and name 'nautilus_controls'[0m
+[0.970s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extensions ['ignore', 'ignore_ament_install']
+[0.970s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extension 'ignore'
+[0.970s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extension 'ignore_ament_install'
+[0.970s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extensions ['colcon_pkg']
+[0.970s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extension 'colcon_pkg'
+[0.970s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extensions ['colcon_meta']
+[0.970s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extension 'colcon_meta'
+[0.971s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extensions ['ros']
+[0.971s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_mission) by extension 'ros'
+[0.972s] [34mcolcon.colcon_core.package_identification[0m [1;30mDEBUG[0m [32mPackage 'src/nautilus_mission' with type 'ros.ament_cmake' and name 'nautilus_mission'[0m
+[0.972s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extensions ['ignore', 'ignore_ament_install']
+[0.972s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extension 'ignore'
+[0.972s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extension 'ignore_ament_install'
+[0.972s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extensions ['colcon_pkg']
+[0.972s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extension 'colcon_pkg'
+[0.973s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extensions ['colcon_meta']
+[0.973s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extension 'colcon_meta'
+[0.973s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extensions ['ros']
+[0.973s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(src/nautilus_sensors) by extension 'ros'
+[0.974s] [34mcolcon.colcon_core.package_identification[0m [1;30mDEBUG[0m [32mPackage 'src/nautilus_sensors' with type 'ros.ament_cmake' and name 'nautilus_sensors'[0m
+[0.974s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(recursive) using defaults
+[0.974s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(ignore) discover
+[0.974s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(ignore) using defaults
+[0.974s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(path) discover
+[0.974s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(path) using defaults
+[1.020s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(prefix_path) check parameters
+[1.021s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(prefix_path) discover
+[1.028s] [34mcolcon.colcon_installed_package_information.package_discovery[0m [1;30mDEBUG[0m [32mFound 273 installed packages in /opt/ros/humble[0m
+[1.030s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(prefix_path) using defaults
+[1.098s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'cmake_args' from command line to 'None'
+[1.098s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'cmake_target' from command line to 'None'
+[1.098s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.099s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'cmake_clean_cache' from command line to 'False'
+[1.099s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'cmake_clean_first' from command line to 'False'
+[1.099s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'cmake_force_configure' from command line to 'False'
+[1.099s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'ament_cmake_args' from command line to 'None'
+[1.099s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'catkin_cmake_args' from command line to 'None'
+[1.099s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_bringup' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.099s] [34mcolcon.colcon_core.verb[0m [1;30mDEBUG[0m [32mBuilding package 'nautilus_bringup' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup', 'merge_install': False, 'path': '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_bringup', 'symlink_install': False, 'test_result_base': None}[0m
+[1.099s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'cmake_args' from command line to 'None'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'cmake_target' from command line to 'None'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'cmake_clean_cache' from command line to 'False'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'cmake_clean_first' from command line to 'False'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'cmake_force_configure' from command line to 'False'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'ament_cmake_args' from command line to 'None'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'catkin_cmake_args' from command line to 'None'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_controls' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mDEBUG[0m [32mBuilding package 'nautilus_controls' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls', 'merge_install': False, 'path': '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_controls', 'symlink_install': False, 'test_result_base': None}[0m
+[1.100s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'cmake_args' from command line to 'None'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'cmake_target' from command line to 'None'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'cmake_clean_cache' from command line to 'False'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'cmake_clean_first' from command line to 'False'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'cmake_force_configure' from command line to 'False'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'ament_cmake_args' from command line to 'None'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'catkin_cmake_args' from command line to 'None'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_mission' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mDEBUG[0m [32mBuilding package 'nautilus_mission' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission', 'merge_install': False, 'path': '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_mission', 'symlink_install': False, 'test_result_base': None}[0m
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'cmake_args' from command line to 'None'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'cmake_target' from command line to 'None'
+[1.101s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.102s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'cmake_clean_cache' from command line to 'False'
+[1.102s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'cmake_clean_first' from command line to 'False'
+[1.102s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'cmake_force_configure' from command line to 'False'
+[1.102s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'ament_cmake_args' from command line to 'None'
+[1.102s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'catkin_cmake_args' from command line to 'None'
+[1.102s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'nautilus_sensors' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.102s] [34mcolcon.colcon_core.verb[0m [1;30mDEBUG[0m [32mBuilding package 'nautilus_sensors' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors', 'merge_install': False, 'path': '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors', 'symlink_install': False, 'test_result_base': None}[0m
+[1.102s] [34mcolcon.colcon_core.executor[0m [1;30mINFO[0m Executing jobs using 'parallel' executor
+[1.105s] [34mcolcon.colcon_parallel_executor.executor.parallel[0m [1;30mDEBUG[0m [32mrun_until_complete[0m
+[1.105s] [34mcolcon.colcon_ros.task.ament_cmake.build[0m [1;30mINFO[0m Building ROS package in '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_bringup' with build type 'ament_cmake'
+[1.105s] [34mcolcon.colcon_cmake.task.cmake.build[0m [1;30mINFO[0m Building CMake package in '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_bringup'
+[1.115s] [34mcolcon.colcon_core.plugin_system[0m [1;30mINFO[0m Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[1.116s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.116s] [34mcolcon.colcon_core.shell[0m [1;30mDEBUG[0m [32mSkip shell extension 'dsv' for command environment[0m
+[1.121s] [34mcolcon.colcon_ros.task.ament_cmake.build[0m [1;30mINFO[0m Building ROS package in '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_controls' with build type 'ament_cmake'
+[1.122s] [34mcolcon.colcon_cmake.task.cmake.build[0m [1;30mINFO[0m Building CMake package in '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_controls'
+[1.122s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.122s] [34mcolcon.colcon_core.shell[0m [1;30mDEBUG[0m [32mSkip shell extension 'dsv' for command environment[0m
+[1.130s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_bringup -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup[0m
+[1.138s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_controls -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls[0m
+[3.918s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_controls -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls[0m
+[3.925s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls -- -j6 -l6[0m
+[4.024s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_bringup -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup[0m
+[4.028s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup -- -j6 -l6[0m
+[4.682s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls -- -j6 -l6[0m
+[4.704s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls[0m
+[4.764s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup -- -j6 -l6[0m
+[4.767s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup[0m
+[4.836s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(nautilus_controls)
+[4.837s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls[0m
+[4.849s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls' for CMake module files
+[4.851s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls' for CMake config files
+[4.853s] [34mcolcon.colcon_core.shell[0m [1;30mLevel 1[0m create_environment_hook('nautilus_controls', 'cmake_prefix_path')
+[4.853s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/hook/cmake_prefix_path.ps1'
+[4.856s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/hook/cmake_prefix_path.dsv'
+[4.858s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/hook/cmake_prefix_path.sh'
+[4.861s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/lib'
+[4.862s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/bin'
+[4.862s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/lib/pkgconfig/nautilus_controls.pc'
+[4.863s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/lib/python3.10/site-packages'
+[4.863s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/bin'
+[4.864s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.ps1'
+[4.867s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.dsv'
+[4.869s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.sh'
+[4.873s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.bash'
+[4.875s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.zsh'
+[4.877s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/colcon-core/packages/nautilus_controls)
+[4.878s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(nautilus_controls)
+[4.879s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls' for CMake module files
+[4.879s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls' for CMake config files
+[4.880s] [34mcolcon.colcon_core.shell[0m [1;30mLevel 1[0m create_environment_hook('nautilus_controls', 'cmake_prefix_path')
+[4.881s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/hook/cmake_prefix_path.ps1'
+[4.906s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/hook/cmake_prefix_path.dsv'
+[4.907s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/hook/cmake_prefix_path.sh'
+[4.908s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/lib'
+[4.908s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/bin'
+[4.908s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/lib/pkgconfig/nautilus_controls.pc'
+[4.909s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/lib/python3.10/site-packages'
+[4.909s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/bin'
+[4.910s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.ps1'
+[4.911s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.dsv'
+[4.993s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.sh'
+[4.995s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.bash'
+[4.998s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/nautilus_controls/package.zsh'
+[5.000s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/share/colcon-core/packages/nautilus_controls)
+[5.002s] [34mcolcon.colcon_ros.task.ament_cmake.build[0m [1;30mINFO[0m Building ROS package in '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_mission' with build type 'ament_cmake'
+[5.003s] [34mcolcon.colcon_cmake.task.cmake.build[0m [1;30mINFO[0m Building CMake package in '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_mission'
+[5.004s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[5.004s] [34mcolcon.colcon_core.shell[0m [1;30mDEBUG[0m [32mSkip shell extension 'dsv' for command environment[0m
+[5.022s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_mission -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission[0m
+[5.151s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(nautilus_bringup)
+[5.152s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup' for CMake module files
+[5.153s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup[0m
+[5.155s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup' for CMake config files
+[5.157s] [34mcolcon.colcon_core.shell[0m [1;30mLevel 1[0m create_environment_hook('nautilus_bringup', 'cmake_prefix_path')
+[5.157s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/hook/cmake_prefix_path.ps1'
+[5.160s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/hook/cmake_prefix_path.dsv'
+[5.161s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/hook/cmake_prefix_path.sh'
+[5.163s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/bin'
+[5.163s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/lib/pkgconfig/nautilus_bringup.pc'
+[5.164s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/lib/python3.10/site-packages'
+[5.166s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/bin'
+[5.167s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.ps1'
+[5.169s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.dsv'
+[5.171s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.sh'
+[5.173s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.bash'
+[5.174s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.zsh'
+[5.175s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/colcon-core/packages/nautilus_bringup)
+[5.178s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(nautilus_bringup)
+[5.179s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup' for CMake module files
+[5.180s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup' for CMake config files
+[5.182s] [34mcolcon.colcon_core.shell[0m [1;30mLevel 1[0m create_environment_hook('nautilus_bringup', 'cmake_prefix_path')
+[5.183s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/hook/cmake_prefix_path.ps1'
+[5.185s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/hook/cmake_prefix_path.dsv'
+[5.186s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/hook/cmake_prefix_path.sh'
+[5.188s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/bin'
+[5.188s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/lib/pkgconfig/nautilus_bringup.pc'
+[5.189s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/lib/python3.10/site-packages'
+[5.191s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/bin'
+[5.192s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.ps1'
+[5.194s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.dsv'
+[7.811s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.sh'
+[7.813s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.bash'
+[7.815s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.zsh'
+[7.816s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/colcon-core/packages/nautilus_bringup)
+[7.817s] [34mcolcon.colcon_ros.task.ament_cmake.build[0m [1;30mINFO[0m Building ROS package in '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors' with build type 'ament_cmake'
+[7.817s] [34mcolcon.colcon_cmake.task.cmake.build[0m [1;30mINFO[0m Building CMake package in '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors'
+[7.818s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[7.818s] [34mcolcon.colcon_core.shell[0m [1;30mDEBUG[0m [32mSkip shell extension 'dsv' for command environment[0m
+[7.836s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors[0m
+[9.538s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_mission -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission[0m
+[9.541s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission -- -j6 -l6[0m
+[9.786s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors[0m
+[9.788s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors -- -j6 -l6[0m
+[10.363s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission -- -j6 -l6[0m
+[10.548s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission[0m
+[10.701s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(nautilus_mission)
+[10.702s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission' for CMake module files
+[10.703s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission' for CMake config files
+[10.704s] [34mcolcon.colcon_core.shell[0m [1;30mLevel 1[0m create_environment_hook('nautilus_mission', 'cmake_prefix_path')
+[10.704s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_controls/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission[0m
+[10.705s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/hook/cmake_prefix_path.ps1'
+[10.706s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/hook/cmake_prefix_path.dsv'
+[10.707s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/hook/cmake_prefix_path.sh'
+[10.708s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/lib'
+[10.708s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/bin'
+[10.708s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/lib/pkgconfig/nautilus_mission.pc'
+[10.709s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/lib/python3.10/site-packages'
+[10.709s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/bin'
+[10.710s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.ps1'
+[10.712s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.dsv'
+[10.713s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.sh'
+[10.714s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.bash'
+[10.714s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.zsh'
+[10.715s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/colcon-core/packages/nautilus_mission)
+[10.716s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(nautilus_mission)
+[10.717s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission' for CMake module files
+[10.717s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission' for CMake config files
+[10.718s] [34mcolcon.colcon_core.shell[0m [1;30mLevel 1[0m create_environment_hook('nautilus_mission', 'cmake_prefix_path')
+[10.718s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/hook/cmake_prefix_path.ps1'
+[10.719s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/hook/cmake_prefix_path.dsv'
+[10.720s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/hook/cmake_prefix_path.sh'
+[10.721s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/lib'
+[10.721s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/bin'
+[10.721s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/lib/pkgconfig/nautilus_mission.pc'
+[10.722s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/lib/python3.10/site-packages'
+[10.722s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/bin'
+[10.723s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.ps1'
+[10.724s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.dsv'
+[11.968s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.sh'
+[11.970s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.bash'
+[11.972s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.zsh'
+[11.974s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/colcon-core/packages/nautilus_mission)
+[11.979s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors -- -j6 -l6[0m
+[11.984s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors[0m
+[12.403s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(nautilus_sensors)
+[12.404s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors' for CMake module files
+[12.405s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors[0m
+[12.407s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors' for CMake config files
+[12.409s] [34mcolcon.colcon_core.shell[0m [1;30mLevel 1[0m create_environment_hook('nautilus_sensors', 'cmake_prefix_path')
+[12.410s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/hook/cmake_prefix_path.ps1'
+[12.412s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/hook/cmake_prefix_path.dsv'
+[12.414s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/hook/cmake_prefix_path.sh'
+[12.416s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib'
+[12.416s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/bin'
+[12.416s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/pkgconfig/nautilus_sensors.pc'
+[12.417s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/python3.10/site-packages'
+[12.419s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/bin'
+[12.420s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.ps1'
+[12.422s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.dsv'
+[12.424s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.sh'
+[12.425s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.bash'
+[12.427s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.zsh'
+[12.428s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/colcon-core/packages/nautilus_sensors)
+[12.430s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(nautilus_sensors)
+[12.431s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors' for CMake module files
+[12.433s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors' for CMake config files
+[12.436s] [34mcolcon.colcon_core.shell[0m [1;30mLevel 1[0m create_environment_hook('nautilus_sensors', 'cmake_prefix_path')
+[12.436s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/hook/cmake_prefix_path.ps1'
+[12.438s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/hook/cmake_prefix_path.dsv'
+[12.439s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating environment hook '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/hook/cmake_prefix_path.sh'
+[12.442s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib'
+[12.442s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/bin'
+[12.442s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/pkgconfig/nautilus_sensors.pc'
+[12.443s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/python3.10/site-packages'
+[12.444s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/bin'
+[12.446s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.ps1'
+[12.448s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.dsv'
+[12.450s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.sh'
+[12.452s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.bash'
+[12.453s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.zsh'
+[12.455s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/colcon-core/packages/nautilus_sensors)
+[12.456s] [34mcolcon.colcon_parallel_executor.executor.parallel[0m [1;30mDEBUG[0m [32mclosing loop[0m
+[12.457s] [34mcolcon.colcon_parallel_executor.executor.parallel[0m [1;30mDEBUG[0m [32mloop closed[0m
+[12.458s] [34mcolcon.colcon_parallel_executor.executor.parallel[0m [1;30mDEBUG[0m [32mrun_until_complete finished with '0'[0m
+[12.458s] [34mcolcon.colcon_core.event_reactor[0m [1;30mDEBUG[0m [32mjoining thread[0m
+[12.482s] [34mcolcon.colcon_core.plugin_system[0m [1;30mINFO[0m Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[12.482s] [34mcolcon.colcon_core.plugin_system[0m [1;30mINFO[0m Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[12.482s] [34mcolcon.colcon_notification.desktop_notification[0m [1;30mINFO[0m Sending desktop notification using 'notify2'
+[12.534s] [34mcolcon.colcon_core.event_reactor[0m [1;30mDEBUG[0m [32mjoined thread[0m
+[12.535s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/home/nautilus/NautilusSW/nautilus_ws/install/local_setup.ps1'
+[12.541s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix util module '/home/nautilus/NautilusSW/nautilus_ws/install/_local_setup_util_ps1.py'
+[12.547s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/home/nautilus/NautilusSW/nautilus_ws/install/setup.ps1'
+[12.551s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/home/nautilus/NautilusSW/nautilus_ws/install/local_setup.sh'
+[12.554s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix util module '/home/nautilus/NautilusSW/nautilus_ws/install/_local_setup_util_sh.py'
+[12.556s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/home/nautilus/NautilusSW/nautilus_ws/install/setup.sh'
+[12.560s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/home/nautilus/NautilusSW/nautilus_ws/install/local_setup.bash'
+[12.562s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/home/nautilus/NautilusSW/nautilus_ws/install/setup.bash'
+[12.566s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script '/home/nautilus/NautilusSW/nautilus_ws/install/local_setup.zsh'
+[12.568s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script '/home/nautilus/NautilusSW/nautilus_ws/install/setup.zsh'

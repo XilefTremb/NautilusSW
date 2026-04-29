@@ -1,0 +1,11 @@
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/uninstall.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/nautilus_controls_uninstall.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/ament_cmake_python_copy_nautilus_controls.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/ament_cmake_python_build_nautilus_controls_egg.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/test.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/edit_cache.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/rebuild_cache.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/list_install_components.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/install.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/install/local.dir
+/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_controls/CMakeFiles/install/strip.dir

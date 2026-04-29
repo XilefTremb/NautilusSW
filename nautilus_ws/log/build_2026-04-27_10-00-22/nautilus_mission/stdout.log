@@ -1,0 +1,60 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+-- Found ament_lint_auto: 0.12.15 (/opt/ros/humble/share/ament_lint_auto/cmake)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_mission
+Built target ament_cmake_python_copy_nautilus_mission
+running egg_info
+creating nautilus_mission.egg-info
+writing nautilus_mission.egg-info/PKG-INFO
+writing dependency_links to nautilus_mission.egg-info/dependency_links.txt
+writing top-level names to nautilus_mission.egg-info/top_level.txt
+writing manifest file 'nautilus_mission.egg-info/SOURCES.txt'
+reading manifest file 'nautilus_mission.egg-info/SOURCES.txt'
+writing manifest file 'nautilus_mission.egg-info/SOURCES.txt'
+Built target ament_cmake_python_build_nautilus_mission_egg
+-- Install configuration: ""
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/launch
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/launch/mission.launch.py
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/lib/nautilus_mission/state_machine
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/environment/pythonpath.sh
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/environment/pythonpath.dsv
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission-0.0.0-py3.10.egg-info
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission-0.0.0-py3.10.egg-info/SOURCES.txt
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission-0.0.0-py3.10.egg-info/PKG-INFO
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission-0.0.0-py3.10.egg-info/dependency_links.txt
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission-0.0.0-py3.10.egg-info/top_level.txt
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission/state_machine.py
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission/__init__.py
+Listing '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission'...
+Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission/__init__.py'...
+Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/local/lib/python3.10/dist-packages/nautilus_mission/state_machine.py'...
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/ament_index/resource_index/package_run_dependencies/nautilus_mission
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/ament_index/resource_index/parent_prefix_path/nautilus_mission
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/environment/ament_prefix_path.sh
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/environment/ament_prefix_path.dsv
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/environment/path.sh
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/environment/path.dsv
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/local_setup.bash
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/local_setup.sh
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/local_setup.zsh
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/local_setup.dsv
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.dsv
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/ament_index/resource_index/packages/nautilus_mission
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/cmake/nautilus_missionConfig.cmake
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/cmake/nautilus_missionConfig-version.cmake
+-- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_mission/share/nautilus_mission/package.xml

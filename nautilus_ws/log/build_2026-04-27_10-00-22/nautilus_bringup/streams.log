@@ -1,0 +1,218 @@
+[0.024s] Invoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_bringup -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup
+[0.638s] -- The C compiler identification is GNU 11.4.0
+[1.053s] -- The CXX compiler identification is GNU 11.4.0
+[1.088s] -- Detecting C compiler ABI info
+[1.220s] -- Detecting C compiler ABI info - done
+[1.246s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.246s] -- Detecting C compile features
+[1.248s] -- Detecting C compile features - done
+[1.258s] -- Detecting CXX compiler ABI info
+[1.408s] -- Detecting CXX compiler ABI info - done
+[1.429s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.430s] -- Detecting CXX compile features
+[1.432s] -- Detecting CXX compile features - done
+[1.442s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[2.212s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[2.640s] -- Found ament_lint_auto: 0.12.15 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[2.841s] -- Added test 'copyright' to check source files copyright and LICENSE
+[2.873s] -- Added test 'flake8' to check Python code syntax and style conventions
+[2.877s] -- Added test 'lint_cmake' to check CMake code style
+[2.880s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[2.895s] -- Added test 'xmllint' to check XML markup files
+[2.897s] -- Configuring done
+[2.905s] -- Generating done
+[2.909s] -- Build files have been written to: /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup
+[2.918s] Invoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_bringup -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup
+[2.922s] Invoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup -- -j6 -l6
+[3.027s] Built target ament_cmake_python_copy_nautilus_bringup
+[3.425s] running egg_info
+[3.456s] creating nautilus_bringup.egg-info
+[3.456s] writing nautilus_bringup.egg-info/PKG-INFO
+[3.457s] writing dependency_links to nautilus_bringup.egg-info/dependency_links.txt
+[3.457s] writing top-level names to nautilus_bringup.egg-info/top_level.txt
+[3.457s] writing manifest file 'nautilus_bringup.egg-info/SOURCES.txt'
+[3.553s] reading manifest file 'nautilus_bringup.egg-info/SOURCES.txt'
+[3.554s] writing manifest file 'nautilus_bringup.egg-info/SOURCES.txt'
+[3.632s] Built target ament_cmake_python_build_nautilus_bringup_egg
+[3.658s] Invoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup -- -j6 -l6
+[3.661s] Invoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup
+[3.679s] -- Install configuration: ""
+[3.679s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch
+[3.679s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/robots
+[3.679s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/robots/orca_auv.launch.py
+[3.679s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/robots/nautilus_auv.launch.py
+[3.680s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/orca.launch.py
+[3.680s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/orca_comp.launch.py
+[3.680s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/launch/mavproxy_router.launch.py
+[3.680s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/config
+[3.680s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/config/nautilus_auv_bridge.yaml
+[3.681s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv
+[3.681s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/BlueRov2.sdf
+[3.681s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/BlueRov2.urdf
+[3.681s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/BlueRov2.urdf.xacro
+[3.681s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part
+[3.682s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Thruster
+[3.682s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Thruster/T200.urdf.xacro
+[3.682s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera
+[3.682s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera/Camera.urdf.xacro
+[3.682s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera/CameraDepth.urdf.xacro
+[3.683s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera/CameraMonoDepth.urdf.xacro
+[3.683s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/Camera/CameraStereo.urdf.xacro
+[3.683s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/DepthSensor
+[3.683s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/DepthSensor/DepthSensor.urdf.xacro
+[3.684s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/DVL
+[3.684s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/DVL/DVL.urdf.xacro
+[3.684s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/IMU
+[3.684s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/IMU/IMU.urdf.xacro
+[3.684s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/P3D
+[3.684s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/nautilus_auv/Part/P3D/P3D.urdf.xacro
+[3.685s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds
+[3.685s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/artisticHouse.world
+[3.685s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/sand.world
+[3.685s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/terrain.dae
+[3.711s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/iris_runway.sdf
+[3.711s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/terrain.sdf
+[3.711s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/semi_final_pool.world
+[3.711s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/inf_pool.world
+[3.711s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/basic_comp_pool.world
+[3.712s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/wildthumper_playpen.sdf
+[3.712s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/underwater.world
+[3.712s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/iris_maze.sdf
+[3.712s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/worlds/pool_corner.world
+[3.713s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models
+[3.713s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap
+[3.713s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/meshes
+[3.713s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/meshes/sandseabed.dae
+[3.720s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/meshes/License and source for textures.txt
+[3.721s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/meshes/soil_sand_0045_01.jpg
+[3.726s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/meshes/heightmap.dae
+[3.734s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/model.sdf
+[3.734s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/materials
+[3.734s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/materials/flat_normal.png
+[3.734s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/materials/soil_sand_0045_01.jpg
+[3.740s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/sand_heightmap/model.config
+[3.740s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_buoy
+[3.741s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_buoy/meshes
+[3.741s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_buoy/meshes/buoy.dae
+[3.744s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_buoy/model.sdf
+[3.745s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_buoy/model.config
+[3.745s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo
+[3.745s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo/meshes
+[3.745s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo/meshes/torpedo.dae
+[3.746s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo/model.sdf
+[3.746s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo/materials
+[3.746s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo/materials/textures
+[3.747s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo/materials/textures/torpedo_map.png
+[3.755s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo/torpedo.sdf
+[3.756s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_torpedo/model.config
+[3.756s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy
+[3.757s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/meshes
+[3.759s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/meshes/bluerov2_heavy.dae
+[3.865s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/meshes/t200_cw_prop.dae
+[3.889s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/meshes/t200_ccw_prop.dae
+[3.890s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/model.sdf
+[3.892s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/model.sdf.in
+[3.892s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/configs.yaml
+[3.892s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/model.config
+[3.892s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_heavy/BlueROV2Heavy.md
+[3.892s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon
+[3.892s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon/meshes
+[3.893s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon/meshes/octagon.dae
+[3.896s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon/model.sdf
+[3.896s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon/model.config
+[3.896s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_ping
+[3.898s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_ping/model.sdf
+[3.899s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_ping/model.sdf.in
+[3.900s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_ping/configs.yaml
+[3.901s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_ping/model.config
+[3.902s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2_ping/BlueROV2Ping.md
+[3.902s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_path
+[3.902s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_path/meshes
+[3.903s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_path/meshes/path.dae
+[3.903s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_path/model.sdf
+[3.903s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_path/model.config
+[3.903s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin
+[3.903s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin/meshes
+[3.903s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin/meshes/bin.dae
+[3.903s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin/model.sdf
+[3.904s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin/materials
+[3.904s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin/materials/textures
+[3.904s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin/materials/textures/DropBRUVS.png
+[3.904s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin/model.config
+[3.904s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_bin/ball.sdf
+[3.905s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/pool
+[3.905s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/pool/meshes
+[3.905s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/pool/meshes/pool.dae
+[3.906s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/pool/model.sdf
+[3.906s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/pool/materials
+[3.907s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/pool/materials/textures
+[3.908s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/pool/materials/textures/pool_material.jpg
+[3.908s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/pool/model.config
+[3.909s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/teknofest
+[3.909s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/teknofest/pipeline.sdf
+[3.909s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/teknofest/model.config
+[3.909s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/axes
+[3.910s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/axes/model.sdf
+[3.910s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/axes/model.config
+[3.910s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate
+[3.910s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate/meshes
+[3.910s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate/meshes/gate.dae
+[3.910s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate/model.sdf
+[3.910s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate/materials
+[3.911s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate/materials/textures
+[3.911s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate/materials/textures/reefshark.png
+[3.914s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate/materials/textures/sawfish.png
+[3.916s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_gate/model.config
+[3.917s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_slalom
+[3.917s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_slalom/model.sdf
+[3.917s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_slalom/model.config
+[3.917s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2
+[3.917s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/meshes
+[3.917s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/meshes/t200_cw_prop.dae
+[3.918s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/meshes/bluerov2.dae
+[3.946s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/meshes/t200_ccw_prop.dae
+[3.947s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/model.sdf
+[3.948s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/model.sdf.in
+[3.948s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/BlueROV2.md
+[3.949s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/configs.yaml
+[3.949s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/bluerov2/model.config
+[3.949s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals
+[3.949s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals/model.sdf
+[3.950s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals/materials
+[3.950s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals/materials/textures
+[3.950s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals/materials/textures/reefshark.png
+[3.952s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals/materials/textures/sawfish.png
+[3.955s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals/materials/scripts
+[3.955s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals/materials/scripts/billboard.material
+[3.955s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/models/robosub_octagon_animals/model.config
+[3.956s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/pythonpath.sh
+[3.956s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/pythonpath.dsv
+[3.956s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup-0.0.0-py3.10.egg-info
+[3.957s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup-0.0.0-py3.10.egg-info/SOURCES.txt
+[3.957s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup-0.0.0-py3.10.egg-info/PKG-INFO
+[3.957s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup-0.0.0-py3.10.egg-info/dependency_links.txt
+[3.958s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup-0.0.0-py3.10.egg-info/top_level.txt
+[3.958s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup
+[3.958s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup/RobotState.py
+[3.958s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup/ObjectID.py
+[3.959s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup/__init__.py
+[4.027s] Listing '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup'...
+[4.027s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup/ObjectID.py'...
+[4.028s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup/RobotState.py'...
+[4.028s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages/nautilus_bringup/__init__.py'...
+[4.037s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/ament_index/resource_index/package_run_dependencies/nautilus_bringup
+[4.038s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/ament_index/resource_index/parent_prefix_path/nautilus_bringup
+[4.038s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/ament_prefix_path.sh
+[4.038s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/ament_prefix_path.dsv
+[4.039s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/path.sh
+[4.039s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/environment/path.dsv
+[4.039s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/local_setup.bash
+[4.040s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/local_setup.sh
+[4.040s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/local_setup.zsh
+[4.040s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/local_setup.dsv
+[4.040s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.dsv
+[4.041s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/ament_index/resource_index/packages/nautilus_bringup
+[4.041s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/cmake/nautilus_bringupConfig.cmake
+[4.041s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/cmake/nautilus_bringupConfig-version.cmake
+[4.042s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/share/nautilus_bringup/package.xml
+[4.048s] Invoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_bringup

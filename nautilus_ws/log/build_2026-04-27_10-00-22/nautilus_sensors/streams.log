@@ -1,0 +1,138 @@
+[0.015s] Invoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors
+[0.108s] -- The C compiler identification is GNU 11.4.0
+[0.205s] -- The CXX compiler identification is GNU 11.4.0
+[0.217s] -- Detecting C compiler ABI info
+[0.358s] -- Detecting C compiler ABI info - done
+[0.373s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.373s] -- Detecting C compile features
+[0.374s] -- Detecting C compile features - done
+[0.380s] -- Detecting CXX compiler ABI info
+[0.542s] -- Detecting CXX compiler ABI info - done
+[0.556s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.557s] -- Detecting CXX compile features
+[0.558s] -- Detecting CXX compile features - done
+[0.562s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.291s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.483s] -- Found rclpy: 3.3.21 (/opt/ros/humble/share/rclpy/cmake)
+[1.926s] -- Configuring done
+[1.943s] -- Generating done
+[1.952s] -- Build files have been written to: /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors
+[1.965s] Invoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors -DCMAKE_INSTALL_PREFIX=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors
+[1.968s] Invoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors -- -j6 -l6
+[2.139s] Built target ament_cmake_python_copy_DVL
+[2.229s] Built target ament_cmake_python_copy_vision
+[2.704s] running egg_info
+[2.813s] creating DVL.egg-info
+[2.813s] writing DVL.egg-info/PKG-INFO
+[2.814s] writing dependency_links to DVL.egg-info/dependency_links.txt
+[2.814s] writing top-level names to DVL.egg-info/top_level.txt
+[2.815s] writing manifest file 'DVL.egg-info/SOURCES.txt'
+[2.856s] running egg_info
+[2.890s] creating vision.egg-info
+[2.891s] writing vision.egg-info/PKG-INFO
+[2.891s] writing dependency_links to vision.egg-info/dependency_links.txt
+[2.892s] writing top-level names to vision.egg-info/top_level.txt
+[2.892s] writing manifest file 'vision.egg-info/SOURCES.txt'
+[2.913s] reading manifest file 'DVL.egg-info/SOURCES.txt'
+[2.915s] writing manifest file 'DVL.egg-info/SOURCES.txt'
+[2.983s] Built target ament_cmake_python_build_DVL_egg
+[2.989s] reading manifest file 'vision.egg-info/SOURCES.txt'
+[2.991s] writing manifest file 'vision.egg-info/SOURCES.txt'
+[3.065s] Built target ament_cmake_python_build_vision_egg
+[4.158s] Invoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors -- -j6 -l6
+[4.163s] Invoking command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors
+[4.184s] -- Install configuration: ""
+[4.185s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/pythonpath.sh
+[4.185s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/pythonpath.dsv
+[4.185s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info
+[4.186s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/SOURCES.txt
+[4.186s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/PKG-INFO
+[4.186s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/dependency_links.txt
+[4.187s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL-0.0.0-py3.10.egg-info/top_level.txt
+[4.187s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL
+[4.187s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/fake_dvl.py
+[4.188s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/README.md
+[4.188s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/dvl_sensor_node.py
+[4.188s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/__init__.py
+[4.263s] Listing '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL'...
+[4.263s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/__init__.py'...
+[4.264s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/dvl_sensor_node.py'...
+[4.264s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/DVL/fake_dvl.py'...
+[4.274s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info
+[4.275s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/SOURCES.txt
+[4.275s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/PKG-INFO
+[4.275s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/dependency_links.txt
+[4.276s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision-0.0.0-py3.10.egg-info/top_level.txt
+[4.276s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision
+[4.276s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models
+[4.276s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim.pt
+[4.294s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/Model_Realtime_18_mars.pt
+[4.314s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_low_res_openvino_model
+[4.314s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_low_res_openvino_model/model_sim_low_res.bin
+[4.344s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_low_res_openvino_model/model_sim_low_res.xml
+[4.345s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_low_res_openvino_model/metadata.yaml
+[4.345s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_low_res.pt
+[4.357s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/best.pt
+[4.369s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_openvino_model
+[4.369s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_openvino_model/metadata.yaml
+[4.369s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_openvino_model/model_sim.bin
+[4.387s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_openvino_model/model_sim.xml
+[4.388s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/stream.py
+[4.388s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/Pixel_and_depth.py
+[4.389s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/__init__.py
+[4.389s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/Angle_between_object.py
+[4.389s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_pipeline.py
+[4.463s] Listing '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision'...
+[4.464s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/Angle_between_object.py'...
+[4.464s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/Pixel_and_depth.py'...
+[4.464s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/__init__.py'...
+[4.464s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/stream.py'...
+[4.465s] Listing '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models'...
+[4.465s] Listing '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_low_res_openvino_model'...
+[4.465s] Listing '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_models/model_sim_openvino_model'...
+[4.465s] Compiling '/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/local/lib/python3.10/dist-packages/vision/yolo_pipeline.py'...
+[4.474s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/fake_dvl
+[4.474s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/dvl_sensor_node
+[4.475s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/stream
+[4.475s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/lib/nautilus_sensors/yolo_pipeline
+[4.475s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl
+[4.476s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/fake_dvl.py
+[4.476s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/README.md
+[4.476s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/dvl_sensor_node.py
+[4.477s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/DVl/__init__.py
+[4.477s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision
+[4.477s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models
+[4.477s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim.pt
+[4.489s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt
+[4.503s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_low_res_openvino_model
+[4.503s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_low_res_openvino_model/model_sim_low_res.bin
+[4.530s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_low_res_openvino_model/model_sim_low_res.xml
+[4.531s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_low_res_openvino_model/metadata.yaml
+[4.531s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_low_res.pt
+[4.544s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/best.pt
+[4.554s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_openvino_model
+[4.555s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_openvino_model/metadata.yaml
+[4.555s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_openvino_model/model_sim.bin
+[4.573s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_models/model_sim_openvino_model/model_sim.xml
+[4.574s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/stream.py
+[4.574s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/Pixel_and_depth.py
+[4.574s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/__init__.py
+[4.575s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/Angle_between_object.py
+[4.575s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/vision/yolo_pipeline.py
+[4.575s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.xml
+[4.576s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/package_run_dependencies/nautilus_sensors
+[4.576s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/parent_prefix_path/nautilus_sensors
+[4.576s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/ament_prefix_path.sh
+[4.577s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/ament_prefix_path.dsv
+[4.577s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/path.sh
+[4.577s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/environment/path.dsv
+[4.577s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.bash
+[4.578s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.sh
+[4.578s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.zsh
+[4.578s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/local_setup.dsv
+[4.579s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.dsv
+[4.579s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/ament_index/resource_index/packages/nautilus_sensors
+[4.579s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/cmake/nautilus_sensorsConfig.cmake
+[4.579s] -- Installing: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/cmake/nautilus_sensorsConfig-version.cmake
+[4.579s] -- Up-to-date: /home/nautilus/NautilusSW/nautilus_ws/install/nautilus_sensors/share/nautilus_sensors/package.xml
+[4.585s] Invoked command in '/home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors' returned '0': AMENT_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup:/opt/ros/humble PYTHONPATH=/home/nautilus/NautilusSW/nautilus_ws/install/nautilus_bringup/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/nautilus/NautilusSW/nautilus_ws/build/nautilus_sensors
