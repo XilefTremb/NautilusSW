@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-from vision.blue_filter import blue_filter
+from blue_filter import blue_filter
 
 import cv2
 import depthai as dai
@@ -12,6 +12,9 @@ import gi
 import os
 import time
 import contextlib
+import threading
+import sys
+import select
 
 gi.require_version("Gst", "1.0")
 from gi.repository import Gst
@@ -23,7 +26,7 @@ from gi.repository import Gst
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 15
-SAVE_INTERVAL = 1000.0  # seconds
+SAVE_INTERVAL = 1000.0
 START_BLUE_FILTER = True
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
@@ -45,40 +48,59 @@ class DualOakNode(Node):
 
         self.get_logger().info("Starting Dual OAK ROS2 Node...")
 
+        self.declare_parameter("save_images", False)
+        self.save_images = self.get_parameter("save_images").value
+
+        # Active stream (switchable)
+        self.active_stream = "oakd"
+
         # ROS Bridge
         self.bridge = CvBridge()
 
         # ROS Publishers
-        self.rgb_pub = self.create_publisher(
-            Image,
-            "/oakd/camera/image_raw",
-            10
-        )
-
-        self.depth_pub = self.create_publisher(
-            Image,
-            "/oakd/camera/depth/image_raw",
-            10
-        )
+        self.rgb_pub = self.create_publisher(Image, "/oakd/camera/image_raw", 10)
+        self.depth_pub = self.create_publisher(Image, "/oakd/camera/depth/image_raw", 10)
+        self.rgb1_pub = self.create_publisher(Image, "/oak1/camera/image_raw", 10)
 
         # GStreamer init
         Gst.init(None)
         self.setup_gstreamer()
 
-        # Latest synchronized frames
+        # Latest frames
         self.rgb_oakd_latest = None
         self.rgb_oak1_latest = None
         self.depth_latest = None
 
         self.last_save_time = time.time()
 
-        # Start DepthAI devices
+        # Devices
         self.stack = contextlib.ExitStack()
         self.devices_data = []
         self.setup_devices()
 
-        # ROS timer loop
+        # Keyboard thread
+        threading.Thread(target=self.keyboard_listener, daemon=True).start()
+
+        # ROS loop
         self.timer = self.create_timer(0.01, self.main_loop)
+
+    # =====================================================
+    # KEYBOARD CONTROL
+    # =====================================================
+    def keyboard_listener(self):
+        self.get_logger().info("Press 's' to switch camera stream")
+
+        while True:
+            if select.select([sys.stdin], [], [], 0.1)[0]:
+                key = sys.stdin.read(1)
+
+                if key == 's':
+                    if self.active_stream == "oakd":
+                        self.active_stream = "oak1"
+                    else:
+                        self.active_stream = "oakd"
+
+                    self.get_logger().info(f"Switched stream to: {self.active_stream}")
 
     # =====================================================
     # GSTREAMER
@@ -106,8 +128,6 @@ class DualOakNode(Node):
 
         self.gst_pipeline.set_state(Gst.State.PLAYING)
 
-
-
     # =====================================================
     # PIPELINES
     # =====================================================
@@ -116,21 +136,27 @@ class DualOakNode(Node):
             dai.CameraBoardSocket.CAM_A
         )
 
-        rgb_out = camRgb.requestOutput(
+        video = camRgb.requestOutput(
             size=(1280, 704),
             fps=FPS,
-            type=dai.ImgFrame.Type.BGR888p
+            type=dai.ImgFrame.Type.NV12
         )
 
-        rgb_queue = rgb_out.createOutputQueue(
-            maxSize=4,
-            blocking=False
+        enc = pipeline.create(dai.node.VideoEncoder)
+        enc.setDefaultProfilePreset(
+            FPS,
+            dai.VideoEncoderProperties.Profile.H264_MAIN
         )
+        enc.setBitrate(7_000_000)
 
-        return rgb_queue
+        video.link(enc.input)
+
+        h264_queue = enc.bitstream.createOutputQueue(maxSize=16, blocking=False)
+        rgb_queue = video.createOutputQueue(maxSize=4, blocking=False)
+
+        return rgb_queue, h264_queue
 
     def create_oakd_pipeline(self, pipeline):
-        # RGB camera
         camRgb = pipeline.create(dai.node.Camera).build(
             dai.CameraBoardSocket.CAM_A
         )
@@ -148,7 +174,6 @@ class DualOakNode(Node):
 
         cam_rgb_out.link(manip.inputImage)
 
-        # Encoder
         enc = pipeline.create(dai.node.VideoEncoder)
         enc.setDefaultProfilePreset(
             FPS,
@@ -159,40 +184,22 @@ class DualOakNode(Node):
 
         manip.out.link(enc.input)
 
-        h264_queue = enc.bitstream.createOutputQueue(
-            maxSize=16,
-            blocking=False
-        )
+        h264_queue = enc.bitstream.createOutputQueue(maxSize=16, blocking=False)
 
-        # Stereo depth
-        monoLeft = pipeline.create(dai.node.Camera).build(
-            dai.CameraBoardSocket.CAM_B
-        )
-        monoRight = pipeline.create(dai.node.Camera).build(
-            dai.CameraBoardSocket.CAM_C
-        )
+        monoLeft = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B)
+        monoRight = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C)
 
         stereo = pipeline.create(dai.node.StereoDepth)
 
-        monoLeftOut = monoLeft.requestOutput(size=(1280, 720))
-        monoRightOut = monoRight.requestOutput(size=(1280, 720))
-
-        monoLeftOut.link(stereo.left)
-        monoRightOut.link(stereo.right)
+        monoLeft.requestOutput(size=(1280, 720)).link(stereo.left)
+        monoRight.requestOutput(size=(1280, 720)).link(stereo.right)
 
         stereo.setRectification(True)
         stereo.setExtendedDisparity(True)
         stereo.setLeftRightCheck(True)
 
-        depth_queue = stereo.depth.createOutputQueue(
-            maxSize=4,
-            blocking=False
-        )
-        
-        rgb_queue = cam_rgb_out.createOutputQueue(
-            maxSize=4,
-            blocking=False
-        )
+        depth_queue = stereo.depth.createOutputQueue(maxSize=4, blocking=False)
+        rgb_queue = cam_rgb_out.createOutputQueue(maxSize=4, blocking=False)
 
         return rgb_queue, depth_queue, h264_queue
 
@@ -206,15 +213,9 @@ class DualOakNode(Node):
         for deviceInfo in deviceInfos:
             pipeline = self.stack.enter_context(dai.Pipeline())
             device = pipeline.getDefaultDevice()
-
             cameras = device.getConnectedCameras()
 
-            self.get_logger().info(
-                f"Connected: {deviceInfo.getDeviceId()} cams: {len(cameras)}"
-            )
-
             if len(cameras) > 1:
-                # OAK-D S2
                 rgb_q, depth_q, h264_q = self.create_oakd_pipeline(pipeline)
                 pipeline.start()
 
@@ -224,15 +225,14 @@ class DualOakNode(Node):
                     "depth": depth_q,
                     "h264": h264_q
                 })
-
             else:
-                # OAK-1
-                rgb_q = self.create_oak1_pipeline(pipeline)
+                rgb_q, h264_q = self.create_oak1_pipeline(pipeline)
                 pipeline.start()
 
                 self.devices_data.append({
                     "type": "oak1",
-                    "rgb": rgb_q
+                    "rgb": rgb_q,
+                    "h264": h264_q
                 })
 
     # =====================================================
@@ -243,7 +243,6 @@ class DualOakNode(Node):
 
         for dev in self.devices_data:
 
-            # ---------------- RGB ----------------
             rgb_pkt = dev["rgb"].tryGet()
             if rgb_pkt is not None:
                 frame = rgb_pkt.getCvFrame()
@@ -251,88 +250,41 @@ class DualOakNode(Node):
 
                 if START_BLUE_FILTER:
                     frame = blue_filter(frame)
-                    
 
                 if dev["type"] == "oakd":
                     self.rgb_oakd_latest = frame
-
-                    # Publish RGB ROS topic
-                    rgb_msg = self.bridge.cv2_to_imgmsg(
-                        frame,
-                        encoding="bgr8"
-                    )
-                    self.rgb_pub.publish(rgb_msg)
-
+                    self.rgb_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
                 else:
                     self.rgb_oak1_latest = frame
+                    self.rgb1_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
 
-            # ---------------- OAK-D ONLY ----------------
-            if dev["type"] == "oakd":
-
-                # H264 UDP Streaming
+            # STREAM SWITCH
+            if "h264" in dev and dev["type"] == self.active_stream:
                 h264_pkt = dev["h264"].tryGet()
                 if h264_pkt is not None:
                     data = h264_pkt.getData()
                     if data is not None and data.size > 0:
                         buf = Gst.Buffer.new_wrapped(data.tobytes())
-                        ret = self.appsrc.emit("push-buffer", buf)
-                        if ret != Gst.FlowReturn.OK:
-                            continue
+                        self.appsrc.emit("push-buffer", buf)
 
-                # Depth
+            if dev["type"] == "oakd":
                 depth_pkt = dev["depth"].tryGet()
                 if depth_pkt is not None:
-                    self.depth_latest = depth_pkt.getFrame()
-                    self.depth_latest = cv2.rotate(self.depth_latest, cv2.ROTATE_180)
-
-                    # Publish Depth ROS topic
-                    depth_msg = self.bridge.cv2_to_imgmsg(
-                        self.depth_latest,
-                        encoding="16UC1"
+                    self.depth_latest = cv2.rotate(depth_pkt.getFrame(), cv2.ROTATE_180)
+                    self.depth_pub.publish(
+                        self.bridge.cv2_to_imgmsg(self.depth_latest, "16UC1")
                     )
-                    self.depth_pub.publish(depth_msg)
 
-        # =================================================
-        # SYNCHRONIZED SAVE
-        # =================================================
-        if now - self.last_save_time >= SAVE_INTERVAL:
-            if (
-                self.rgb_oakd_latest is not None and
-                self.rgb_oak1_latest is not None and
-                self.depth_latest is not None
-            ):
+        # SAVE
+        if self.save_images and (now - self.last_save_time >= SAVE_INTERVAL):
+            if self.rgb_oakd_latest is not None and self.rgb_oak1_latest is not None and self.depth_latest is not None:
                 timestamp = time.strftime("%Y%m%d_%H%M%S")
 
-                oakd_rgb_path = os.path.join(
-                    RGB_OAKD_DIR,
-                    f"{timestamp}.jpg"
-                )
-                oak1_rgb_path = os.path.join(
-                    RGB_OAK1_DIR,
-                    f"{timestamp}.jpg"
-                )
-                depth_path = os.path.join(
-                    DEPTH_DIR,
-                    f"{timestamp}.png"
-                )
+                cv2.imwrite(os.path.join(RGB_OAKD_DIR, f"{timestamp}.jpg"), self.rgb_oakd_latest)
+                cv2.imwrite(os.path.join(RGB_OAK1_DIR, f"{timestamp}.jpg"), self.rgb_oak1_latest)
+                cv2.imwrite(os.path.join(DEPTH_DIR, f"{timestamp}.png"), self.depth_latest)
 
-                cv2.imwrite(
-                    oakd_rgb_path,
-                    self.rgb_oakd_latest,
-                    [cv2.IMWRITE_JPEG_QUALITY, 90]
-                )
-
-                cv2.imwrite(
-                    oak1_rgb_path,
-                    self.rgb_oak1_latest,
-                    [cv2.IMWRITE_JPEG_QUALITY, 90]
-                )
-
-                cv2.imwrite(depth_path, self.depth_latest)
-
-                self.get_logger().info(
-                    f"Saved synchronized frame set: {timestamp}"
-                )
+                self.get_logger().info(f"Saved synchronized frame set: {timestamp}")
 
             self.last_save_time = now
 
@@ -341,27 +293,22 @@ class DualOakNode(Node):
     # =====================================================
     def destroy_node(self):
         self.get_logger().info("Shutting down Dual OAK Node...")
-
         self.gst_pipeline.set_state(Gst.State.NULL)
         self.stack.close()
-
         super().destroy_node()
 
 
 # =========================================================
-# MAIN ENTRY
+# MAIN
 # =========================================================
 def main(args=None):
     rclpy.init(args=args)
-
     node = DualOakNode()
 
     try:
         rclpy.spin(node)
-
     except KeyboardInterrupt:
         pass
-
     finally:
         node.destroy_node()
         rclpy.shutdown()
