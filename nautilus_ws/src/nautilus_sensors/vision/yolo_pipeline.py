@@ -100,8 +100,10 @@ class YoloNode(Node):
         payload_angle_bet = []
 
         objects = {}
+        dict_leg = {}
 
         annotated_frame = frame.copy()
+        id_leg_dic = 0
 
         if results[0].boxes is not None:
             for box in results[0].boxes:
@@ -150,11 +152,20 @@ class YoloNode(Node):
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
+                if object_id == ObjectID.GATE_LEG:
+                    dict_leg[id_leg_dic] = {
+                        "depth": depth_value,
+                        "bbox_cx": bbox_cx
+                    }
+                    id_leg_dic += 1
+
+                """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
                     objects[object_id] = {
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
                     }
+                """
 
                 #Threshold for depth
                 if depth_value<self.depth_threshold:
@@ -217,7 +228,8 @@ class YoloNode(Node):
 
         # -----PUBLISH ANGLE BETWEEN OBJECT------
         # Call function
-        payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+        #payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+        payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
 
         msg_angle_between_object = Float32MultiArray()
         msg_angle_between_object.data = payload_angle_bet

@@ -26,13 +26,18 @@ def find_dist_center_gate(cx, left_x, right_x):
 def switch_case_sub_angle(objects, mode):
     results_angle = []
 
-    gate_left = ObjectID.GATE_LEG_L in objects
-    gate_right = ObjectID.GATE_LEG_R in objects
-    gate_middle = ObjectID.GATE_LEG_CENTER in objects
-    slalom_side = ObjectID.SLALOM_SIDE in objects
-    slalom_middle = ObjectID.SLALOM_CENTER in objects
+    #gate_left = ObjectID.GATE_LEG_L in objects
+    #gate_right = ObjectID.GATE_LEG_R in objects
+    #gate_middle = ObjectID.GATE_LEG_CENTER in objects
+    #slalom_side = ObjectID.SLALOM_SIDE in objects
+    #slalom_middle = ObjectID.SLALOM_CENTER in objects
 
-    # Exemple : angle entre gate_left et gate_middle 
+    gate_prequalif = (0 in objects and 1 in objects)
+
+
+    # Exemple : angle entre gate_left et gate_middle
+    """
+    
     if gate_left and gate_middle:
         left_obj = objects[ObjectID.GATE_LEG_L]
         right_obj = objects[ObjectID.GATE_LEG_CENTER]
@@ -65,5 +70,26 @@ def switch_case_sub_angle(objects, mode):
         dist_center_gate = find_dist_center_gate(cx, left_obj["bbox_cx"], right_obj["bbox_cx"])
 
         results_angle.extend([float(3), angle_calc, float(dist_center_gate)])
+    """
+    if gate_prequalif:
+        #middle = objects[ObjectID.SLALOM_CENTER]
+        cx, _, _, _ = params_cams(mode)
+
+        gate_L = objects.get(0)
+        gate_R = objects.get(1)
+
+        if gate_L is not None and gate_R is not None:
+            if gate_L["bbox_cx"] - gate_R["bbox_cx"] > 0:
+                gate_L = objects.get(1)
+                gate_R = objects.get(0)
+        else:
+            return []
+
+        if gate_L is not None and gate_R is not None:
+            angle_calc = find_angle_plane_V2(gate_L["depth"],gate_R["depth"],1524, gate_L["bbox_cx"],gate_R["bbox_cx"], mode)
+            dist_center_gate = find_dist_center_gate(cx, gate_L["bbox_cx"], gate_R["bbox_cx"])
+            results_angle.extend([float(3), angle_calc, float(dist_center_gate)])
+
+
 
     return results_angle
