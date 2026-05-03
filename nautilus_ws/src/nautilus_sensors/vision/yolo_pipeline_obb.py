@@ -4,7 +4,7 @@ import argparse
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int16
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int16
 import cv2
 import numpy as np
 from ultralytics import YOLO
@@ -12,22 +12,24 @@ from cv_bridge import CvBridge
 import torch
 
 from message_filters import Subscriber, ApproximateTimeSynchronizer
-from std_msgs.msg import Header
 from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
 from pathlib import Path
 
+
 def parse_args():
     p = argparse.ArgumentParser()
     mode = p.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--sim", action="store_true", help="Run against SITL (keep sim GPS, don't start DVL aiding)")
-    mode.add_argument("--real", action="store_true", help="Run against real vehicle (enable DVL aiding + ExternalNav fusion)")
-    p.add_argument("--ros-args",action="store_true")
+    mode.add_argument("--sim", action="store_true")
+    mode.add_argument("--real", action="store_true")
+    p.add_argument("--ros-args", action="store_true")
     return p.parse_args()
+
 
 class YoloNode(Node):
     def __init__(self, args):
         super().__init__('yolo_node')
+
         if args.sim:
             self.mode = 'sim'
             self.half_for_depth_patch = 1
@@ -36,25 +38,28 @@ class YoloNode(Node):
             self.half_for_depth_patch = 5
 
         self.bridge = CvBridge()
+
         if self.mode == 'sim':
-            self.model = YOLO(
-                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_sim_low_res_openvino_model', task='detect')
+            self.model = YOLO('/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
         else:
-            self.model = YOLO(
-                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
-            
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+
         self.depth_threshold = 5000
 
         if torch.cuda.is_available:
             self.model.to('cuda')
 
-        # ---------------- SUBSCRIBERS ----------------
+        # Subscribers
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
 
-        self.depth_threshold_sub = self.create_subscription(Int16, '/yolo/depth_threshold', self.depth_threshold_callback, 10)
+        self.depth_threshold_sub = self.create_subscription(
+            Int16,
+            '/yolo/depth_threshold',
+            self.depth_threshold_callback,
+            10
+        )
 
-        # ApproximateTimeSynchronizer with allow_headerless=True
         self.ts = ApproximateTimeSynchronizer(
             [self.rgb_sub, self.depth_sub],
             queue_size=10,
@@ -63,129 +68,105 @@ class YoloNode(Node):
         )
         self.ts.registerCallback(self.synced_callback)
 
-        # ---------------- PUBLISHERS ----------------
-        self.obj_depth_dist_pub = self.create_publisher(
-            Float32MultiArray,
-            '/yolo/obj_depth_dist',
-            10
-        )
+        # Publishers
+        self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
+        self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
+        self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
+        self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
 
-        self.region_angle_topic = self.create_publisher(
-            Float32MultiArray,
-            '/yolo/obj_angle',
-            10
-        )
-
-        self.image_pub = self.create_publisher(
-            Image,
-            '/yolo/image_annotated',
-            10
-        )
-
-        self.mean_depth_forward_cam = self.create_publisher(
-            Int16,
-            '/yolo/mean_depth_forward_cam',
-            10
-        )
-
-        self.get_logger().info(f'YOLOv8 node with depth started, mode : {self.mode}')
-
+        self.get_logger().info(f'YOLOv8 OBB node started, mode: {self.mode}')
 
     def synced_callback(self, rgb_msg, depth_msg):
 
-        # Convert ROS → OpenCV
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, desired_encoding='bgr8')
         depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='32FC1')
 
-        # YOLO inference
         results = self.model(frame, conf=0.4, verbose=False, imgsz=320)
 
         payload = []
         payload_angle_bet = []
-
         objects = {}
-        dict_leg = {}
-
         annotated_frame = frame.copy()
-        id_leg_dic = 0
 
-        if results[0].boxes is not None:
-            for box in results[0].boxes:
+        # 🔥 OBB processing
+        if results[0].obb is not None:
 
-                # ----------- POSITION -----------
-                xywh = box.xywh[0].cpu().numpy()
-                bbox_cx = int(xywh[0])
-                bbox_cy = int(xywh[1])
+            for obb in results[0].obb:
 
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                # ----------- CENTER -----------
+                xywhr = obb.xywhr[0].cpu().numpy()
+                bbox_cx = int(xywhr[0])
+                bbox_cy = int(xywhr[1])
 
-                # Clamp image
+                # ----------- CORNERS -----------
+                points = obb.xyxyxyxy[0].cpu().numpy().astype(int)
+
+                x_coords = points[:, 0]
+                y_coords = points[:, 1]
+
+                x1, x2 = x_coords.min(), x_coords.max()
+                y1, y2 = y_coords.min(), y_coords.max()
+
+                # Clamp to image
                 h, w = depth.shape
                 x1, x2 = np.clip([x1, x2], 0, w - 1)
                 y1, y2 = np.clip([y1, y2], 0, h - 1)
 
-                # ----------- ID / CONF -----------
-                object_id = int(box.cls[0])
-                confidence = float(box.conf[0])
+                # ----------- CLASS / CONF -----------
+                object_id = int(obb.cls[0])
+                confidence = float(obb.conf[0])
 
-                # ----------- DEFINE DEPTH ZONE -----------
-                depth_zone_h = abs(y2-y1)
-                depth_zone_w = abs(x2-x1)
+                # ----------- DEPTH ZONE -----------
+                depth_zone_h = abs(y2 - y1)
+                depth_zone_w = abs(x2 - x1)
 
                 if depth_zone_w > depth_zone_h:
                     half = 0.40 * depth_zone_h
                 else:
                     half = 0.40 * depth_zone_w
 
-                half = max(1, min(8, np.ceil(half)))
+                half = max(1, min(8, int(np.ceil(half))))
 
                 # ----------- DEPTH -----------
                 try:
                     depth_value = find_depth(
                         depth_frame=depth,
-                        half=int(half),
+                        half=half,
                         bbox_cy=bbox_cy,
                         bbox_cx=bbox_cx,
                         mode=self.mode
                     )
                 except Exception as e:
-                    self.get_logger().warn(f'Erreur find_depth pour objet {object_id}: {e}')
+                    self.get_logger().warn(f'Depth error for obj {object_id}: {e}')
                     depth_value = None
 
-                # ----------- ANGLE / DIST -----------
+                if depth_value is None:
+                    continue
+
+                # ----------- DIST / ANGLE -----------
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
-                # ----------- DICT FOR ANGLE BETWEEN -----------
-                if object_id == ObjectID.GATE_LEG:
-                    dict_leg[id_leg_dic] = {
-                        "depth": depth_value,
-                        "bbox_cx": bbox_cx
-                    }
-                    id_leg_dic += 1
-
-                """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
                     objects[object_id] = {
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
                     }
-                """
 
-                #Threshold for depth
-                if depth_value<self.depth_threshold:
-                    # ----------- PAYLOAD -----------
+                if depth_value < self.depth_threshold:
+
                     payload.extend([float(object_id), depth_value, dist_center])
 
-                    # ----------- DRAW BOX AND INFO -----------
-                    cv2.rectangle(
+                    # ----------- DRAW OBB -----------
+                    cv2.polylines(
                         annotated_frame,
-                        (x1, y1),
-                        (x2, y2),
-                        (0, 255, 0),
-                        2
+                        [points],
+                        isClosed=True,
+                        color=(0, 255, 0),
+                        thickness=2
                     )
 
                     label = f"{object_id} | {confidence:.2f}"
+
                     cv2.putText(
                         annotated_frame,
                         label,
@@ -216,11 +197,10 @@ class YoloNode(Node):
                         1
                     )
 
-        # ----------- PUBLISH DEPTH AND PIXEL -----------
+        # ----------- PUBLISH DEPTH DATA -----------
         msg = Float32MultiArray()
         msg.data = payload
 
-        # Layout: N x 3
         nb_objects = len(payload) // 3
         msg.layout.dim = [
             MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
@@ -230,39 +210,37 @@ class YoloNode(Node):
 
         self.obj_depth_dist_pub.publish(msg)
 
-        # -----PUBLISH ANGLE BETWEEN OBJECT------
-        # Call function
-        #payload_angle_bet = switch_case_sub_angle(objects, self.mode)
-        payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
+        # ----------- ANGLE BETWEEN OBJECTS -----------
+        payload_angle_bet = switch_case_sub_angle(objects, self.mode)
 
-        msg_angle_between_object = Float32MultiArray()
-        msg_angle_between_object.data = payload_angle_bet
+        msg_angle = Float32MultiArray()
+        msg_angle.data = payload_angle_bet
 
-        # Layout: N x 3
-        nb_objects_angle_bet = len(payload_angle_bet) // 3
-        msg_angle_between_object.layout.dim = [
-            MultiArrayDimension(label='objects', size=nb_objects_angle_bet, stride=max(len(payload_angle_bet), 1)),
+        nb_objects_angle = len(payload_angle_bet) // 3
+        msg_angle.layout.dim = [
+            MultiArrayDimension(label='objects', size=nb_objects_angle, stride=max(len(payload_angle_bet), 1)),
             MultiArrayDimension(label='fields', size=3, stride=3)
         ]
-        msg_angle_between_object.layout.data_offset = 0
+        msg_angle.layout.data_offset = 0
 
-        self.region_angle_topic.publish(msg_angle_between_object)
+        self.region_angle_topic.publish(msg_angle)
 
-        # ----------- PUBLISH ANNOTED IMAGE -----------
+        # ----------- IMAGE OUTPUT -----------
         out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
         out_msg.header = rgb_msg.header
         self.image_pub.publish(out_msg)
 
-        # ----------- GET AND PUBLISH DEPTH GLOBAL -----------
+        # ----------- GLOBAL DEPTH -----------
         depth_global_mean = global_median_forward_cam(depth, self.mode)
-        msg_depth_global_mean = Int16()
-        msg_depth_global_mean.data = int(depth_global_mean)
 
-        self.mean_depth_forward_cam.publish(msg_depth_global_mean)
+        msg_depth = Int16()
+        msg_depth.data = int(depth_global_mean)
+
+        self.mean_depth_forward_cam.publish(msg_depth)
 
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data
-        self.get_logger().info(f'Updated depth threshold to {self.depth_threshold}')
+        self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
 
 
 def main():
