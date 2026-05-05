@@ -19,20 +19,20 @@ class ObjectID(IntEnum):
     # GATE = 14
 
 #SIM model ids
-    GATE = 0
-    GATE_LEG_L = 1
-    GATE_LEG_R = 2
-    GATE_LEG_CENTER = 3
-    SLALOM_CENTER = 4
-    SLALOM_SIDE = 5
-    REQUIN = 6
-    POISSON = 7
+    # GATE = 0
+    # GATE_LEG_L = 1
+    # GATE_LEG_R = 2
+    # GATE_LEG_CENTER = 3
+    # SLALOM_CENTER = 4
+    # SLALOM_SIDE = 5
+    # REQUIN = 6
+    # POISSON = 7
 
 #Prequal model ids
-    # GATE_LEG = 2
-    # GATE_TOTAL = 3
-    # MARQUEUR = 4
-    # LUMIERE = 5
+    GATE_LEG = 2
+    GATE_TOTAL = 3
+    MARQUEUR = 4
+    LUMIERE = 5
 
 class GateLikeObjectID(IntEnum):
     GATE_LEFT_MID = 1

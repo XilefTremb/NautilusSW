@@ -41,7 +41,7 @@ class YoloNode(Node):
                 '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_sim_low_res_openvino_model', task='detect')
         else:
             self.model = YOLO(
-                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt', task='detect')
             
         self.depth_threshold = 5000
 
@@ -98,7 +98,7 @@ class YoloNode(Node):
         depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='32FC1')
 
         # YOLO inference
-        results = self.model(frame, conf=0.4, verbose=False, imgsz=320)
+        results = self.model(frame, conf=0.4, verbose=False)
 
         payload = []
         payload_angle_bet = []

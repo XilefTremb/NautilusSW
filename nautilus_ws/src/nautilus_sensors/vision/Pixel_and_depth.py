@@ -84,8 +84,8 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
     if mode == "sim":
         center_depth = center_depth*1000
 
-    if np.isnan(center_depth) or center_depth == 0:
-        return -1000
+    if np.isnan(center_depth) or center_depth == 0 or center_depth is None:
+        return -1000.0
 
     return center_depth
 

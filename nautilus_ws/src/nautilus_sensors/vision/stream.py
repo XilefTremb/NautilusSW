@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
-from blue_filter import blue_filter
+from vision.blue_filter import blue_filter
 
 import cv2
 import depthai as dai
@@ -27,7 +27,7 @@ UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 15
 SAVE_INTERVAL = 1000.0
-START_BLUE_FILTER = True
+START_BLUE_FILTER = False
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
@@ -108,8 +108,8 @@ class DualOakNode(Node):
     def setup_gstreamer(self):
         pipeline_str = (
             "appsrc name=src is-live=true do-timestamp=true format=time "
-            "block=true max-buffers=8 ! "
-            "queue leaky=downstream max-size-buffers=4 ! "
+            "block=true max-buffers=1 ! "
+            "queue leaky=downstream max-size-buffers=1 ! "
             "h264parse config-interval=1 ! "
             "rtph264pay config-interval=1 pt=96 ! "
             f"udpsink host={UDP_IP} port={UDP_PORT} sync=false async=false"
@@ -145,9 +145,9 @@ class DualOakNode(Node):
         enc = pipeline.create(dai.node.VideoEncoder)
         enc.setDefaultProfilePreset(
             FPS,
-            dai.VideoEncoderProperties.Profile.H264_MAIN
+            dai.VideoEncoderProperties.Profile.H264_BASELINE
         )
-        enc.setBitrate(7_000_000)
+        enc.setBitrate(3_000_000)
 
         video.link(enc.input)
 
@@ -180,11 +180,11 @@ class DualOakNode(Node):
             dai.VideoEncoderProperties.Profile.H264_MAIN
         )
         enc.setBitrate(7_000_000)
-        enc.setKeyframeFrequency(FPS * 2)
+        enc.setKeyframeFrequency(FPS)
 
         manip.out.link(enc.input)
 
-        h264_queue = enc.bitstream.createOutputQueue(maxSize=16, blocking=False)
+        h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
 
         monoLeft = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B)
         monoRight = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C)
@@ -198,8 +198,8 @@ class DualOakNode(Node):
         stereo.setExtendedDisparity(True)
         stereo.setLeftRightCheck(True)
 
-        depth_queue = stereo.depth.createOutputQueue(maxSize=4, blocking=False)
-        rgb_queue = cam_rgb_out.createOutputQueue(maxSize=4, blocking=False)
+        depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
+        rgb_queue = cam_rgb_out.createOutputQueue(maxSize=1, blocking=False)
 
         return rgb_queue, depth_queue, h264_queue
 
@@ -266,6 +266,8 @@ class DualOakNode(Node):
                     if data is not None and data.size > 0:
                         buf = Gst.Buffer.new_wrapped(data.tobytes())
                         self.appsrc.emit("push-buffer", buf)
+
+                        
 
             if dev["type"] == "oakd":
                 depth_pkt = dev["depth"].tryGet()

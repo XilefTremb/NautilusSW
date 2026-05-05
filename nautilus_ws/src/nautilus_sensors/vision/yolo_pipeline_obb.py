@@ -42,7 +42,7 @@ class YoloNode(Node):
         if self.mode == 'sim':
             self.model = YOLO('/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
         else:
-            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/competition_obb.pt')
 
         self.depth_threshold = 5000
 
@@ -81,7 +81,7 @@ class YoloNode(Node):
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, desired_encoding='bgr8')
         depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='32FC1')
 
-        results = self.model(frame, conf=0.4, verbose=False, imgsz=320)
+        results = self.model(frame, conf=0.4, verbose=False)
 
         payload = []
         payload_angle_bet = []
@@ -136,6 +136,7 @@ class YoloNode(Node):
                         bbox_cx=bbox_cx,
                         mode=self.mode
                     )
+                    print(depth_value)
                 except Exception as e:
                     self.get_logger().warn(f'Depth error for obj {object_id}: {e}')
                     depth_value = None
