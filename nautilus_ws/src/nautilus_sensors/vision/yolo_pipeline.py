@@ -16,6 +16,7 @@ from std_msgs.msg import Header
 from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
 from pathlib import Path
+from collections import deque
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -45,7 +46,7 @@ class YoloNode(Node):
             
         self.depth_threshold = 5000
 
-        if torch.cuda.is_available:
+        if torch.cuda.is_available():
             self.model.to('cuda')
 
         # ---------------- SUBSCRIBERS ----------------
