@@ -31,11 +31,6 @@ def switch_case_sub_angle(objects, mode):
     #gate_middle = ObjectID.GATE_LEG_CENTER in objects
     #slalom_side = ObjectID.SLALOM_SIDE in objects
     #slalom_middle = ObjectID.SLALOM_CENTER in objects
-
-    gate_prequalif = (0 in objects and 1 in objects)
-
-
-    # Exemple : angle entre gate_left et gate_middle
     """
     
     if gate_left and gate_middle:
@@ -71,22 +66,24 @@ def switch_case_sub_angle(objects, mode):
 
         results_angle.extend([float(3), angle_calc, float(dist_center_gate)])
     """
+    gate_prequalif = (0 in objects and 1 in objects)
+
     if gate_prequalif:
-        #middle = objects[ObjectID.SLALOM_CENTER]
         cx, _, _, _ = params_cams(mode)
 
         gate_L = objects.get(0)
         gate_R = objects.get(1)
 
-
-        if gate_L["bbox_cx"] - gate_R["bbox_cx"] > 0:
-            gate_L, gate_R = gate_R, gate_L
-
         if gate_L is not None and gate_R is not None:
-            angle_calc = find_angle_plane_V2(gate_L["depth"],gate_R["depth"],1524, gate_L["bbox_cx"],gate_R["bbox_cx"], mode)
+            angle_calc = find_angle_plane_V2(
+                gate_L["depth"],
+                gate_R["depth"],
+                1524,
+                gate_L["bbox_cx"],
+                gate_R["bbox_cx"],
+                mode
+            )
             dist_center_gate = find_dist_center_gate(cx, gate_L["bbox_cx"], gate_R["bbox_cx"])
             results_angle.extend([float(3), angle_calc, float(dist_center_gate)])
-
-
 
     return results_angle

@@ -15,6 +15,7 @@ from message_filters import Subscriber, ApproximateTimeSynchronizer
 from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
 from pathlib import Path
+from collections import deque
 
 
 def parse_args():
@@ -46,7 +47,12 @@ class YoloNode(Node):
 
         self.depth_threshold = 5000
 
-        if torch.cuda.is_available:
+        self.depth_history = {
+            "gate_left": deque(maxlen=5),
+            "gate_right": deque(maxlen=5),
+        }
+
+        if torch.cuda.is_available():
             self.model.to('cuda')
 
         # Subscribers
@@ -86,6 +92,7 @@ class YoloNode(Node):
         payload = []
         payload_angle_bet = []
         objects = {}
+        gate_legs_detected = []
         annotated_frame = frame.copy()
 
         # 🔥 OBB processing
@@ -147,11 +154,19 @@ class YoloNode(Node):
                 # ----------- DIST / ANGLE -----------
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
+                if object_id == ObjectID.GATE_LEG:
+                    gate_legs_detected.append({
+                        "depth": depth_value,
+                        "bbox_cx": bbox_cx
+                    })
+
+                """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
                     objects[object_id] = {
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
                     }
+                """
 
                 if depth_value < self.depth_threshold:
 
@@ -212,7 +227,8 @@ class YoloNode(Node):
         self.obj_depth_dist_pub.publish(msg)
 
         # ----------- ANGLE BETWEEN OBJECTS -----------
-        payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+        dict_leg = self.build_gate_leg_dict(gate_legs_detected)
+        payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
 
         msg_angle = Float32MultiArray()
         msg_angle.data = payload_angle_bet
@@ -242,6 +258,33 @@ class YoloNode(Node):
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
+
+    def build_gate_leg_dict(self, gate_legs_detected):
+        """
+        Sort gate legs left/right using their x-position in the camera,
+        then smooth left and right depths with a moving average of 10 frames.
+        """
+        if len(gate_legs_detected) < 2:
+            return {}
+
+        # If more than two legs are detected, keep the leftmost and rightmost ones.
+        gate_legs_detected = sorted(gate_legs_detected, key=lambda obj: obj["bbox_cx"])
+        gate_left = gate_legs_detected[0]
+        gate_right = gate_legs_detected[-1]
+
+        self.depth_history["gate_left"].append(gate_left["depth"])
+        self.depth_history["gate_right"].append(gate_right["depth"])
+
+        gate_left["depth"] = float(np.mean(self.depth_history["gate_left"]))
+        gate_right["depth"] = float(np.mean(self.depth_history["gate_right"]))
+
+        # 0 = left, 1 = right. Angle_between_object.py now assumes this is already ordered.
+        return {
+            0: gate_left,
+            1: gate_right,
+        }
+
+
 
 
 def main():
