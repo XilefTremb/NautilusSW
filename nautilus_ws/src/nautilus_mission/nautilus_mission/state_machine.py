@@ -46,7 +46,7 @@ class StateMachine(Node):
         # Initial state
         self.state = RobotState.SEARCH
 
-        self.target_gate_id = GateLikeObjectID.GATE_LEFT_MID
+        self.target_gate_id = GateLikeObjectID.SLALOM_SIDE_MID
         self.get_logger().info(f'Set target gate to : {self.target_gate_id.name}')
 
     def state_machine(self):
@@ -56,9 +56,10 @@ class StateMachine(Node):
 
         elif self.state == RobotState.CENTER_GATE:
             if self.is_gate_centered() and self.state.lifespan > 10.0:
-                self.state = RobotState.APPROACH_GATE
-                self.target_object_id = [ObjectID.REQUIN]
-                self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
+                pass
+                # self.state = RobotState.APPROACH_GATE
+                # self.target_object_id = [ObjectID.GATE_TOTAL]
+                # self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
 
         elif self.state == RobotState.APPROACH_GATE:
             if self.is_target_approached(1500):

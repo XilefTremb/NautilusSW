@@ -42,7 +42,7 @@ class YoloNode(Node):
         if self.mode == 'sim':
             self.model = YOLO('/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
         else:
-            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/competition_obb.pt')
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
 
         self.depth_threshold = 5000
 
@@ -86,10 +86,13 @@ class YoloNode(Node):
         payload = []
         payload_angle_bet = []
         objects = {}
+        dict_leg = {}
         annotated_frame = frame.copy()
 
         # 🔥 OBB processing
         if results[0].obb is not None:
+
+            id_leg_dict = 0
 
             for obb in results[0].obb:
 
@@ -136,7 +139,7 @@ class YoloNode(Node):
                         bbox_cx=bbox_cx,
                         mode=self.mode
                     )
-                    print(depth_value)
+                
                 except Exception as e:
                     self.get_logger().warn(f'Depth error for obj {object_id}: {e}')
                     depth_value = None
@@ -147,11 +150,22 @@ class YoloNode(Node):
                 # ----------- DIST / ANGLE -----------
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
+                # ----------- DICT FOR ANGLE BETWEEN -----------
+                if object_id == ObjectID.GATE_LEG:
+                    dict_leg[id_leg_dict] = {
+                        "depth": depth_value,
+                        "bbox_cx": bbox_cx
+                    }
+                    id_leg_dict += 1
+
+                """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
                     objects[object_id] = {
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
                     }
+                """
+                
 
                 if depth_value < self.depth_threshold:
 
@@ -212,7 +226,7 @@ class YoloNode(Node):
         self.obj_depth_dist_pub.publish(msg)
 
         # ----------- ANGLE BETWEEN OBJECTS -----------
-        payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+        payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
 
         msg_angle = Float32MultiArray()
         msg_angle.data = payload_angle_bet

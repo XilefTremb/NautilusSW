@@ -108,8 +108,8 @@ class DualOakNode(Node):
     def setup_gstreamer(self):
         pipeline_str = (
             "appsrc name=src is-live=true do-timestamp=true format=time "
-            "block=true max-buffers=1 ! "
-            "queue leaky=downstream max-size-buffers=1 ! "
+            "block=true max-buffers=4 ! "
+            "queue leaky=downstream max-size-buffers=4 ! "
             "h264parse config-interval=1 ! "
             "rtph264pay config-interval=1 pt=96 ! "
             f"udpsink host={UDP_IP} port={UDP_PORT} sync=false async=false"
@@ -184,7 +184,7 @@ class DualOakNode(Node):
 
         manip.out.link(enc.input)
 
-        h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
+        h264_queue = enc.bitstream.createOutputQueue(maxSize=4, blocking=False)
 
         monoLeft = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B)
         monoRight = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C)
@@ -198,8 +198,8 @@ class DualOakNode(Node):
         stereo.setExtendedDisparity(True)
         stereo.setLeftRightCheck(True)
 
-        depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
-        rgb_queue = cam_rgb_out.createOutputQueue(maxSize=1, blocking=False)
+        depth_queue = stereo.depth.createOutputQueue(maxSize=4, blocking=False)
+        rgb_queue = cam_rgb_out.createOutputQueue(maxSize=4, blocking=False)
 
         return rgb_queue, depth_queue, h264_queue
 
