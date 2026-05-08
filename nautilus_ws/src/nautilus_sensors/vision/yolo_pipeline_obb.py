@@ -40,9 +40,9 @@ class YoloNode(Node):
         self.bridge = CvBridge()
 
         if self.mode == 'sim':
-            self.model = YOLO('/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/sim_320_obb_1mai.pt')
         else:
-            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_26-04.pt')
 
         self.depth_threshold = 5000
 
