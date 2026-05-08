@@ -108,6 +108,8 @@ class YoloNode(Node):
         # 🔥 OBB processing
         if results[0].obb is not None:
 
+            id_leg_dict = 0
+
             for obb in results[0].obb:
 
                 # ----------- CENTER -----------
@@ -153,7 +155,7 @@ class YoloNode(Node):
                         bbox_cx=bbox_cx,
                         mode=self.mode
                     )
-                    #print(depth_value)
+                
                 except Exception as e:
                     self.get_logger().warn(f'Depth error for obj {object_id}: {e}')
                     depth_value = None
@@ -164,11 +166,13 @@ class YoloNode(Node):
                 # ----------- DIST / ANGLE -----------
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
+                # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id == ObjectID.GATE_LEG:
-                    gate_legs_detected.append({
+                    dict_leg[id_leg_dict] = {
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
-                    })
+                    }
+                    id_leg_dict += 1
 
                 """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
@@ -177,6 +181,7 @@ class YoloNode(Node):
                         "bbox_cx": bbox_cx
                     }
                 """
+                
 
                 if depth_value < self.depth_threshold:
                     payload.extend([float(object_id), depth_value, dist_center])
