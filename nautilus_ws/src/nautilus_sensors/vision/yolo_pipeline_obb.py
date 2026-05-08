@@ -10,15 +10,12 @@ import numpy as np
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 import torch
-
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
-from pathlib import Path
 from collections import deque
 
 MOVING_MEAN_ACTIVATED =  True
-
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -36,13 +33,11 @@ class YoloNode(Node):
         # ----------- MODE -----------
         if args.sim:
             self.mode = 'sim'
-            self.half_for_depth_patch = 1
             self.model = YOLO(
                 '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
         else:
             self.mode = 'real'
-            self.half_for_depth_patch = 5
-            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/competition_obb.pt')
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
 
         # ----------- INIT PARAMS -----------
         self.depth_threshold = 5000
@@ -104,12 +99,8 @@ class YoloNode(Node):
         gate_legs_detected = []
         annotated_frame = frame.copy()
 
-
         # 🔥 OBB processing
         if results[0].obb is not None:
-
-            id_leg_dict = 0
-
             for obb in results[0].obb:
 
                 # ----------- CENTER -----------
@@ -168,11 +159,10 @@ class YoloNode(Node):
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id == ObjectID.GATE_LEG:
-                    dict_leg[id_leg_dict] = {
+                    gate_legs_detected.append({
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
-                    }
-                    id_leg_dict += 1
+                    })
 
                 """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
@@ -181,7 +171,6 @@ class YoloNode(Node):
                         "bbox_cx": bbox_cx
                     }
                 """
-                
 
                 if depth_value < self.depth_threshold:
                     payload.extend([float(object_id), depth_value, dist_center])
