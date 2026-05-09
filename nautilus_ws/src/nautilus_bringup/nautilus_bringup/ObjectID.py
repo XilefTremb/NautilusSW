@@ -2,9 +2,9 @@ from enum import IntEnum
 
 class ObjectID(IntEnum):
 #official list to be used on next model training
-    # GATE_LEFT = 0
-    # GATE_MID = 1
-    # GATE_RIGHT = 2
+    # GATE_LEG_L = 0
+    # GATE_LEG_CENTER = 1
+    # GATE_LEG_R = 2
     # SOS_SAFETY = 3
     # COMPASS_HAMMER = 4
     # SLALOM_SIDE = 5

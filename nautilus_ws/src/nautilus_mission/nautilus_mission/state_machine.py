@@ -46,23 +46,22 @@ class StateMachine(Node):
         # Initial state
         self.state = RobotState.SEARCH
 
-        self.target_gate_id = GateLikeObjectID.SLALOM_SIDE_MID
-        self.get_logger().info(f'Set target gate to : {self.target_gate_id.name}')
+        self.target_object_id = ObjectID.GATE_TOTAL
+        self.get_logger().info(f'Set target gate to : {self.target_object_id.name}')
 
     def state_machine(self):
         if self.state == RobotState.SEARCH:
-            if self.is_gate_present():
+            if self.is_object_present():
                 self.state = RobotState.CENTER_GATE
 
         elif self.state == RobotState.CENTER_GATE:
-            if self.is_gate_centered() and self.state.lifespan > 10.0:
-                pass
-                # self.state = RobotState.APPROACH_GATE
-                # self.target_object_id = [ObjectID.GATE_TOTAL]
-                # self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
+            if self.is_object_centered() and self.state.lifespan > 10.0:
+                self.state = RobotState.APPROACH_GATE
+                self.target_object_id = [ObjectID.GATE_TOTAL]
+                self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
 
         elif self.state == RobotState.APPROACH_GATE:
-            if self.is_target_approached(1500):
+            if not self.is_object_present():
                 self.state = RobotState.TRAVERSE_GATE
                 msg = Int16()
                 msg.data = 15000
@@ -74,7 +73,7 @@ class StateMachine(Node):
             self.forward_cmd_pub.publish(forward_msg)
 
             if self.state.lifespan > 10.0:
-                self.target_object_id = [ObjectID.GATE_LEG_L]
+                self.target_object_id = [ObjectID.MARQUEUR]
                 self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
 
                 if self.is_target_approached(5000):
@@ -96,7 +95,7 @@ class StateMachine(Node):
             self.forward_cmd_pub.publish(forward_msg)
 
             if self.state.lifespan > 5.0:
-                self.target_object_id = [ObjectID.REQUIN, ObjectID.POISSON]
+                self.target_object_id = [ObjectID.GATE_LEG, ObjectID.GATE_TOTAL, ObjectID.LUMIERE]
                 self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
                 self.state = RobotState.APPROACH_ANY
 
@@ -155,12 +154,27 @@ class StateMachine(Node):
             self.get_logger().info(f"Gate like object {self.target_gate_id.name} was found!")
             return True
         return False
+    
+    def is_object_present(self):
+        target_object = self.get_target_object()
+        if target_object is not None:
+            self.get_logger().info(f"Object {self.target_object_id.name} was found!")
+            return True
+        return False
 
     def is_gate_centered(self):
         target_gate = self.get_target_gate()
         if target_gate is not None:
             if abs(target_gate[1]) < 3 and abs(target_gate[2]) < 15:
                 self.get_logger().info(f"Gate like object {self.target_gate_id.name} is centered!")
+                return True
+        return False
+    
+    def is_object_centered(self):
+        target_object = self.get_target_object()
+        if target_object is not None:
+            if abs(target_object[2]) < 15:
+                self.get_logger().info(f"Object {self.target_object_id.name} is centered!")
                 return True
         return False
 

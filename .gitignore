@@ -1,0 +1,8 @@
+#ignore all files and directories
+/*
+!/nautilus_ws
+/nautilus_ws/*
+!/nautilus_ws/src
+!/UTILES
+!/UTILES/*
+*.pyc

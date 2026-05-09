@@ -64,7 +64,7 @@ class VisionControllerNode(Node):
         # Reacts to state ----------------------------------------------------------------------------------
 
         if self.state == RobotState.CENTER_GATE:
-            self.current_gate_detection_callback = self.center_gate_callback
+            self.current_object_detection_callback = self.center_gate_callback
 
         elif self.state == RobotState.APPROACH_GATE:
             self.current_gate_detection_callback = self.approach_gate_callback
@@ -102,23 +102,23 @@ class VisionControllerNode(Node):
         self.previous_target_object_id = self.target_object_id
 
     def center_gate_callback(self, msg):
-        if self.last_target_gate_detection is None:
+        if self.last_target_object_detection is None:
             return
 
-        forward_error, lateral_error = self.split_angle(
-            self.last_target_gate_detection[1]
-        )
+        # forward_error, lateral_error = self.split_angle(
+        #     self.last_target_gate_detection[1]
+        # )
 
-        forward_msg = Float32()
-        forward_msg.data = forward_error
-        self.forward_error_pub.publish(forward_msg)
+        # forward_msg = Float32()
+        # forward_msg.data = forward_error
+        # self.forward_error_pub.publish(forward_msg)
 
-        lateral_msg = Float32()
-        lateral_msg.data = lateral_error
-        self.lateral_error_pub.publish(lateral_msg)
+        # lateral_msg = Float32()
+        # lateral_msg.data = lateral_error
+        # self.lateral_error_pub.publish(lateral_msg)
 
         yaw_msg = Float32()
-        yaw_msg.data = self.last_target_gate_detection[2]
+        yaw_msg.data = self.last_target_object_detection[2]
         self.yaw_error_pub.publish(yaw_msg)
 
     def approach_gate_callback(self, msg):

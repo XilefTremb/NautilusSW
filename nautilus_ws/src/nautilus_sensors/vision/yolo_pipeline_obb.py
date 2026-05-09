@@ -10,13 +10,12 @@ import numpy as np
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 import torch
-
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
-from pathlib import Path
 from collections import deque
 
+MOVING_MEAN_ACTIVATED =  True
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -31,31 +30,39 @@ class YoloNode(Node):
     def __init__(self, args):
         super().__init__('yolo_node')
 
+        # ----------- MODE -----------
         if args.sim:
             self.mode = 'sim'
-            self.half_for_depth_patch = 1
+            self.model = YOLO(
+                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
         else:
             self.mode = 'real'
-            self.half_for_depth_patch = 5
-
-        self.bridge = CvBridge()
-
-        if self.mode == 'sim':
-            self.model = YOLO('/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
-        else:
             self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
 
+        # ----------- INIT PARAMS -----------
         self.depth_threshold = 5000
-
         self.depth_history = {
-            "gate_left": deque(maxlen=5),
-            "gate_right": deque(maxlen=5),
-        }
+            "gate_left": deque(maxlen=10),
+            "gate_right": deque(maxlen=10),}
 
+        self.angle_history = deque(maxlen=10)
+
+        self.last_seen = {
+            "gate_left": None,
+            "gate_right": None, }
+
+        self.spike_threshold_mm = 1000
+        self.reset_after_sec = 2.0
+        #self.depth_history = {}
+        #self.last_seen = {}
+
+        # ----------- CPU -----------
         if torch.cuda.is_available():
             self.model.to('cuda')
 
-        # Subscribers
+        self.bridge = CvBridge()
+
+        # ----------- SUBSCRIBER -----------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
 
@@ -74,7 +81,7 @@ class YoloNode(Node):
         )
         self.ts.registerCallback(self.synced_callback)
 
-        # Publishers
+        # ----------- PUBLISHER -----------
         self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
         self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
         self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
@@ -96,11 +103,9 @@ class YoloNode(Node):
         dict_leg = {}
         annotated_frame = frame.copy()
 
+
         # 🔥 OBB processing
         if results[0].obb is not None:
-
-            id_leg_dict = 0
-
             for obb in results[0].obb:
 
                 # ----------- CENTER -----------
@@ -158,12 +163,6 @@ class YoloNode(Node):
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
-                # if object_id == ObjectID.GATE_LEG:
-                #     dict_leg[id_leg_dict] = {
-                #         "depth": depth_value,
-                #         "bbox_cx": bbox_cx
-                #     }
-                #     id_leg_dict += 1
 
                 if object_id == ObjectID.GATE_LEG:
                     gate_legs_detected.append({
@@ -178,10 +177,7 @@ class YoloNode(Node):
                         "bbox_cx": bbox_cx
                     }
                 """
-                
-
                 if depth_value < self.depth_threshold:
-
                     payload.extend([float(object_id), depth_value, dist_center])
 
                     # ----------- DRAW OBB -----------
@@ -239,8 +235,20 @@ class YoloNode(Node):
         self.obj_depth_dist_pub.publish(msg)
 
         # ----------- ANGLE BETWEEN OBJECTS -----------
-        dict_leg = self.build_gate_leg_dict(gate_legs_detected)
+        dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED) #moving mean calcul
         payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
+        #objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
+        #payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+
+        if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
+            angle = payload_angle_bet[1]
+
+            self.angle_history.append(angle)
+
+            angle_filtered = float(np.median(self.angle_history))
+
+            payload_angle_bet[1] = angle_filtered
+
 
         msg_angle = Float32MultiArray()
         msg_angle.data = payload_angle_bet
@@ -271,7 +279,35 @@ class YoloNode(Node):
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
 
-    def build_gate_leg_dict(self, gate_legs_detected):
+    def filter_objects_depth(self, objects, activated):
+        if not activated:
+            return objects
+
+        filtered_objects = {}
+
+        for object_id, obj in objects.items():
+            key = str(object_id)
+
+            if key not in self.depth_history:
+                self.depth_history[key] = deque(maxlen=10)
+                self.last_seen[key] = None
+
+            filtered_depth = self.spike_filter_with_timeout(
+                obj["depth"],
+                self.depth_history[key],
+                key
+            )
+
+            self.depth_history[key].append(filtered_depth)
+
+            filtered_objects[object_id] = {
+                "depth": float(np.median(self.depth_history[key])),
+                "bbox_cx": obj["bbox_cx"]
+            }
+
+        return filtered_objects
+
+    def build_gate_leg_dict(self, gate_legs_detected, activated):
         """
         Sort gate legs left/right using their x-position in the camera,
         then smooth left and right depths with a moving average of 10 frames.
@@ -284,11 +320,24 @@ class YoloNode(Node):
         gate_left = gate_legs_detected[0]
         gate_right = gate_legs_detected[-1]
 
-        self.depth_history["gate_left"].append(gate_left["depth"])
-        self.depth_history["gate_right"].append(gate_right["depth"])
+        if activated:
+            left_filtered = self.spike_filter_with_timeout(
+                gate_left["depth"],
+                self.depth_history["gate_left"],
+                "gate_left"
+            )
 
-        gate_left["depth"] = float(np.mean(self.depth_history["gate_left"]))
-        gate_right["depth"] = float(np.mean(self.depth_history["gate_right"]))
+            right_filtered = self.spike_filter_with_timeout(
+                gate_right["depth"],
+                self.depth_history["gate_right"],
+                "gate_right"
+            )
+
+            self.depth_history["gate_left"].append(left_filtered)
+            self.depth_history["gate_right"].append(right_filtered)
+
+            gate_left["depth"] = float(np.median(self.depth_history["gate_left"]))
+            gate_right["depth"] = float(np.median(self.depth_history["gate_right"]))
 
         # 0 = left, 1 = right. Angle_between_object.py now assumes this is already ordered.
         return {
@@ -296,7 +345,27 @@ class YoloNode(Node):
             1: gate_right,
         }
 
+    def spike_filter_with_timeout(self, new_value, history, key):
+        now = self.get_clock().now().nanoseconds / 1e9
 
+        last_seen = self.last_seen[key]
+
+        if last_seen is None or len(history) == 0:
+            self.last_seen[key] = now
+            return new_value
+
+        time_since_seen = now - last_seen
+        self.last_seen[key] = now
+
+        if time_since_seen > self.reset_after_sec:
+            return new_value
+
+        last_value = history[-1]
+
+        if abs(new_value - last_value) > self.spike_threshold_mm:
+            return last_value
+
+        return new_value
 
 
 def main():
