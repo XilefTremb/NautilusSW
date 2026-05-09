@@ -29,7 +29,7 @@ UDP_PORT = 5600
 FPS = 15
 SAVE_INTERVAL = 1000.0
 START_BLUE_FILTER = False
-START_DEPTH_COLOR = False
+START_DEPTH_COLOR = True
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
