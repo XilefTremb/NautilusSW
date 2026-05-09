@@ -46,12 +46,15 @@ class YoloNode(Node):
             "gate_right": deque(maxlen=10),}
 
         self.angle_history = deque(maxlen=10)
+
         self.last_seen = {
             "gate_left": None,
             "gate_right": None, }
 
         self.spike_threshold_mm = 1000
         self.reset_after_sec = 2.0
+        #self.depth_history = {}
+        #self.last_seen = {}
 
         # ----------- CPU -----------
         if torch.cuda.is_available():
@@ -98,6 +101,7 @@ class YoloNode(Node):
         objects = {}
         gate_legs_detected = []
         annotated_frame = frame.copy()
+
 
         # 🔥 OBB processing
         if results[0].obb is not None:
@@ -158,6 +162,7 @@ class YoloNode(Node):
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
+
                 if object_id == ObjectID.GATE_LEG:
                     gate_legs_detected.append({
                         "depth": depth_value,
@@ -171,7 +176,6 @@ class YoloNode(Node):
                         "bbox_cx": bbox_cx
                     }
                 """
-
                 if depth_value < self.depth_threshold:
                     payload.extend([float(object_id), depth_value, dist_center])
 
@@ -232,6 +236,8 @@ class YoloNode(Node):
         # ----------- ANGLE BETWEEN OBJECTS -----------
         dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED) #moving mean calcul
         payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
+        #objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
+        #payload_angle_bet = switch_case_sub_angle(objects, self.mode)
 
         if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
             angle = payload_angle_bet[1]
@@ -271,6 +277,34 @@ class YoloNode(Node):
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
+
+    def filter_objects_depth(self, objects, activated):
+        if not activated:
+            return objects
+
+        filtered_objects = {}
+
+        for object_id, obj in objects.items():
+            key = str(object_id)
+
+            if key not in self.depth_history:
+                self.depth_history[key] = deque(maxlen=10)
+                self.last_seen[key] = None
+
+            filtered_depth = self.spike_filter_with_timeout(
+                obj["depth"],
+                self.depth_history[key],
+                key
+            )
+
+            self.depth_history[key].append(filtered_depth)
+
+            filtered_objects[object_id] = {
+                "depth": float(np.median(self.depth_history[key])),
+                "bbox_cx": obj["bbox_cx"]
+            }
+
+        return filtered_objects
 
     def build_gate_leg_dict(self, gate_legs_detected, activated):
         """
