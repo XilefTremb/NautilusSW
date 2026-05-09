@@ -93,6 +93,7 @@ class YoloNode(Node):
         payload_angle_bet = []
         objects = {}
         gate_legs_detected = []
+        dict_leg = {}
         annotated_frame = frame.copy()
 
         # 🔥 OBB processing
@@ -157,12 +158,18 @@ class YoloNode(Node):
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
+                # if object_id == ObjectID.GATE_LEG:
+                #     dict_leg[id_leg_dict] = {
+                #         "depth": depth_value,
+                #         "bbox_cx": bbox_cx
+                #     }
+                #     id_leg_dict += 1
+
                 if object_id == ObjectID.GATE_LEG:
-                    dict_leg[id_leg_dict] = {
+                    gate_legs_detected.append({
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
-                    }
-                    id_leg_dict += 1
+                    })
 
                 """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:

@@ -152,7 +152,7 @@ class DualOakNode(Node):
         video.link(enc.input)
 
         h264_queue = enc.bitstream.createOutputQueue(maxSize=16, blocking=False)
-        rgb_queue = video.createOutputQueue(maxSize=4, blocking=False)
+        rgb_queue = video.createOutputQueue(maxSize=1, blocking=False)
 
         return rgb_queue, h264_queue
 
@@ -184,7 +184,7 @@ class DualOakNode(Node):
 
         manip.out.link(enc.input)
 
-        h264_queue = enc.bitstream.createOutputQueue(maxSize=4, blocking=False)
+        h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
 
         monoLeft = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B)
         monoRight = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C)
@@ -198,8 +198,8 @@ class DualOakNode(Node):
         stereo.setExtendedDisparity(True)
         stereo.setLeftRightCheck(True)
 
-        depth_queue = stereo.depth.createOutputQueue(maxSize=4, blocking=False)
-        rgb_queue = cam_rgb_out.createOutputQueue(maxSize=4, blocking=False)
+        depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
+        rgb_queue = cam_rgb_out.createOutputQueue(maxSize=1, blocking=False)
 
         return rgb_queue, depth_queue, h264_queue
 
