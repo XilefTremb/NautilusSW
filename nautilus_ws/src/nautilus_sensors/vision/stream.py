@@ -15,6 +15,7 @@ import contextlib
 import threading
 import sys
 import select
+import numpy as np
 
 gi.require_version("Gst", "1.0")
 from gi.repository import Gst
@@ -28,6 +29,7 @@ UDP_PORT = 5600
 FPS = 15
 SAVE_INTERVAL = 1000.0
 START_BLUE_FILTER = False
+START_DEPTH_COLOR = True
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
@@ -61,6 +63,7 @@ class DualOakNode(Node):
         self.rgb_pub = self.create_publisher(Image, "/oakd/camera/image_raw", 10)
         self.depth_pub = self.create_publisher(Image, "/oakd/camera/depth/image_raw", 10)
         self.rgb1_pub = self.create_publisher(Image, "/oak1/camera/image_raw", 10)
+        self.depth_color_pub = self.create_publisher(Image, "/oakd/camera/depth/color",10)
 
         # GStreamer init
         Gst.init(None)
@@ -184,7 +187,11 @@ class DualOakNode(Node):
 
         manip.out.link(enc.input)
 
+<<<<<<< HEAD
         h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
+=======
+        h264_queue = enc.bitstream.createOutputQueue(maxSize=4, blocking=False)
+>>>>>>> NSFW-126-Add-depth-color-topic
 
         monoLeft = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B)
         monoRight = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C)
@@ -235,6 +242,7 @@ class DualOakNode(Node):
                     "h264": h264_q
                 })
 
+
     # =====================================================
     # MAIN LOOP
     # =====================================================
@@ -277,6 +285,15 @@ class DualOakNode(Node):
                         self.bridge.cv2_to_imgmsg(self.depth_latest, "16UC1")
                     )
 
+                    if START_DEPTH_COLOR:
+                        depth_color = self.depth_to_colormap(
+                            self.depth_latest,
+                            max_depth_mm=10000
+                        )
+                        self.depth_color_pub.publish(
+                            self.bridge.cv2_to_imgmsg(depth_color, "bgr8")
+                        )
+
         # SAVE
         if self.save_images and (now - self.last_save_time >= SAVE_INTERVAL):
             if self.rgb_oakd_latest is not None and self.rgb_oak1_latest is not None and self.depth_latest is not None:
@@ -298,6 +315,21 @@ class DualOakNode(Node):
         self.gst_pipeline.set_state(Gst.State.NULL)
         self.stack.close()
         super().destroy_node()
+
+    def depth_to_colormap(self, depth_frame, max_depth_mm=10000):
+        # Clamp entre 0 et 10000 mm
+        depth_clipped = np.clip(depth_frame, 0, max_depth_mm)
+
+        # Normalisation 0-10000 mm vers 0-255
+        depth_norm = ((depth_clipped / max_depth_mm) * 255).astype(np.uint8)
+
+        # Appliquer une carte de couleur
+        depth_color = cv2.applyColorMap(depth_norm, cv2.COLORMAP_JET)
+
+        # Pixels avec profondeur 0 en noir
+        depth_color[depth_frame == 0] = [0, 0, 0]
+
+        return depth_color
 
 
 # =========================================================
