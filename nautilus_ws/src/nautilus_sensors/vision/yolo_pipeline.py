@@ -16,6 +16,7 @@ from std_msgs.msg import Header
 from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
 from pathlib import Path
+from collections import deque
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -41,11 +42,11 @@ class YoloNode(Node):
                 '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_sim_low_res_openvino_model', task='detect')
         else:
             self.model = YOLO(
-                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt', task='detect')
             
-        #self.depth_threshold = 5000
+        self.depth_threshold = 5000
 
-        if torch.cuda.is_available:
+        if torch.cuda.is_available():
             self.model.to('cuda')
 
         # ---------------- SUBSCRIBERS ----------------
@@ -98,14 +99,16 @@ class YoloNode(Node):
         depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='32FC1')
 
         # YOLO inference
-        results = self.model(frame, conf=0.4, verbose=False, imgsz=320)
+        results = self.model(frame, conf=0.4, verbose=False)
 
         payload = []
         payload_angle_bet = []
 
         objects = {}
+        dict_leg = {}
 
         annotated_frame = frame.copy()
+        id_leg_dic = 0
 
         if results[0].boxes is not None:
             for box in results[0].boxes:
@@ -154,11 +157,20 @@ class YoloNode(Node):
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
+                if object_id == ObjectID.GATE_LEG:
+                    dict_leg[id_leg_dic] = {
+                        "depth": depth_value,
+                        "bbox_cx": bbox_cx
+                    }
+                    id_leg_dic += 1
+
+                """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
                     objects[object_id] = {
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
                     }
+                """
 
                 #Threshold for depth
                 if depth_value<self.depth_threshold:
@@ -221,7 +233,8 @@ class YoloNode(Node):
 
         # -----PUBLISH ANGLE BETWEEN OBJECT------
         # Call function
-        payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+        #payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+        payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
 
         msg_angle_between_object = Float32MultiArray()
         msg_angle_between_object.data = payload_angle_bet

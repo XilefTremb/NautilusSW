@@ -50,8 +50,21 @@ class VisionControllerNode(Node):
     def state_callback(self, msg):
         self.state = RobotState(msg.data)
 
+        if self.previous_state != self.state:
+            self.current_gate_detection_callback = self.empty_callback
+            self.current_object_detection_callback = self.empty_callback
+
+            if self.previous_state is not None:
+                self.get_logger().info(f'Set state from {self.previous_state.name} to : {self.state.name}')
+            else:
+                self.get_logger().info(f'Set state from {self.previous_state} to : {self.state.name}')
+
+        self.previous_state = self.state
+
+        # Reacts to state ----------------------------------------------------------------------------------
+
         if self.state == RobotState.CENTER_GATE:
-            self.current_gate_detection_callback = self.center_gate_callback
+            self.current_object_detection_callback = self.center_gate_callback
 
         elif self.state == RobotState.APPROACH_GATE:
             self.current_gate_detection_callback = self.approach_gate_callback
@@ -63,16 +76,11 @@ class VisionControllerNode(Node):
             self.current_object_detection_callback = self.circle_marker_callback
 
         elif self.state == RobotState.RETURN_GATE:
+            self.current_object_detection_callback = self.empty_callback
+
+        elif self.state == RobotState.APPROACH_ANY:
             self.current_object_detection_callback = self.approach_object_callback
-
-        if self.previous_state != self.state:
-            if self.previous_state is not None:
-                self.get_logger().info(f'Set state from {self.previous_state.name} to : {self.state.name}')
-            else:
-                self.get_logger().info(f'Set state from {self.previous_state} to : {self.state.name}')
-
-        self.previous_state = self.state
-
+        
     def target_gate_callback(self, msg):
         self.target_gate_id = GateLikeObjectID(msg.data)
         if self.previous_target_gate_id != self.target_gate_id:
@@ -94,23 +102,23 @@ class VisionControllerNode(Node):
         self.previous_target_object_id = self.target_object_id
 
     def center_gate_callback(self, msg):
-        if self.last_target_gate_detection is None:
+        if self.last_target_object_detection is None:
             return
 
-        forward_error, lateral_error = self.split_angle(
-            self.last_target_gate_detection[1]
-        )
+        # forward_error, lateral_error = self.split_angle(
+        #     self.last_target_gate_detection[1]
+        # )
 
-        forward_msg = Float32()
-        forward_msg.data = forward_error
-        self.forward_error_pub.publish(forward_msg)
+        # forward_msg = Float32()
+        # forward_msg.data = forward_error
+        # self.forward_error_pub.publish(forward_msg)
 
-        lateral_msg = Float32()
-        lateral_msg.data = lateral_error
-        self.lateral_error_pub.publish(lateral_msg)
+        # lateral_msg = Float32()
+        # lateral_msg.data = lateral_error
+        # self.lateral_error_pub.publish(lateral_msg)
 
         yaw_msg = Float32()
-        yaw_msg.data = self.last_target_gate_detection[2]
+        yaw_msg.data = self.last_target_object_detection[2]
         self.yaw_error_pub.publish(yaw_msg)
 
     def approach_gate_callback(self, msg):
@@ -138,15 +146,15 @@ class VisionControllerNode(Node):
             return
 
         yaw_msg = Float32()
-        yaw_msg.data = self.last_target_object_detection[2] - 80
+        yaw_msg.data = self.last_target_object_detection[2] - 320
         self.yaw_error_pub.publish(yaw_msg)
 
         forward_msg = Int16()
-        forward_msg.data = 1525
+        forward_msg.data = 1540
         self.forward_cmd_pub.publish(forward_msg)
 
         lateral_msg = Int16()
-        lateral_msg.data = 1480
+        lateral_msg.data = 1375
         self.lateral_cmd_pub.publish(lateral_msg)
 
     def empty_callback(self, msg):
@@ -156,13 +164,7 @@ class VisionControllerNode(Node):
         self.objects = [msg.data[i:i + 3] for i in range(0, len(msg.data), 3)]
 
         if self.target_object_id is not None:
-            self.last_target_object_detection = next(
-                (
-                    obj for obj in self.objects
-                    if ObjectID(obj[0]) == self.target_object_id
-                ),
-                None
-            )
+            self.last_target_object_detection = next((obj for obj in self.objects if ObjectID(obj[0]) == self.target_object_id),None)
 
         self.current_object_detection_callback(msg)
 
@@ -172,13 +174,7 @@ class VisionControllerNode(Node):
         ]
 
         if self.target_gate_id is not None:
-            self.last_target_gate_detection = next(
-                (
-                    obj for obj in self.gate_objects
-                    if GateLikeObjectID(obj[0]) == self.target_gate_id
-                ),
-                None
-            )
+            self.last_target_gate_detection = next((obj for obj in self.gate_objects if GateLikeObjectID(obj[0]) == self.target_gate_id),None)
 
         self.current_gate_detection_callback(msg)
 

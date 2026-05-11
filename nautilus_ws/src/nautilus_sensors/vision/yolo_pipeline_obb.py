@@ -10,12 +10,12 @@ import numpy as np
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 import torch
-
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
-from pathlib import Path
+from collections import deque
 
+MOVING_MEAN_ACTIVATED =  False
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -30,26 +30,39 @@ class YoloNode(Node):
     def __init__(self, args):
         super().__init__('yolo_node')
 
+        # ----------- MODE -----------
         if args.sim:
             self.mode = 'sim'
-            self.half_for_depth_patch = 1
+            self.model = YOLO(
+                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
         else:
             self.mode = 'real'
-            self.half_for_depth_patch = 5
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
+
+        # ----------- INIT PARAMS -----------
+        self.depth_threshold = 5000
+        self.depth_history = {
+            "gate_left": deque(maxlen=10),
+            "gate_right": deque(maxlen=10),}
+
+        self.angle_history = deque(maxlen=10)
+
+        self.last_seen = {
+            "gate_left": None,
+            "gate_right": None, }
+
+        self.spike_threshold_mm = 1000
+        self.reset_after_sec = 2.0
+        #self.depth_history = {}
+        #self.last_seen = {}
+
+        # ----------- CPU -----------
+        if torch.cuda.is_available():
+            self.model.to('cuda')
 
         self.bridge = CvBridge()
 
-        if self.mode == 'sim':
-            self.model = YOLO('/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
-        else:
-            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
-
-        self.depth_threshold = 5000
-
-        if torch.cuda.is_available:
-            self.model.to('cuda')
-
-        # Subscribers
+        # ----------- SUBSCRIBER -----------
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
 
@@ -68,7 +81,7 @@ class YoloNode(Node):
         )
         self.ts.registerCallback(self.synced_callback)
 
-        # Publishers
+        # ----------- PUBLISHER -----------
         self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
         self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
         self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
@@ -81,16 +94,18 @@ class YoloNode(Node):
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, desired_encoding='bgr8')
         depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='32FC1')
 
-        results = self.model(frame, conf=0.4, verbose=False, imgsz=320)
+        results = self.model(frame, conf=0.4, verbose=False)
 
         payload = []
         payload_angle_bet = []
         objects = {}
+        gate_legs_detected = []
+        dict_leg = {}
         annotated_frame = frame.copy()
+
 
         # 🔥 OBB processing
         if results[0].obb is not None:
-
             for obb in results[0].obb:
 
                 # ----------- CENTER -----------
@@ -136,6 +151,7 @@ class YoloNode(Node):
                         bbox_cx=bbox_cx,
                         mode=self.mode
                     )
+                
                 except Exception as e:
                     self.get_logger().warn(f'Depth error for obj {object_id}: {e}')
                     depth_value = None
@@ -146,56 +162,64 @@ class YoloNode(Node):
                 # ----------- DIST / ANGLE -----------
                 dist_center = find_dist_from_center(bbox_cx, self.mode)
 
+                # ----------- DICT FOR ANGLE BETWEEN -----------
+
+                if object_id == ObjectID.GATE_LEG:
+                    gate_legs_detected.append({
+                        "depth": depth_value,
+                        "bbox_cx": bbox_cx
+                    })
+
+                """
                 if object_id not in objects or depth_value < objects[object_id]["depth"]:
                     objects[object_id] = {
                         "depth": depth_value,
                         "bbox_cx": bbox_cx
                     }
+                """
+                # if depth_value < self.depth_threshold:
+                payload.extend([float(object_id), depth_value, dist_center])
 
-                if depth_value < self.depth_threshold:
+                # ----------- DRAW OBB -----------
+                cv2.polylines(
+                    annotated_frame,
+                    [points],
+                    isClosed=True,
+                    color=(0, 255, 0),
+                    thickness=2
+                )
 
-                    payload.extend([float(object_id), depth_value, dist_center])
+                label = f"{object_id} | {confidence:.2f}"
 
-                    # ----------- DRAW OBB -----------
-                    cv2.polylines(
-                        annotated_frame,
-                        [points],
-                        isClosed=True,
-                        color=(0, 255, 0),
-                        thickness=2
-                    )
+                cv2.putText(
+                    annotated_frame,
+                    label,
+                    (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
 
-                    label = f"{object_id} | {confidence:.2f}"
+                cv2.putText(
+                    annotated_frame,
+                    f"{depth_value:.2f}mm",
+                    (bbox_cx, bbox_cy),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
 
-                    cv2.putText(
-                        annotated_frame,
-                        label,
-                        (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1
-                    )
-
-                    cv2.putText(
-                        annotated_frame,
-                        f"{depth_value:.2f}mm",
-                        (bbox_cx, bbox_cy),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1
-                    )
-
-                    cv2.putText(
-                        annotated_frame,
-                        f"{dist_center:.2f}px",
-                        (bbox_cx, bbox_cy + 15),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1
-                    )
+                cv2.putText(
+                    annotated_frame,
+                    f"{dist_center:.2f}px",
+                    (bbox_cx, bbox_cy + 15),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
 
         # ----------- PUBLISH DEPTH DATA -----------
         msg = Float32MultiArray()
@@ -211,7 +235,20 @@ class YoloNode(Node):
         self.obj_depth_dist_pub.publish(msg)
 
         # ----------- ANGLE BETWEEN OBJECTS -----------
-        payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+        dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED) #moving mean calcul
+        payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
+        #objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
+        #payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+
+        if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
+            angle = payload_angle_bet[1]
+
+            self.angle_history.append(angle)
+
+            angle_filtered = float(np.median(self.angle_history))
+
+            payload_angle_bet[1] = angle_filtered
+
 
         msg_angle = Float32MultiArray()
         msg_angle.data = payload_angle_bet
@@ -232,15 +269,102 @@ class YoloNode(Node):
 
         # ----------- GLOBAL DEPTH -----------
         depth_global_mean = global_median_forward_cam(depth, self.mode)
-
-        msg_depth = Int16()
-        msg_depth.data = int(depth_global_mean)
-
-        self.mean_depth_forward_cam.publish(msg_depth)
+        if not depth_global_mean < -32767 and not depth_global_mean > 32767:
+            msg_depth = Int16()
+            msg_depth.data = int(depth_global_mean)
+            self.mean_depth_forward_cam.publish(msg_depth)
 
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
+
+    def filter_objects_depth(self, objects, activated):
+        if not activated:
+            return objects
+
+        filtered_objects = {}
+
+        for object_id, obj in objects.items():
+            key = str(object_id)
+
+            if key not in self.depth_history:
+                self.depth_history[key] = deque(maxlen=10)
+                self.last_seen[key] = None
+
+            filtered_depth = self.spike_filter_with_timeout(
+                obj["depth"],
+                self.depth_history[key],
+                key
+            )
+
+            self.depth_history[key].append(filtered_depth)
+
+            filtered_objects[object_id] = {
+                "depth": float(np.median(self.depth_history[key])),
+                "bbox_cx": obj["bbox_cx"]
+            }
+
+        return filtered_objects
+
+    def build_gate_leg_dict(self, gate_legs_detected, activated):
+        """
+        Sort gate legs left/right using their x-position in the camera,
+        then smooth left and right depths with a moving average of 10 frames.
+        """
+        if len(gate_legs_detected) < 2:
+            return {}
+
+        # If more than two legs are detected, keep the leftmost and rightmost ones.
+        gate_legs_detected = sorted(gate_legs_detected, key=lambda obj: obj["bbox_cx"])
+        gate_left = gate_legs_detected[0]
+        gate_right = gate_legs_detected[-1]
+
+        if activated:
+            left_filtered = self.spike_filter_with_timeout(
+                gate_left["depth"],
+                self.depth_history["gate_left"],
+                "gate_left"
+            )
+
+            right_filtered = self.spike_filter_with_timeout(
+                gate_right["depth"],
+                self.depth_history["gate_right"],
+                "gate_right"
+            )
+
+            self.depth_history["gate_left"].append(left_filtered)
+            self.depth_history["gate_right"].append(right_filtered)
+
+            gate_left["depth"] = float(np.median(self.depth_history["gate_left"]))
+            gate_right["depth"] = float(np.median(self.depth_history["gate_right"]))
+
+        # 0 = left, 1 = right. Angle_between_object.py now assumes this is already ordered.
+        return {
+            0: gate_left,
+            1: gate_right,
+        }
+
+    def spike_filter_with_timeout(self, new_value, history, key):
+        now = self.get_clock().now().nanoseconds / 1e9
+
+        last_seen = self.last_seen[key]
+
+        if last_seen is None or len(history) == 0:
+            self.last_seen[key] = now
+            return new_value
+
+        time_since_seen = now - last_seen
+        self.last_seen[key] = now
+
+        if time_since_seen > self.reset_after_sec:
+            return new_value
+
+        last_value = history[-1]
+
+        if abs(new_value - last_value) > self.spike_threshold_mm:
+            return last_value
+
+        return new_value
 
 
 def main():
