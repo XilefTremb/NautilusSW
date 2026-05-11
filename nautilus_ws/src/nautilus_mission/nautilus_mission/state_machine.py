@@ -40,14 +40,14 @@ class StateMachine(Node):
         self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
 
         # Timers
-        self.timer_state_machine = self.create_timer(1/10, self.state_machine)
+        self.timer_state_machine = self.create_timer(1/20, self.state_machine)
         self.timer_state_sender = self.create_timer(1/10, self.state_targets_sender)
 
         # Initial state
-        self.state = RobotState.SEARCH
+        self.state = RobotState.TRAVERSE_GATE
 
-        self.target_object_id = ObjectID.GATE_TOTAL
-        self.get_logger().info(f'Set target gate to : {self.target_object_id.name}')
+        self.target_object_id = [ObjectID.GATE_TOTAL]
+        self.get_logger().info(f'Set target gate to : {self.target_object_id[0].name}')
 
     def state_machine(self):
         if self.state == RobotState.SEARCH:
@@ -69,21 +69,22 @@ class StateMachine(Node):
 
         elif self.state == RobotState.TRAVERSE_GATE:
             forward_msg = Int16()
-            forward_msg.data = 1900
+            forward_msg.data = 1700
             self.forward_cmd_pub.publish(forward_msg)
 
-            if self.state.lifespan > 10.0:
+            if self.state.lifespan > 2.0:
                 self.target_object_id = [ObjectID.MARQUEUR]
                 self.get_logger().info(f'Set target object to : {self.target_object_id[0].name}')
 
                 if self.is_target_approached(5000):
                     msg = Int16()
-                    msg.data = 5000
+                    msg.data = 15000
                     self.depth_threshold_pub.publish(msg)
                     self.state = RobotState.CIRCLE_MARKER
+                    self.target_gate_id = GateLikeObjectID.SLALOM_SIDE_MID
 
         elif self.state == RobotState.CIRCLE_MARKER:
-            if self.state.lifespan > 10.0 and self.mean_depth_forward_cam >= 20000:
+            if self.state.lifespan > 10.0 and self.is_gate_present() and self.mean_depth_forward_cam > 8200:
                 msg = Int16()
                 msg.data = 15000
                 self.depth_threshold_pub.publish(msg)
@@ -91,7 +92,7 @@ class StateMachine(Node):
 
         elif self.state == RobotState.RETURN_GATE:
             forward_msg = Int16()
-            forward_msg.data = 1900
+            forward_msg.data = 1700
             self.forward_cmd_pub.publish(forward_msg)
 
             if self.state.lifespan > 5.0:
@@ -174,7 +175,7 @@ class StateMachine(Node):
         target_object = self.get_target_object()
         if target_object is not None:
             if abs(target_object[2]) < 15:
-                self.get_logger().info(f"Object {self.target_object_id.name} is centered!")
+                self.get_logger().info(f"Object {self.target_object_id[0].name} is centered!")
                 return True
         return False
 

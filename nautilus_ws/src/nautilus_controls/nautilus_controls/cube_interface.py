@@ -62,7 +62,7 @@ class CubeInterface(Node):
             ),
         }
 
-        self.timer = self.create_timer(1.0 / 40.0, self.timer_callback)
+        self.timer = self.create_timer(1.0 / 200.0, self.timer_callback)
 
     def startup(self, args):
         self.auv = AuvPymavlink(self)
@@ -101,7 +101,12 @@ class CubeInterface(Node):
     def timer_callback(self):
         yaw_cmd = int(self.last_yaw_cmd) if self.is_fresh(self.last_yaw_cmd_time) else None
         lateral_cmd = int(self.last_lateral_cmd) if self.is_fresh(self.last_lateral_cmd_time) else None
-        forward_cmd = int(self.last_forward_cmd) if self.is_fresh(self.last_forward_cmd_time) else None
+        forward_fresh = self.is_fresh(self.last_forward_cmd_time) 
+        self.get_logger().info(f"{forward_fresh}")
+        if forward_fresh:
+            forward_cmd = int(self.last_forward_cmd)
+        else:
+            forward_cmd = None
 
         if yaw_cmd is None and lateral_cmd is None and forward_cmd is None:
             self.get_logger().info('No fresh command')

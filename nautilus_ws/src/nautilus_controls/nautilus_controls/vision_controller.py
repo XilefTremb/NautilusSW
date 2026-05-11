@@ -146,15 +146,15 @@ class VisionControllerNode(Node):
             return
 
         yaw_msg = Float32()
-        yaw_msg.data = self.last_target_object_detection[2] - 80
+        yaw_msg.data = self.last_target_object_detection[2] - 320
         self.yaw_error_pub.publish(yaw_msg)
 
         forward_msg = Int16()
-        forward_msg.data = 1545
+        forward_msg.data = 1540
         self.forward_cmd_pub.publish(forward_msg)
 
         lateral_msg = Int16()
-        lateral_msg.data = 1455
+        lateral_msg.data = 1375
         self.lateral_cmd_pub.publish(lateral_msg)
 
     def empty_callback(self, msg):

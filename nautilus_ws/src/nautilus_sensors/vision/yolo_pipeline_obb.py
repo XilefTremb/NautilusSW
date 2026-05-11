@@ -15,7 +15,7 @@ from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
 from collections import deque
 
-MOVING_MEAN_ACTIVATED =  True
+MOVING_MEAN_ACTIVATED =  False
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -177,49 +177,49 @@ class YoloNode(Node):
                         "bbox_cx": bbox_cx
                     }
                 """
-                if depth_value < self.depth_threshold:
-                    payload.extend([float(object_id), depth_value, dist_center])
+                # if depth_value < self.depth_threshold:
+                payload.extend([float(object_id), depth_value, dist_center])
 
-                    # ----------- DRAW OBB -----------
-                    cv2.polylines(
-                        annotated_frame,
-                        [points],
-                        isClosed=True,
-                        color=(0, 255, 0),
-                        thickness=2
-                    )
+                # ----------- DRAW OBB -----------
+                cv2.polylines(
+                    annotated_frame,
+                    [points],
+                    isClosed=True,
+                    color=(0, 255, 0),
+                    thickness=2
+                )
 
-                    label = f"{object_id} | {confidence:.2f}"
+                label = f"{object_id} | {confidence:.2f}"
 
-                    cv2.putText(
-                        annotated_frame,
-                        label,
-                        (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1
-                    )
+                cv2.putText(
+                    annotated_frame,
+                    label,
+                    (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
 
-                    cv2.putText(
-                        annotated_frame,
-                        f"{depth_value:.2f}mm",
-                        (bbox_cx, bbox_cy),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1
-                    )
+                cv2.putText(
+                    annotated_frame,
+                    f"{depth_value:.2f}mm",
+                    (bbox_cx, bbox_cy),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
 
-                    cv2.putText(
-                        annotated_frame,
-                        f"{dist_center:.2f}px",
-                        (bbox_cx, bbox_cy + 15),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5,
-                        (0, 255, 0),
-                        1
-                    )
+                cv2.putText(
+                    annotated_frame,
+                    f"{dist_center:.2f}px",
+                    (bbox_cx, bbox_cy + 15),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5,
+                    (0, 255, 0),
+                    1
+                )
 
         # ----------- PUBLISH DEPTH DATA -----------
         msg = Float32MultiArray()
@@ -269,11 +269,10 @@ class YoloNode(Node):
 
         # ----------- GLOBAL DEPTH -----------
         depth_global_mean = global_median_forward_cam(depth, self.mode)
-
-        msg_depth = Int16()
-        msg_depth.data = int(depth_global_mean)
-
-        self.mean_depth_forward_cam.publish(msg_depth)
+        if not depth_global_mean < -32767 and not depth_global_mean > 32767:
+            msg_depth = Int16()
+            msg_depth.data = int(depth_global_mean)
+            self.mean_depth_forward_cam.publish(msg_depth)
 
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data

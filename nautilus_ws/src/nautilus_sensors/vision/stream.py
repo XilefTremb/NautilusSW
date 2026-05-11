@@ -187,11 +187,7 @@ class DualOakNode(Node):
 
         manip.out.link(enc.input)
 
-<<<<<<< HEAD
         h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
-=======
-        h264_queue = enc.bitstream.createOutputQueue(maxSize=4, blocking=False)
->>>>>>> NSFW-126-Add-depth-color-topic
 
         monoLeft = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B)
         monoRight = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C)
