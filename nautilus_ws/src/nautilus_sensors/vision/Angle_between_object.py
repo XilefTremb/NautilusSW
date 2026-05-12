@@ -73,8 +73,8 @@ def switch_case_sub_angle(objects, mode):
         gate_R = objects.get(1)
 
         if gate_L is not None and gate_R is not None:
-            angle_calc = find_angle_plane_V2(gate_L["depth"],gate_R["depth"],2100, gate_L["bbox_cx"],gate_R["bbox_cx"], mode)
-            dist_center_gate = find_dist_center_gate(cx, gate_L["bbox_cx"], gate_R["bbox_cx"])
+            angle_calc = find_angle_plane_V2(gate_L["depth"],gate_R["depth"],2100, gate_L["box_cx"],gate_R["box_cx"], mode)
+            dist_center_gate = find_dist_center_gate(cx, gate_L["box_cx"], gate_R["box_cx"])
             if angle_calc is None:
                 return []
             else:
