@@ -17,6 +17,10 @@ class ObjectID(IntEnum):
     # HAMMER = 12
     # TORPEDO = 13
     # GATE = 14
+    # GATE_LEFT_MID = 15
+    # GATE_MID_RIGHT = 16
+    # SLALOM_SIDE_MID = 17
+    # SLALOM_MID_SIDE = 18
 
 #SIM model ids
     # GATE = 0
