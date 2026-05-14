@@ -23,50 +23,16 @@ class VisionControllerNode(Node):
         self.last_target_detection = None
 
         # Subscribers
-        self.state_sub = self.create_subscription(
-            Int8,
-            '/mission/state',
-            self.state_callback,
-            10
-        )
-
-        self.target_detection_sub = self.create_subscription(
-            Float32MultiArray,
-            '/mission/target_detection',
-            self.target_detection_callback,
-            10
-        )
+        self.state_sub = self.create_subscription(Int8, '/mission/state', self.state_callback, 10)
+        self.target_detection_sub = self.create_subscription(Float32MultiArray, '/mission/target_detection', self.target_detection_callback, 10)
 
         # Publishers
-        self.yaw_error_pub = self.create_publisher(
-            Float32,
-            '/control/vision_errors/yaw',
-            10
-        )
+        self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
+        self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
+        self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
 
-        self.forward_error_pub = self.create_publisher(
-            Float32,
-            '/control/vision_errors/forward',
-            10
-        )
-
-        self.lateral_error_pub = self.create_publisher(
-            Float32,
-            '/control/vision_errors/lateral',
-            10
-        )
-
-        self.forward_cmd_pub = self.create_publisher(
-            Int16,
-            '/control/cmd/forward',
-            10
-        )
-
-        self.lateral_cmd_pub = self.create_publisher(
-            Int16,
-            '/control/cmd/lateral',
-            10
-        )
+        self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
+        self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
 
         self.get_logger().info('Vision controller node started.')
 

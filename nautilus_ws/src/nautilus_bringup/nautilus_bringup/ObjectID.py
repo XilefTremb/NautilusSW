@@ -41,10 +41,4 @@ class ObjectID(IntEnum):
     # GATE_TOTAL = 3
     # MARQUEUR = 4
     # LUMIERE = 5
-
-class GateLikeObjectID(IntEnum):
-    GATE_LEFT_MID = 1
-    GATE_MID_RIGHT = 2
-    SLALOM_SIDE_MID = 3
-    SLALOM_MID_SIDE = 4
     

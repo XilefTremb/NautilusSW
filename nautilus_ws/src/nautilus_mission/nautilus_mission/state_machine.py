@@ -66,7 +66,7 @@ class StateMachine(Node):
         # Initial state
         self.state = RobotState.TRAVERSE_GATE
 
-        self.set_target([ObjectID.GATE_TOTAL])
+        self.set_target([ObjectID.GATE_LEFT_MID])
 
     def state_machine(self):
         if self.state == RobotState.SEARCH:
@@ -75,7 +75,7 @@ class StateMachine(Node):
 
         elif self.state == RobotState.CENTER_GATE:
             if self.is_target_centered() and self.state.lifespan > 10.0:
-                self.set_target([ObjectID.GATE_TOTAL])
+                self.set_target([ObjectID.GATE_LEFT_MID])
                 self.state = RobotState.APPROACH_GATE
 
         elif self.state == RobotState.APPROACH_GATE:
@@ -87,14 +87,12 @@ class StateMachine(Node):
             self.publish_forward_cmd(1700)
 
             if self.state.lifespan > 2.0:
-                self.set_target([ObjectID.MARQUEUR])
+                self.set_target([ObjectID.GATE_LEG_L])
 
                 if self.is_target_approached(5000):
                     self.publish_depth_threshold(15000)
 
-                    # Example: gate-like object IDs are now simple higher IDs
-                    # Replace 17 with your actual SLALOM_SIDE_MID ID
-                    self.set_target([17])
+                    self.set_target(ObjectID.GATE_LEG_L)
 
                     self.state = RobotState.CIRCLE_MARKER
 
@@ -113,9 +111,10 @@ class StateMachine(Node):
 
             if self.state.lifespan > 5.0:
                 self.set_target([
-                    ObjectID.GATE_LEG,
-                    ObjectID.GATE_TOTAL,
-                    ObjectID.LUMIERE
+                    ObjectID.GATE_LEG_L,
+                    ObjectID.GATE_LEFT_MID,
+                    ObjectID.REQUIN,
+                    ObjectID.POISSON
                 ])
 
                 self.state = RobotState.APPROACH_ANY
