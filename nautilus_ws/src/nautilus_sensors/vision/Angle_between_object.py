@@ -41,8 +41,8 @@ def switch_case_sub_angle(objects, mode, PREQUALIFICATION):
             angle_calc = find_angle_plane_V2(right_obj["depth"],left_obj["depth"],1524, right_obj["box_cx"],left_obj["box_cx"], mode)
             cx, _, _, _= params_cams(mode)
             dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
-
-            results_angle.extend([ObjectID.GATE_LEFT_MID, float(dist_center_gate), 0, angle_calc])
+            if angle_calc is not None and dist_center_gate is not None:
+                results_angle.extend([float(ObjectID.GATE_LEFT_MID), float(dist_center_gate), 0.0, float(angle_calc)])
 
         if gate_right and gate_middle:
             left_obj = objects[ObjectID.GATE_LEG_CENTER]
@@ -51,8 +51,8 @@ def switch_case_sub_angle(objects, mode, PREQUALIFICATION):
             angle_calc = find_angle_plane_V2(left_obj["depth"],right_obj["depth"],1524, left_obj["box_cx"],right_obj["box_cx"], mode)
             cx, _, _, _= params_cams(mode)
             dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
-
-            results_angle.extend([ObjectID.GATE_MID_RIGHT, float(dist_center_gate), 0, angle_calc])
+            if angle_calc is not None and dist_center_gate is not None:
+                results_angle.extend([float(ObjectID.GATE_MID_RIGHT), float(dist_center_gate), 0.0, float(angle_calc)])
 
         if slalom_side and slalom_middle:
             # TODO: may have to treat case if side slalom is on the left or right of center slalom
@@ -62,8 +62,8 @@ def switch_case_sub_angle(objects, mode, PREQUALIFICATION):
             angle_calc = find_angle_plane_V2(right_obj["depth"],left_obj["depth"],1524, right_obj["box_cx"],left_obj["box_cx"], mode)
             cx, _, _, _= params_cams(mode)
             dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
-
-            results_angle.extend([ObjectID.SLALOM_SIDE_MID,float(dist_center_gate), 0, angle_calc])
+            if angle_calc is not None and dist_center_gate is not None:
+                results_angle.extend([float(ObjectID.SLALOM_SIDE_MID),float(dist_center_gate), 0.0, float(angle_calc)])
 
 
     else:
@@ -81,6 +81,6 @@ def switch_case_sub_angle(objects, mode, PREQUALIFICATION):
                 if angle_calc is None:
                     return []
                 else:
-                    results_angle.extend([float(3), float(dist_center_gate), 0, angle_calc])
+                    results_angle.extend([float(3), float(dist_center_gate), 0.0, float(angle_calc)])
 
     return results_angle

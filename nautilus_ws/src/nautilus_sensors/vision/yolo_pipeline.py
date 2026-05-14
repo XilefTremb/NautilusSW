@@ -42,7 +42,7 @@ class YoloNode(Node):
         if args.sim:
             self.mode = 'sim'
             self.model = YOLO(
-                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
+                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/sim_640_bbox_18mars.pt')
         else:
             self.mode = 'real'
             self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
@@ -186,7 +186,7 @@ class YoloNode(Node):
                         }
 
                 if depth_value < self.depth_threshold:
-                    payload.extend([float(object_id), dist_center, depth_value, 0])
+                    payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
                     if self.type_yolo == 'obb':
                         # ----------- DRAW OBB -----------
                         cv2.polylines(
