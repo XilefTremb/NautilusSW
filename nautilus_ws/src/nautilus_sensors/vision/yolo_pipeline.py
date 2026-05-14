@@ -2,20 +2,22 @@
 
 import argparse
 import rclpy
+import torch
+import cv2
+import numpy as np
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int16
-import cv2
-import numpy as np
 from ultralytics import YOLO
 from cv_bridge import CvBridge
-import torch
 from message_filters import Subscriber, ApproximateTimeSynchronizer
-from vision.Pixel_and_depth import *
-from vision.Angle_between_object import *
 from collections import deque
 
-MOVING_MEAN_ACTIVATED =  False
+from vision.Pixel_and_depth import *
+from vision.Angle_between_object import *
+from vision.Filters import TemporalFilter
+
+MOVING_MEAN_ACTIVATED =  True
 PREQUALIFICATION = False
 
 def parse_args():
@@ -56,6 +58,8 @@ class YoloNode(Node):
 
         # ----------- INIT PARAMS FILTER-----------
         self.depth_threshold = 9999999
+
+        self.temporal_filter = TemporalFilter(self)
 
         if PREQUALIFICATION:
             self.depth_history = {
@@ -180,10 +184,15 @@ class YoloNode(Node):
 
                 else:
                     if object_id not in objects or depth_value < objects[object_id]["depth"]:
+                        if MOVING_MEAN_ACTIVATED:
+                            depth_value = self.temporal_filter.moving_median_filter(
+                                key=f"depth_{object_id}",
+                                new_value=depth_value
+                            )
+
                         objects[object_id] = {
                             "depth": depth_value,
-                            "box_cx": box_cx
-                        }
+                            "box_cx": box_cx}
 
                 if depth_value < self.depth_threshold:
                     payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
@@ -274,15 +283,25 @@ class YoloNode(Node):
         if PREQUALIFICATION:
             dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED)
             payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode, PREQUALIFICATION)
+
+            if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
+                angle = payload_angle_bet[3]
+                self.angle_history.append(angle)
+                angle_filtered = float(np.median(self.angle_history))
+                payload_angle_bet[3] = angle_filtered
+
         else:
-            objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
             payload_angle_bet = switch_case_sub_angle(objects, self.mode, PREQUALIFICATION)
 
-        if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
-            angle = payload_angle_bet[3]
-            self.angle_history.append(angle)
-            angle_filtered = float(np.median(self.angle_history))
-            payload_angle_bet[3] = angle_filtered
+            if MOVING_MEAN_ACTIVATED:
+                for i in range(0, len(payload_angle_bet), 4):
+                    group_id = int(payload_angle_bet[i])
+                    angle_index = i + 3
+
+                    payload_angle_bet[angle_index] = self.temporal_filter.moving_median_filter(
+                        key=f"angle_{group_id}",
+                        new_value=payload_angle_bet[angle_index])
+
 
         payload.extend(payload_angle_bet)
 
@@ -314,93 +333,6 @@ class YoloNode(Node):
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
-
-    def filter_objects_depth(self, objects, activated):
-        if not activated:
-            return objects
-
-        filtered_objects = {}
-        for object_id, obj in objects.items():
-            key = str(object_id)
-
-            if key not in self.depth_history:
-                self.depth_history[key] = deque(maxlen=10)
-                self.last_seen[key] = None
-
-            filtered_depth = self.spike_filter_with_timeout(
-                obj["depth"],
-                self.depth_history[key],
-                key
-            )
-
-            self.depth_history[key].append(filtered_depth)
-
-            filtered_objects[object_id] = {
-                "depth": float(np.median(self.depth_history[key])),
-                "box_cx": obj["box_cx"]
-            }
-
-        return filtered_objects
-
-    def build_gate_leg_dict(self, gate_legs_detected, activated):
-        """
-        Sort gate legs left/right using their x-position in the camera,
-        then smooth left and right depths with a moving average of 10 frames.
-        """
-        if len(gate_legs_detected) < 2:
-            return {}
-
-        # If more than two legs are detected, keep the leftmost and rightmost ones.
-        gate_legs_detected = sorted(gate_legs_detected, key=lambda obj: obj["box_cx"])
-        gate_left = gate_legs_detected[0]
-        gate_right = gate_legs_detected[-1]
-
-        if activated:
-            left_filtered = self.spike_filter_with_timeout(
-                gate_left["depth"],
-                self.depth_history["gate_left"],
-                "gate_left"
-            )
-
-            right_filtered = self.spike_filter_with_timeout(
-                gate_right["depth"],
-                self.depth_history["gate_right"],
-                "gate_right"
-            )
-
-            self.depth_history["gate_left"].append(left_filtered)
-            self.depth_history["gate_right"].append(right_filtered)
-
-            gate_left["depth"] = float(np.median(self.depth_history["gate_left"]))
-            gate_right["depth"] = float(np.median(self.depth_history["gate_right"]))
-
-        # 0 = left, 1 = right. Angle_between_object.py now assumes this is already ordered.
-        return {
-            0: gate_left,
-            1: gate_right,
-        }
-
-    def spike_filter_with_timeout(self, new_value, history, key):
-        now = self.get_clock().now().nanoseconds / 1e9
-
-        last_seen = self.last_seen[key]
-
-        if last_seen is None or len(history) == 0:
-            self.last_seen[key] = now
-            return new_value
-
-        time_since_seen = now - last_seen
-        self.last_seen[key] = now
-
-        if time_since_seen > self.reset_after_sec:
-            return new_value
-
-        last_value = history[-1]
-
-        if abs(new_value - last_value) > self.spike_threshold_mm:
-            return last_value
-
-        return new_value
 
     def obb_model(self, box):
         xywhr = box.xywhr[0].cpu().numpy()
@@ -439,6 +371,45 @@ class YoloNode(Node):
         half = 5
 
         return box_cx, box_cy, x1, y1, x2, y2, half
+
+    def build_gate_leg_dict(self, gate_legs_detected, activated):
+        """
+        Sort gate legs left/right using their x-position in the camera,
+        then smooth left and right depths with a moving average of 10 frames.
+        ONLY FOR PREQUALIFICATION
+        """
+        if len(gate_legs_detected) < 2:
+            return {}
+
+        # If more than two legs are detected, keep the leftmost and rightmost ones.
+        gate_legs_detected = sorted(gate_legs_detected, key=lambda obj: obj["box_cx"])
+        gate_left = gate_legs_detected[0]
+        gate_right = gate_legs_detected[-1]
+
+        if activated:
+            left_filtered = self.spike_filter_with_timeout(
+                gate_left["depth"],
+                self.depth_history["gate_left"],
+                "gate_left"
+            )
+
+            right_filtered = self.spike_filter_with_timeout(
+                gate_right["depth"],
+                self.depth_history["gate_right"],
+                "gate_right"
+            )
+
+            self.depth_history["gate_left"].append(left_filtered)
+            self.depth_history["gate_right"].append(right_filtered)
+
+            gate_left["depth"] = float(np.median(self.depth_history["gate_left"]))
+            gate_right["depth"] = float(np.median(self.depth_history["gate_right"]))
+
+        # 0 = left, 1 = right. Angle_between_object.py now assumes this is already ordered.
+        return {
+            0: gate_left,
+            1: gate_right,
+        }
 
 
 def main():
