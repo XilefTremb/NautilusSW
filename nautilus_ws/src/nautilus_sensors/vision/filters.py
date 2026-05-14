@@ -1,9 +1,10 @@
 from collections import deque
 import numpy as np
+import time
 
 
 class TemporalFilter:
-    def __init__(self, node, maxlen=10, spike_threshold_mm=1000, reset_after_sec=2.0):
+    def __init__(self, node, maxlen=10, spike_threshold_mm=1000, reset_after_sec=1):
 
         self.node = node
 
@@ -32,7 +33,7 @@ class TemporalFilter:
 
     def spike_filter_with_timeout(self, new_value, history, key):
 
-        now = self.node.get_clock().now().nanoseconds / 1e9
+        now = time.monotonic()
 
         last_seen = self.last_seen[key]
 
