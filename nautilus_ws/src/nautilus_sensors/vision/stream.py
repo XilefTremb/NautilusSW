@@ -194,6 +194,8 @@ class DualOakNode(Node):
 
         stereo = pipeline.create(dai.node.StereoDepth)
 
+        stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
+
         monoLeft.requestOutput(size=(1280, 720)).link(stereo.left)
         monoRight.requestOutput(size=(1280, 720)).link(stereo.right)
 
