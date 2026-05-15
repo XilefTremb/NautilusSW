@@ -2,14 +2,12 @@ from enum import IntEnum
 
 class RobotState(IntEnum):
     IDLE = 0
-    SEARCH = 1
-    APPROACH = 2
-    CENTER_GATE = 3
-    APPROACH_GATE = 4
-    TRAVERSE_GATE = 5
-    CIRCLE_MARKER = 6
-    RETURN_GATE = 7
-    APPROACH_ANY = 8
+    LOAD_OBJECTIVE = 1
+    SEARCH_TARGET = 2
+    CENTER_TARGET = 3
+    APPROACH_TARGET = 4
+    EXECUTE_ACTION = 5
+    MISSION_COMPLETE = 6
 
 
     

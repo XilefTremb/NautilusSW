@@ -73,7 +73,7 @@ class YoloNode(Node):
         self.spike_threshold_mm = 1000
         self.reset_after_sec = 2.0
 
-        # ----------- CPU -----------
+        # ----------- GPU -----------
         if torch.cuda.is_available():
             self.model.to('cuda')
 
@@ -102,7 +102,7 @@ class YoloNode(Node):
         # ----------- PUBLISHER -----------
         #self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
         #self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
-        self.detection_topic = self.create_publisher(Float32MultiArray, '/yolo/detection', 10)
+        self.detection_topic = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
         self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
 
@@ -436,7 +436,7 @@ class YoloNode(Node):
 
         x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-        half = 5
+        half = 1
 
         return box_cx, box_cy, x1, y1, x2, y2, half
 
