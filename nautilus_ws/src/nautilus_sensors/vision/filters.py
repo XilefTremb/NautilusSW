@@ -12,42 +12,42 @@ class TemporalFilter:
         self.spike_threshold_mm = spike_threshold_mm
         self.reset_after_sec = reset_after_sec
 
-        self.history = {}
-        self.last_seen = {}
+        self.history_dict = {}
+        self.last_seen_ms = {}
 
     def moving_median_filter(self, key, new_value):
 
-        if key not in self.history:
-            self.history[key] = deque(maxlen=self.maxlen)
-            self.last_seen[key] = None
+        if key not in self.history_dict:
+            self.history_dict[key] = deque(maxlen=self.maxlen)
+            self.last_seen_ms[key] = None
 
         filtered_value = self.spike_filter_with_timeout(
             new_value,
-            self.history[key],
+            self.history_dict[key],
             key
         )
 
-        self.history[key].append(filtered_value)
+        self.history_dict[key].append(filtered_value)
 
-        return float(np.median(self.history[key]))
+        return float(np.median(self.history_dict[key]))
 
-    def spike_filter_with_timeout(self, new_value, history, key):
+    def spike_filter_with_timeout(self, new_value, history_tab, key):
 
         now = time.monotonic()
 
-        last_seen = self.last_seen[key]
+        last_seen_with_key = self.last_seen_ms[key]
 
-        if last_seen is None or len(history) == 0:
-            self.last_seen[key] = now
+        if last_seen_with_key is None or len(history_tab) == 0:
+            self.last_seen_ms[key] = now
             return new_value
 
-        time_since_seen = now - last_seen
-        self.last_seen[key] = now
+        time_since_seen = now - last_seen_with_key
+        self.last_seen_ms[key] = now
 
         if time_since_seen > self.reset_after_sec:
             return new_value
 
-        last_value = history[-1]
+        last_value = history_tab[-1]
 
         if abs(new_value - last_value) > self.spike_threshold_mm:
             return last_value
