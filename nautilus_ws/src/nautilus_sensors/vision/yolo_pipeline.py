@@ -15,6 +15,8 @@ from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
 from collections import deque
 
+from nautilus_ws.src.nautilus_bringup.nautilus_bringup.ObjectID import ObjectID
+
 MOVING_MEAN_ACTIVATED =  False
 PREQUALIFICATION = False
 
@@ -123,6 +125,7 @@ class YoloNode(Node):
             dict_leg = {}
         else:
             objects = {}
+            slalom_tab = []
 
         annotated_frame = frame.copy()
 
@@ -179,7 +182,10 @@ class YoloNode(Node):
                         })
 
                 else:
-                    if object_id not in objects or depth_value < objects[object_id]["depth"]:
+                    if object_id == ObjectID.SLALOM_SIDE:
+                        slalom_tab.append([depth_value, box_cx])
+
+                    elif object_id not in objects or depth_value < objects[object_id]["depth"]:
                         objects[object_id] = {
                             "depth": depth_value,
                             "box_cx": box_cx
@@ -275,10 +281,11 @@ class YoloNode(Node):
             dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED)
             payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode, PREQUALIFICATION)
         else:
+            objects = self.slalom_organizer(slalom_tab, objects)
             objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
             payload_angle_bet = switch_case_sub_angle(objects, self.mode, PREQUALIFICATION)
 
-        if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
+        if len(payload_angle_bet) >= 4 and MOVING_MEAN_ACTIVATED:
             angle = payload_angle_bet[3]
             self.angle_history.append(angle)
             angle_filtered = float(np.median(self.angle_history))
@@ -341,6 +348,45 @@ class YoloNode(Node):
             }
 
         return filtered_objects
+
+    def slalom_organizer(self, slalom_tab, objects):
+
+        if ObjectID.SLALOM_CENTER not in objects:
+            return objects
+
+        slalom_middle = objects[ObjectID.SLALOM_CENTER]
+        slalom_middle_cx = slalom_middle["box_cx"]
+
+        slalom_left = None
+        slalom_right = None
+
+        for depth_value, box_cx in slalom_tab:
+
+            candidate = {
+                "depth": depth_value,
+                "box_cx": box_cx
+            }
+
+            # ---------- LEFT ----------
+            if box_cx < slalom_middle_cx:
+
+                if slalom_left is None or depth_value < slalom_left["depth"]:
+                    slalom_left = candidate
+
+            # ---------- RIGHT ----------
+            elif box_cx > slalom_middle_cx:
+
+                if slalom_right is None or depth_value < slalom_right["depth"]:
+                    slalom_right = candidate
+
+        # ---------- SAVE NEW IDS ----------
+        if slalom_left is not None:
+            objects[ObjectID.SLALOM_LEFT] = slalom_left
+
+        if slalom_right is not None:
+            objects[ObjectID.SLALOM_RIGHT] = slalom_right
+
+        return objects
 
     def build_gate_leg_dict(self, gate_legs_detected, activated):
         """
