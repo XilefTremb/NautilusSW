@@ -15,7 +15,7 @@ from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
 from collections import deque
 
-from nautilus_ws.src.nautilus_bringup.nautilus_bringup.ObjectID import ObjectID
+from nautilus_bringup.ObjectID import ObjectID
 
 MOVING_MEAN_ACTIVATED =  False
 PREQUALIFICATION = False
@@ -44,7 +44,7 @@ class YoloNode(Node):
         if args.sim:
             self.mode = 'sim'
             self.model = YOLO(
-                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/sim_640_bbox_18mars.pt')
+                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/sim_640_bbox_18mars.pt')
         else:
             self.mode = 'real'
             self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
@@ -182,8 +182,20 @@ class YoloNode(Node):
                         })
 
                 else:
-                    if object_id == ObjectID.SLALOM_SIDE:
-                        slalom_tab.append([depth_value, box_cx])
+                    if int(object_id) == int(ObjectID.SLALOM_SIDE):
+                        slalom_tab.append({
+                            "depth": depth_value,
+                            "dist_center": dist_center,
+                            "box_cx": box_cx,
+                            "box_cy": box_cy,
+                            "confidence": confidence,
+                            "x1": x1,
+                            "y1": y1,
+                            "x2": x2,
+                            "y2": y2,
+                            "points": points if self.type_yolo == 'obb' else None
+                        })
+                        continue
 
                     elif object_id not in objects or depth_value < objects[object_id]["depth"]:
                         objects[object_id] = {
@@ -193,95 +205,19 @@ class YoloNode(Node):
 
                 if depth_value < self.depth_threshold:
                     payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
-                    if self.type_yolo == 'obb':
-                        # ----------- DRAW OBB -----------
-                        cv2.polylines(
-                            annotated_frame,
-                            [points],
-                            isClosed=True,
-                            color=(0, 255, 0),
-                            thickness=2
-                        )
-
-                        label = f"{object_id} | {confidence:.2f}"
-
-                        cv2.putText(
-                            annotated_frame,
-                            label,
-                            (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5,
-                            (0, 255, 0),
-                            1
-                        )
-
-                        cv2.putText(
-                            annotated_frame,
-                            f"{depth_value:.2f}mm",
-                            (box_cx, box_cy),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5,
-                            (0, 255, 0),
-                            1
-                        )
-
-                        cv2.putText(
-                            annotated_frame,
-                            f"{dist_center:.2f}px",
-                            (box_cx, box_cy + 15),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5,
-                            (0, 255, 0),
-                            1
-                        )
-
-                    elif self.type_yolo== 'bbox':
-                        # ----------- DRAW BBOX -----------
-                        cv2.rectangle(
-                            annotated_frame,
-                            (x1, y1),
-                            (x2, y2),
-                            (0, 255, 0),
-                            2
-                        )
-
-                        label = f"{object_id} | {confidence:.2f}"
-                        cv2.putText(
-                            annotated_frame,
-                            label,
-                            (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5,
-                            (0, 255, 0),
-                            1
-                        )
-
-                        cv2.putText(
-                            annotated_frame,
-                            f"{depth_value:.2f}mm",
-                            (box_cx, box_cy),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5,
-                            (0, 255, 0),
-                            1
-                        )
-
-                        cv2.putText(
-                            annotated_frame,
-                            f"{dist_center:.2f}px",
-                            (box_cx, box_cy + 15),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5,
-                            (0, 255, 0),
-                            1
-                        )
+                    self.draw_detection(
+                        annotated_frame, object_id, confidence,
+                        depth_value, dist_center,
+                        box_cx, box_cy, x1, y1, x2, y2,
+                        points if self.type_yolo == 'obb' else None
+                    )
 
         # ----------- ANGLE BETWEEN OBJECTS -----------
         if PREQUALIFICATION:
             dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED)
             payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode, PREQUALIFICATION)
         else:
-            objects = self.slalom_organizer(slalom_tab, objects)
+            objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
             objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
             payload_angle_bet = switch_case_sub_angle(objects, self.mode, PREQUALIFICATION)
 
@@ -349,44 +285,77 @@ class YoloNode(Node):
 
         return filtered_objects
 
-    def slalom_organizer(self, slalom_tab, objects):
-
+    def slalom_organizer(self, slalom_tab, objects, annotated_frame, payload):
+        
+        if len(slalom_tab) == 0:
+            return objects, payload
+        
         if ObjectID.SLALOM_CENTER not in objects:
-            return objects
+                closest_side = min(slalom_tab, key=lambda s: s["depth"])
 
-        slalom_middle = objects[ObjectID.SLALOM_CENTER]
-        slalom_middle_cx = slalom_middle["box_cx"]
+                payload.extend([float(ObjectID.SLALOM_SIDE), float(closest_side["dist_center"]), float(closest_side["depth"]),0.0])
+
+                self.draw_detection(
+                    annotated_frame,
+                    ObjectID.SLALOM_SIDE,
+                    closest_side["confidence"],
+                    closest_side["depth"],
+                    closest_side["dist_center"],
+                    closest_side["box_cx"],
+                    closest_side["box_cy"],
+                    closest_side["x1"],
+                    closest_side["y1"],
+                    closest_side["x2"],
+                    closest_side["y2"],
+                    closest_side["points"]
+                )
+
+                return objects, payload
+
+        slalom_middle_cx = objects[ObjectID.SLALOM_CENTER]["box_cx"]
 
         slalom_left = None
         slalom_right = None
 
-        for depth_value, box_cx in slalom_tab:
+        for slalom in slalom_tab:
+            depth_value = slalom["depth"]
+            box_cx = slalom["box_cx"]
 
-            candidate = {
-                "depth": depth_value,
-                "box_cx": box_cx
-            }
-
-            # ---------- LEFT ----------
             if box_cx < slalom_middle_cx:
-
                 if slalom_left is None or depth_value < slalom_left["depth"]:
-                    slalom_left = candidate
+                    slalom_left = slalom
 
-            # ---------- RIGHT ----------
             elif box_cx > slalom_middle_cx:
-
                 if slalom_right is None or depth_value < slalom_right["depth"]:
-                    slalom_right = candidate
+                    slalom_right = slalom
 
-        # ---------- SAVE NEW IDS ----------
         if slalom_left is not None:
             objects[ObjectID.SLALOM_LEFT] = slalom_left
+            payload.extend([float(ObjectID.SLALOM_LEFT),float(slalom_left["dist_center"]), float(slalom_left["depth"]),0.0])
+            self.draw_detection(
+                annotated_frame, ObjectID.SLALOM_LEFT,
+                slalom_left["confidence"], slalom_left["depth"],
+                slalom_left["dist_center"],
+                slalom_left["box_cx"], slalom_left["box_cy"],
+                slalom_left["x1"], slalom_left["y1"],
+                slalom_left["x2"], slalom_left["y2"],
+                slalom_left["points"]
+            )
 
         if slalom_right is not None:
             objects[ObjectID.SLALOM_RIGHT] = slalom_right
+            payload.extend([float(ObjectID.SLALOM_RIGHT),float(slalom_right["dist_center"]), float(slalom_right["depth"]),0.0])
+            self.draw_detection(
+                annotated_frame, ObjectID.SLALOM_RIGHT,
+                slalom_right["confidence"], slalom_right["depth"],
+                slalom_right["dist_center"],
+                slalom_right["box_cx"], slalom_right["box_cy"],
+                slalom_right["x1"], slalom_right["y1"],
+                slalom_right["x2"], slalom_right["y2"],
+                slalom_right["points"]
+            )
 
-        return objects
+        return objects, payload
 
     def build_gate_leg_dict(self, gate_legs_detected, activated):
         """
@@ -447,6 +416,25 @@ class YoloNode(Node):
             return last_value
 
         return new_value
+
+    def draw_detection(self, annotated_frame, object_id, confidence, depth_value,
+                   dist_center, box_cx, box_cy, x1, y1, x2, y2, points=None):
+
+        if self.type_yolo == 'obb' and points is not None:
+            cv2.polylines(annotated_frame, [points], True, (0, 255, 0), 2)
+        else:
+            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+        label = f"{object_id} | {confidence:.2f}"
+
+        cv2.putText(annotated_frame, label, (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
+        cv2.putText(annotated_frame, f"{depth_value:.2f}mm", (box_cx, box_cy),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
+        cv2.putText(annotated_frame, f"{dist_center:.2f}px", (box_cx, box_cy + 15),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
     def obb_model(self, box):
         xywhr = box.xywhr[0].cpu().numpy()
