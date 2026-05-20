@@ -7,6 +7,7 @@ from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16
 
 from nautilus_bringup.VisionAction import VisionAction
+from nautilus_bringup.DetectionIndex import DetectionIndex
 
 
 class VisionControllerNode(Node):
@@ -21,6 +22,7 @@ class VisionControllerNode(Node):
         # Selected detection coming from vision_action_machine:
         # [id, px, angle, depth]
         self.last_target_detection = None
+        self.circle_marker_pixel_offset = 0.0
 
         # Subscribers
         self.vision_action_sub = self.create_subscription(Int8, '/mission/vision_action', self.vision_action_callback, 10)
@@ -55,7 +57,7 @@ class VisionControllerNode(Node):
 
         self.previous_vision_action = self.vision_action
 
-    def select_action_callback(self):
+    def select_vision_action_callback(self):
         if self.vision_action == VisionAction.CENTER_TARGET:
             self.current_detection_callback = self.center_target_callback
 
@@ -82,8 +84,10 @@ class VisionControllerNode(Node):
     def center_target_callback(self):
         if self.last_target_detection is None:
             return
-
-        _, px, depth, angle = self.last_target_detection
+        
+        px = self.last_target_detection[DetectionIndex.CENTER_PX]
+        angle = self.last_target_detection[DetectionIndex.ANGLE_DEG]
+        
 
         forward_error, lateral_error = self.split_angle(angle)
         fwd_msg = Float32()
@@ -95,13 +99,14 @@ class VisionControllerNode(Node):
         yaw_msg = Float32()
         yaw_msg.data = float(px)
 
-        self.forward_error_pub(fwd_msg)
-        self.lateral_error_pub(lat_msg)
+        self.forward_error_pub.publish(fwd_msg)
+        self.lateral_error_pub.publish(lat_msg)
         self.yaw_error_pub.publish(yaw_msg)
 
     def approach_target_callback(self):
         if self.last_target_detection is not None:
-            _, px, depth, angle = self.last_target_detection
+
+            px = self.last_target_detection[DetectionIndex.CENTER_PX]
 
             yaw_msg = Float32()
             yaw_msg.data = float(px)
@@ -114,20 +119,23 @@ class VisionControllerNode(Node):
     def circle_marker_callback(self):
         if self.last_target_detection is None:
             return
-
-        _, px, depth, angle = self.last_target_detection
+        
+        px = self.last_target_detection[DetectionIndex.CENTER_PX]
 
         yaw_msg = Float32()
-        yaw_msg.data = float(px) - 320.0
+        yaw_msg.data = float(px) - self.circle_marker_pixel_offset
         self.yaw_error_pub.publish(yaw_msg)
 
         forward_msg = Int16()
-        forward_msg.data = 1540
+        forward_msg.data = 1505
         self.forward_cmd_pub.publish(forward_msg)
 
         lateral_msg = Int16()
-        lateral_msg.data = 1375
+        lateral_msg.data = 1495
         self.lateral_cmd_pub.publish(lateral_msg)
+
+        if self.circle_marker_pixel_offset < 240.0:
+            self.circle_marker_pixel_offset = self.circle_marker_pixel_offset + 1
 
     def empty_callback(self):
         pass

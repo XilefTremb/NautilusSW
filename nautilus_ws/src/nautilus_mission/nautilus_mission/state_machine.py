@@ -13,6 +13,7 @@ from transitions import Machine
 from nautilus_bringup.RobotState import RobotState
 from nautilus_bringup.ObjectID import ObjectID
 from nautilus_bringup.VisionAction import VisionAction
+from nautilus_bringup.DetectionIndex import DetectionIndex
 
 
 class ActionType(Enum):
@@ -48,6 +49,21 @@ class StateMachine(Node):
         super().__init__('state_machine')
 
         # ------------------------------------------------------------------------------------------
+        # Subscribers
+        # ------------------------------------------------------------------------------------------
+        self.detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections',self.detection_callback,10)
+        self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,10)
+
+        # ------------------------------------------------------------------------------------------
+        # Publishers
+        # ------------------------------------------------------------------------------------------
+        self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
+        self.vision_action_pub = self.create_publisher(Int8, '/mission/vision_action', 10)
+        self.target_detection_pub = self.create_publisher(Float32MultiArray, '/mission/target_detection', 10)
+        self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
+        self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
+
+        # ------------------------------------------------------------------------------------------
         # Mission objectives
         # ------------------------------------------------------------------------------------------
         self.objectives: list[Objective] = [
@@ -56,24 +72,33 @@ class StateMachine(Node):
                 target_ids=[ObjectID.GATE_LEFT_MID],
                 center_tolerance_px=50.0,
                 approach_distance=3000.0,
+                angle_tolerance_deg=5.0,
                 depth_threshold=7000,
                 action_type=ActionType.FORWARD,
-                action_duration=3.0,
+                action_duration=8.0,
                 action_forward_pwm=1700,
+
             ),
             Objective(
                 name='marker',
                 target_ids=[ObjectID.GATE_LEG_L],
                 center_tolerance_px=50.0,
-                approach_distance=3000.0,
+                approach_distance=5000.0,
                 depth_threshold=15000,
                 action_type=ActionType.CIRCLE_MARKER,
                 mean_depth_target=20000,
-                min_action_lifespan=10.0,
+                min_action_lifespan=8.0,
+            ),
+            Objective(
+                name='marker_blind',
+                target_ids=None,
+                action_type=ActionType.FORWARD,
+                min_action_lifespan=3.0,
+               
             ),
            Objective(
                 name='return_gate_area',
-                target_ids=[ObjectID.GATE_LEG_L, ObjectID.REQUIN, ObjectID.POISSON],
+                target_ids=[ObjectID.GATE_LEFT_MID, ObjectID.REQUIN, ObjectID.POISSON],
                 center_tolerance_px=80.0,
                 approach_distance=6000.0,
                 action_type=ActionType.NONE,
@@ -102,6 +127,9 @@ class StateMachine(Node):
         self.target_ids: Optional[list[ObjectID]] = None
         self.vision_action = VisionAction.IDLE
 
+        self.target_missing_count = 0
+        self.target_missing_limit = 5
+
         # ------------------------------------------------------------------------------------------
         # Generic behavior FSM
         # ------------------------------------------------------------------------------------------
@@ -124,6 +152,7 @@ class StateMachine(Node):
             {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
             {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
             {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION'},
+            {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
 
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
             {'trigger': 'finish_mission', 'source': '*', 'dest': 'MISSION_COMPLETE'},
@@ -138,31 +167,7 @@ class StateMachine(Node):
             ignore_invalid_triggers=True,
         )
 
-        # ------------------------------------------------------------------------------------------
-        # Subscribers
-        # ------------------------------------------------------------------------------------------
-        self.detection_sub = self.create_subscription(
-            Float32MultiArray,
-            '/yolo/detections',
-            self.detection_callback,
-            10,
-        )
-
-        self.mean_depth_sub = self.create_subscription(
-            Int16,
-            '/yolo/mean_depth_forward_cam',
-            self.mean_depth_callback,
-            10,
-        )
-
-        # ------------------------------------------------------------------------------------------
-        # Publishers
-        # ------------------------------------------------------------------------------------------
-        self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
-        self.vision_action_pub = self.create_publisher(Int8, '/mission/vision_action', 10)
-        self.target_detection_pub = self.create_publisher(Float32MultiArray, '/mission/target_detection', 10)
-        self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
-        self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
+        
 
         # ------------------------------------------------------------------------------------------
         # Timers
@@ -177,6 +182,9 @@ class StateMachine(Node):
     # ==============================================================================================
 
     def behavior_timer(self):
+        if self.target_ids is None:
+            self.no_target_to_be_reached()
+
         if self.state == 'SEARCH_TARGET':
             self.vision_action = VisionAction.IDLE
             self.run_search_behavior()
@@ -188,22 +196,22 @@ class StateMachine(Node):
             self.vision_action = VisionAction.CENTER_TARGET
             self.run_center_behavior()
 
-            if not self.is_target_present():
+            if self.is_target_lost_filtered():
                 self.target_lost()
-            elif self.is_target_centered():
+            elif self.is_target_centered() and self.is_target_perpendicular() and self.state_lifespan > 5.0:
                 self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
             self.vision_action = VisionAction.APPROACH_TARGET
             self.run_approach_behavior()
 
-            if not self.is_target_present():
+            if self.is_target_lost_filtered():
                 self.target_lost()
             elif self.is_target_approached():
                 self.target_reached()
 
         elif self.state == 'EXECUTE_ACTION':
-            self.vision_action = self.get_vision_action_for_current_action()
+            self.vision_action = self.get_vision_action_for_current_objective()
             self.run_current_action()
 
             if self.is_current_action_done():
@@ -233,14 +241,21 @@ class StateMachine(Node):
             f'{self.current_objective.name}'
         )
 
-        self.get_logger().info(
-            'Target IDs: ' + ', '.join(target.name for target in self.target_ids)
-        )
+        if self.target_ids is not None:
+            self.get_logger().info('Target IDs: ' + ', '.join(target.name for target in self.target_ids))
+        else:
+            self.get_logger().info('Target IDs: ' + ', '.join("None"))
 
         if self.current_objective.depth_threshold is not None:
             self.publish_depth_threshold(self.current_objective.depth_threshold)
 
         self.objective_loaded()
+
+    def on_enter_CENTER_TARGET(self):
+        self.target_missing_count = 0
+
+    def on_enter_APPROACH_TARGET(self):
+        self.target_missing_count = 0
 
     def on_enter_EXECUTE_ACTION(self):
         if self.current_objective is None:
@@ -297,7 +312,7 @@ class StateMachine(Node):
             # through VisionAction.CIRCLE_MARKER.
             pass
 
-    def get_vision_action_for_current_action(self) -> VisionAction:
+    def get_vision_action_for_current_objective(self) -> VisionAction:
         if self.current_objective is None:
             return VisionAction.IDLE
 
@@ -337,16 +352,24 @@ class StateMachine(Node):
         target = self.get_detection(self.target_ids)
 
         if target is not None:
-            self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} was found!')
+            # self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} was found!')
             return True
 
         return False
+    
+    def is_target_lost_filtered(self) -> bool:
+        if self.is_target_present():
+            self.target_missing_count = 0
+            return False
+
+        self.target_missing_count += 1
+        return self.target_missing_count >= self.target_missing_limit
 
     def is_id_present(self, ids: int | list[int]) -> bool:
         target = self.get_detection(ids)
 
         if target is not None:
-            self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} was found!')
+            # self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} was found!')
             return True
 
         return False
@@ -360,10 +383,10 @@ class StateMachine(Node):
         if target is None:
             return False
 
-        px = target[1]
+        px = target[DetectionIndex.CENTER_PX]
 
         if abs(px) < self.current_objective.center_tolerance_px:
-            self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} is centered!')
+            # self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} is centered!')
             return True
 
         return False
@@ -377,12 +400,10 @@ class StateMachine(Node):
         if target is None:
             return False
 
-        depth = target[3]
+        depth = target[DetectionIndex.DEPTH_MM]
 
         if depth < self.current_objective.approach_distance:
-            self.get_logger().info(
-                f'Target ID {ObjectID(int(target[0])).name} is in range! Depth: {depth}'
-            )
+            # self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} is in range! Depth: {depth}')
             return True
 
         return False
@@ -393,10 +414,10 @@ class StateMachine(Node):
         if target is None:
             return False
 
-        angle = target[2]
+        angle = target[DetectionIndex.ANGLE_DEG]
 
-        if abs(angle) < self.current_objective.angle_tolerence_deg:
-            self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} is perpendicular!')
+        if abs(angle) < self.current_objective.angle_tolerance_deg:
+            # self.get_logger().info(f'Target ID {ObjectID(int(target[0])).name} is perpendicular!')
             return True
 
         return False
@@ -413,7 +434,7 @@ class StateMachine(Node):
         return next(
             (
                 detection for detection in self.detections
-                if int(detection[0]) in ids_as_int
+                if int(detection[DetectionIndex.ID]) in ids_as_int
             ),
             None,
         )
@@ -429,9 +450,6 @@ class StateMachine(Node):
 
     def publish_state(self):
         if self.state is None:
-            return
-
-        if not hasattr(RobotState, self.state):
             return
 
         msg = Int8()
@@ -454,10 +472,10 @@ class StateMachine(Node):
 
         msg = Float32MultiArray()
         msg.data = [
-            float(target[0]),  # id
-            float(target[1]),  # px
-            float(target[2]),  # angle
-            float(target[3]),  # depth
+            float(target[DetectionIndex.ID]),
+            float(target[DetectionIndex.CENTER_PX]),
+            float(target[DetectionIndex.DEPTH_MM]),
+            float(target[DetectionIndex.ANGLE_DEG]),
         ]
         self.target_detection_pub.publish(msg)
 
