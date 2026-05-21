@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+import math
+from typing import Optional
+
+from rclpy.node import Node
+
+from enums.VisionAction import VisionAction
+from enums.DetectionIndex import DetectionIndex
+
+class VisionController:
+    """Vision action to error/cmd calculation only. No ROS subscriptions."""
+
+    def __init__(self, node: Node):
+        self.node = node
+        self.previous_vision_action: Optional[VisionAction] = None
+        self.circle_marker_pixel_offset = 0.0
+
+    def process(self, vision_action: VisionAction, target_detection):
+        if self.previous_vision_action != vision_action:
+            if self.previous_vision_action is not None:
+                self.node.get_logger().info(
+                    f'Set vision_action from {self.previous_vision_action.name} to: {vision_action.name}'
+                )
+            else:
+                self.node.get_logger().info(
+                    f'Set vision_action from {self.previous_vision_action} to: {vision_action.name}'
+                )
+            self.previous_vision_action = vision_action
+
+        if vision_action == VisionAction.CENTER_TARGET:
+            self.center_target(target_detection)
+        elif vision_action == VisionAction.APPROACH_TARGET:
+            self.approach_target(target_detection)
+        elif vision_action == VisionAction.CIRCLE_MARKER:
+            self.circle_marker(target_detection)
+
+    def center_target(self, target_detection):
+        if target_detection is None:
+            return
+
+        px = target_detection[DetectionIndex.CENTER_PX]
+        angle = target_detection[DetectionIndex.ANGLE_DEG]
+
+        forward_error, lateral_error = self.split_angle(angle)
+        self.node.publish_forward_error(forward_error)
+        self.node.publish_lateral_error(lateral_error)
+        self.node.publish_yaw_error(float(px))
+
+    def approach_target(self, target_detection):
+        if target_detection is not None:
+            px = target_detection[DetectionIndex.CENTER_PX]
+            self.node.publish_yaw_error(float(px))
+
+        self.node.publish_forward_cmd(1600)
+
+    def circle_marker(self, target_detection):
+        if target_detection is None:
+            return
+
+        px = target_detection[DetectionIndex.CENTER_PX]
+        self.node.publish_yaw_error(float(px) - self.circle_marker_pixel_offset)
+        self.node.publish_forward_cmd(1505)
+        self.node.publish_lateral_cmd(1495)
+
+        if self.circle_marker_pixel_offset < 240.0:
+            self.circle_marker_pixel_offset += 1.0
+
+    def split_angle(self, angle_deg):
+        angle = math.radians(angle_deg)
+        forward_error = -angle_deg * math.sin(angle)
+        lateral_error = angle_deg * math.cos(angle)
+        return forward_error, lateral_error

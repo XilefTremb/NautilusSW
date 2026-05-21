@@ -102,7 +102,7 @@ class YoloNode(Node):
         # ----------- PUBLISHER -----------
         #self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
         #self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
-        self.detection_topic = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
+        self.detection_pub = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
         self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
 
@@ -297,7 +297,7 @@ class YoloNode(Node):
         ]
         msg.layout.data_offset = 0
 
-        self.detection_topic.publish(msg)
+        self.detection_pub.publish(msg)
 
         # ----------- IMAGE OUTPUT -----------
         out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')

@@ -44,10 +44,4 @@ def generate_launch_description():
                 'flip_output': True
             }]
         ),
-
-        Node(
-            package='nautilus_controls',
-            executable='vision_controller',
-            name='vision_controller',
-        ),
     ])

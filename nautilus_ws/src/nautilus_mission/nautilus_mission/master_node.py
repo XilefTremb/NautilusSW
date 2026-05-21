@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+
+import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
+from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16
+
+from nautilus_mission.detection_store import DetectionStore
+from nautilus_mission.state_machine import StateMachine
+from nautilus_mission.vision_controller import VisionController
+
+
+class MasterNode(Node):
+    def __init__(self):
+        super().__init__('master_node')
+
+        fast_qos = QoSProfile(
+            history=HistoryPolicy.KEEP_LAST,
+            depth=1,
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+        )
+
+        self.detection_store = DetectionStore(self.get_logger())
+        self.fsm = StateMachine(self, self.detection_store)
+        self.vision_controller = VisionController(self)
+
+        # Subscribers
+        self.detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections',self.detection_callback,fast_qos)
+        self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
+
+        # Publishers kept from the original nodes
+        self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
+        self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
+        self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
+        self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
+        self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
+        self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
+        self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
+
+        # Timer remains for mission/action housekeeping, but detections also trigger immediate processing.
+        self.timer = self.create_timer(1 / 20, self.pipeline_tick)
+
+        self.get_logger().info('Master mission + vision node started.')
+
+        self.fsm.start_mission()
+
+    def detection_callback(self, msg: Float32MultiArray):
+        if not self.detection_store.update_from_msg(msg):
+            return
+
+        # Immediate callback-driven processing to reduce detection-to-error delay.
+        # self.vision_tick()
+        self.vision_controller.circle_marker(self.detection_store.get_detection(self.fsm.target_ids))
+
+    def mean_depth_callback(self, msg: Int16):
+        self.fsm.mean_depth_forward_cam = msg.data
+
+    def pipeline_tick(self):
+        self.fsm.tick()
+    
+    def vision_tick(self):
+        target_detection = self.detection_store.get_detection(self.fsm.target_ids)
+        self.vision_controller.process(self.fsm.vision_action, target_detection)
+
+    def publish_depth_threshold(self, threshold: int):
+        msg = Int16()
+        msg.data = int(threshold)
+        self.depth_threshold_pub.publish(msg)
+
+    def publish_yaw_error(self, error: float):
+        msg = Float32()
+        msg.data = float(error)
+        self.yaw_error_pub.publish(msg)
+
+    def publish_forward_error(self, error: float):
+        msg = Float32()
+        msg.data = float(error)
+        self.forward_error_pub.publish(msg)
+
+    def publish_lateral_error(self, error: float):
+        msg = Float32()
+        msg.data = float(error)
+        self.lateral_error_pub.publish(msg)
+
+    def publish_forward_cmd(self, pwm: int):
+        msg = Int16()
+        msg.data = int(pwm)
+        self.forward_cmd_pub.publish(msg)
+
+    def publish_lateral_cmd(self, pwm: int):
+        msg = Int16()
+        msg.data = int(pwm)
+        self.lateral_cmd_pub.publish(msg)
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = MasterNode()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
