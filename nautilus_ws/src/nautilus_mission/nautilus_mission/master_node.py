@@ -49,8 +49,7 @@ class MasterNode(Node):
             return
 
         # Immediate callback-driven processing to reduce detection-to-error delay.
-        # self.vision_tick()
-        self.vision_controller.circle_marker(self.detection_store.get_detection(self.fsm.target_ids))
+        self.vision_tick()
 
     def mean_depth_callback(self, msg: Int16):
         self.fsm.mean_depth_forward_cam = msg.data
