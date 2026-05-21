@@ -60,10 +60,10 @@ class VisionController:
 
         px = target_detection[DetectionIndex.CENTER_PX]
         self.node.publish_yaw_error(float(px) - self.circle_marker_pixel_offset)
-        self.node.publish_forward_cmd(1505)
-        self.node.publish_lateral_cmd(1495)
+        self.node.publish_forward_cmd(1540)
+        self.node.publish_lateral_cmd(1375)
 
-        if self.circle_marker_pixel_offset < 240.0:
+        if self.circle_marker_pixel_offset < 280.0:
             self.circle_marker_pixel_offset += 1.0
 
     def split_angle(self, angle_deg):
