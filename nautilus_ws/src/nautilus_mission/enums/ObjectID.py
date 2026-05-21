@@ -17,10 +17,12 @@ class ObjectID(IntEnum):
     # HAMMER = 12
     # TORPEDO = 13
     # GATE = 14
-    # GATE_LEFT_MID = 15
-    # GATE_MID_RIGHT = 16
-    # SLALOM_SIDE_MID = 17
-    # SLALOM_MID_SIDE = 18
+    # SLALOM_LEFT = 15
+    # SLALOM_RIGHT = 16
+    # GATE_LEFT_MID = 20
+    # GATE_MID_RIGHT = 21
+    # SLALOM_LEFT_MID = 22
+    # SLALOM_MID_RIGHT = 23
 
 #SIM model ids
     GATE = 0
@@ -31,10 +33,12 @@ class ObjectID(IntEnum):
     SLALOM_SIDE = 5
     REQUIN = 6
     POISSON = 7
-    GATE_LEFT_MID = 15
-    GATE_MID_RIGHT = 16
-    SLALOM_SIDE_MID = 17
-    SLALOM_MID_SIDE = 18
+    SLALOM_LEFT = 8
+    SLALOM_RIGHT = 9
+    GATE_LEFT_MID = 20
+    GATE_MID_RIGHT = 21
+    SLALOM_LEFT_MID = 22
+    SLALOM_MID_RIGHT = 23
 
 #Prequal model ids
     # GATE_LEG = 2
