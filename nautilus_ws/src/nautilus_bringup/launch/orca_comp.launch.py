@@ -76,8 +76,8 @@ def generate_launch_description():
         launch_arguments={
             "model": "orca_auv",
             "name": "AUV",
-            "x": "-6.5",
-            "y": "-7.0",
+            "x": "-9.0",
+            "y": "2.0",
             "z": "0.0",
             "R": "0.0",
             "P": "0.0",
