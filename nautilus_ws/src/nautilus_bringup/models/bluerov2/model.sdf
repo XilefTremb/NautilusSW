@@ -487,8 +487,8 @@
         <camera name='oakd_rgbd_camera'>
           <horizontal_fov>1.658000000000001</horizontal_fov>
           <image>
-            <width>320</width>
-            <height>240</height>
+            <width>640</width>
+            <height>480</height>
             <format>R8G8B8</format>
           </image>
           <clip>
@@ -503,8 +503,8 @@
             <far>50</far>
           </clip>
           <image>
-            <width>320</width>
-            <height>240</height>
+            <width>640</width>
+            <height>480</height>
             <format>R_FLOAT32</format>
           </image>
         </depth_camera>

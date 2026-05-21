@@ -6,177 +6,139 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16
 
-from nautilus_bringup.RobotState import RobotState
-from nautilus_bringup.ObjectID import ObjectID, GateLikeObjectID
+from nautilus_bringup.VisionAction import VisionAction
+from nautilus_bringup.DetectionIndex import DetectionIndex
 
 
 class VisionControllerNode(Node):
     def __init__(self):
         super().__init__('vision_controller_node')
 
-        self.current_object_detection_callback = self.empty_callback
-        self.current_gate_detection_callback = self.empty_callback
+        self.vision_action = None
+        self.previous_vision_action = None
 
-        self.state = None
-        self.previous_state = None
-        self.objects = None
-        self.gate_objects = None
+        self.current_detection_callback = self.empty_callback
 
-        self.target_gate_id = None
-        self.previous_target_gate_id = None
-        self.target_object_id = None
-        self.previous_target_object_id = None
-
-        self.last_target_gate_detection = None
-        self.last_target_object_detection = None
+        # Selected detection coming from vision_action_machine:
+        # [id, px, angle, depth]
+        self.last_target_detection = None
+        self.circle_marker_pixel_offset = 0.0
 
         # Subscribers
-        self.state_sub = self.create_subscription(Int8, '/mission/state', self.state_callback, 10)
-        self.target_gate_sub = self.create_subscription(Int8, '/mission/target_gate', self.target_gate_callback, 10)
-        self.target_object_sub = self.create_subscription(Int8, '/mission/target_object', self.target_object_callback, 10)
-
-        self.obj_detection_sub = self.create_subscription(Float32MultiArray, '/yolo/obj_depth_dist', self.obj_detection_wrapper, 10)
-        self.gate_detection_sub = self.create_subscription(Float32MultiArray, '/yolo/obj_angle', self.gate_detection_wrapper, 10)
+        self.vision_action_sub = self.create_subscription(Int8, '/mission/vision_action', self.vision_action_callback, 10)
+        self.target_detection_sub = self.create_subscription(Float32MultiArray, '/mission/target_detection', self.target_detection_callback, 10)
 
         # Publishers
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
         self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
+
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
 
         self.get_logger().info('Vision controller node started.')
 
-    def state_callback(self, msg):
-        self.state = RobotState(msg.data)
+    def vision_action_callback(self, msg):
+        self.vision_action = VisionAction(msg.data)
 
-        if self.previous_state != self.state:
-            self.current_gate_detection_callback = self.empty_callback
-            self.current_object_detection_callback = self.empty_callback
+        if self.previous_vision_action != self.vision_action:
+            self.current_detection_callback = self.empty_callback
 
-            if self.previous_state is not None:
-                self.get_logger().info(f'Set state from {self.previous_state.name} to : {self.state.name}')
+            if self.previous_vision_action is not None:
+                self.get_logger().info(
+                    f'Set vision_action from {self.previous_vision_action.name} to: {self.vision_action.name}'
+                )
             else:
-                self.get_logger().info(f'Set state from {self.previous_state} to : {self.state.name}')
+                self.get_logger().info(
+                    f'Set vision_action from {self.previous_vision_action} to: {self.vision_action.name}'
+                )
 
-        self.previous_state = self.state
+            self.select_vision_action_callback()
 
-        # Reacts to state ----------------------------------------------------------------------------------
+        self.previous_vision_action = self.vision_action
 
-        if self.state == RobotState.CENTER_GATE:
-            self.current_object_detection_callback = self.center_gate_callback
+    def select_vision_action_callback(self):
+        if self.vision_action == VisionAction.CENTER_TARGET:
+            self.current_detection_callback = self.center_target_callback
 
-        elif self.state == RobotState.APPROACH_GATE:
-            self.current_gate_detection_callback = self.approach_gate_callback
+        elif self.vision_action == VisionAction.APPROACH_TARGET:
+            self.current_detection_callback = self.approach_target_callback
 
-        elif self.state == RobotState.TRAVERSE_GATE:
-            self.current_gate_detection_callback = self.empty_callback
+        elif self.vision_action == VisionAction.CIRCLE_MARKER:
+            self.current_detection_callback = self.circle_marker_callback
 
-        elif self.state == RobotState.CIRCLE_MARKER:
-            self.current_object_detection_callback = self.circle_marker_callback
+        else:
+            self.current_detection_callback = self.empty_callback
 
-        elif self.state == RobotState.RETURN_GATE:
-            self.current_object_detection_callback = self.empty_callback
+    def target_detection_callback(self, msg):
+        if len(msg.data) != 4:
+            self.get_logger().warn(
+                f'Received invalid target detection length {len(msg.data)}. Expected 4.'
+            )
+            return
 
-        elif self.state == RobotState.APPROACH_ANY:
-            self.current_object_detection_callback = self.approach_object_callback
+        self.last_target_detection = msg.data
+
+        self.current_detection_callback()
+
+    def center_target_callback(self):
+        if self.last_target_detection is None:
+            return
         
-    def target_gate_callback(self, msg):
-        self.target_gate_id = GateLikeObjectID(msg.data)
-        if self.previous_target_gate_id != self.target_gate_id:
-            if self.previous_target_gate_id is not None:
-                self.get_logger().info(f'Set target gate from : {self.previous_target_gate_id.name} to : {self.target_gate_id.name}')
-            else:
-                self.get_logger().info(f'Set target gate from : {self.previous_target_gate_id} to : {self.target_gate_id.name}')
+        px = self.last_target_detection[DetectionIndex.CENTER_PX]
+        angle = self.last_target_detection[DetectionIndex.ANGLE_DEG]
+        
 
-        self.previous_target_gate_id = self.target_gate_id
+        forward_error, lateral_error = self.split_angle(angle)
+        fwd_msg = Float32()
+        fwd_msg.data = forward_error
 
-    def target_object_callback(self, msg):
-        self.target_object_id = ObjectID(msg.data)
-        if self.previous_target_object_id != self.target_object_id:
-            if self.previous_target_object_id is not None:
-                self.get_logger().info(f'Set target object from : {self.previous_target_object_id.name} to : {self.target_object_id.name}')
-            else:
-                self.get_logger().info(f'Set target object from : {self.previous_target_object_id} to : {self.target_object_id.name}')
-
-        self.previous_target_object_id = self.target_object_id
-
-    def center_gate_callback(self, msg):
-        if self.last_target_object_detection is None:
-            return
-
-        # forward_error, lateral_error = self.split_angle(
-        #     self.last_target_gate_detection[1]
-        # )
-
-        # forward_msg = Float32()
-        # forward_msg.data = forward_error
-        # self.forward_error_pub.publish(forward_msg)
-
-        # lateral_msg = Float32()
-        # lateral_msg.data = lateral_error
-        # self.lateral_error_pub.publish(lateral_msg)
+        lat_msg = Float32()
+        lat_msg.data = lateral_error
 
         yaw_msg = Float32()
-        yaw_msg.data = self.last_target_object_detection[2]
+        yaw_msg.data = float(px)
+
+        self.forward_error_pub.publish(fwd_msg)
+        self.lateral_error_pub.publish(lat_msg)
         self.yaw_error_pub.publish(yaw_msg)
 
-    def approach_gate_callback(self, msg):
-        if self.last_target_gate_detection is not None:
+    def approach_target_callback(self):
+        if self.last_target_detection is not None:
+
+            px = self.last_target_detection[DetectionIndex.CENTER_PX]
+
             yaw_msg = Float32()
-            yaw_msg.data = self.last_target_gate_detection[2]
+            yaw_msg.data = float(px)
             self.yaw_error_pub.publish(yaw_msg)
 
         forward_msg = Int16()
         forward_msg.data = 1600
         self.forward_cmd_pub.publish(forward_msg)
 
-    def approach_object_callback(self, msg):
-        if self.last_target_object_detection is not None:
-            yaw_msg = Float32()
-            yaw_msg.data = self.last_target_object_detection[2]
-            self.yaw_error_pub.publish(yaw_msg)
-
-        forward_msg = Int16()
-        forward_msg.data = 1600
-        self.forward_cmd_pub.publish(forward_msg)
-
-    def circle_marker_callback(self, msg):
-        if self.last_target_object_detection is None:
+    def circle_marker_callback(self):
+        if self.last_target_detection is None:
             return
+        
+        px = self.last_target_detection[DetectionIndex.CENTER_PX]
 
         yaw_msg = Float32()
-        yaw_msg.data = self.last_target_object_detection[2] - 320
+        yaw_msg.data = float(px) - self.circle_marker_pixel_offset
         self.yaw_error_pub.publish(yaw_msg)
 
         forward_msg = Int16()
-        forward_msg.data = 1540
+        forward_msg.data = 1505
         self.forward_cmd_pub.publish(forward_msg)
 
         lateral_msg = Int16()
-        lateral_msg.data = 1375
+        lateral_msg.data = 1495
         self.lateral_cmd_pub.publish(lateral_msg)
 
-    def empty_callback(self, msg):
+        if self.circle_marker_pixel_offset < 240.0:
+            self.circle_marker_pixel_offset = self.circle_marker_pixel_offset + 1
+
+    def empty_callback(self):
         pass
-
-    def obj_detection_wrapper(self, msg):
-        self.objects = [msg.data[i:i + 3] for i in range(0, len(msg.data), 3)]
-
-        if self.target_object_id is not None:
-            self.last_target_object_detection = next((obj for obj in self.objects if ObjectID(obj[0]) == self.target_object_id),None)
-
-        self.current_object_detection_callback(msg)
-
-    def gate_detection_wrapper(self, msg):
-        self.gate_objects = [
-            msg.data[i:i + 3] for i in range(0, len(msg.data), 3)
-        ]
-
-        if self.target_gate_id is not None:
-            self.last_target_gate_detection = next((obj for obj in self.gate_objects if GateLikeObjectID(obj[0]) == self.target_gate_id),None)
-
-        self.current_gate_detection_callback(msg)
 
     def split_angle(self, angle_deg):
         angle = math.radians(angle_deg)

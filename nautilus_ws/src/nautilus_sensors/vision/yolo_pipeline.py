@@ -42,7 +42,7 @@ class YoloNode(Node):
         if args.sim:
             self.mode = 'sim'
             self.model = YOLO(
-                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/obb_sim_320.pt')
+                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/sim_640_bbox_18mars.pt')
         else:
             self.mode = 'real'
             self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
@@ -73,7 +73,7 @@ class YoloNode(Node):
         self.spike_threshold_mm = 1000
         self.reset_after_sec = 2.0
 
-        # ----------- CPU -----------
+        # ----------- GPU -----------
         if torch.cuda.is_available():
             self.model.to('cuda')
 
@@ -100,8 +100,9 @@ class YoloNode(Node):
         self.ts.registerCallback(self.synced_callback)
 
         # ----------- PUBLISHER -----------
-        self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
-        self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
+        #self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
+        #self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
+        self.detection_topic = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
         self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
 
@@ -116,7 +117,6 @@ class YoloNode(Node):
         # ----------- MODEL -----------
         results = self.model(frame, conf=0.4, verbose=False)
         payload = []
-        payload_angle_bet = []
 
         if PREQUALIFICATION:
             gate_legs_detected = []
@@ -186,8 +186,7 @@ class YoloNode(Node):
                         }
 
                 if depth_value < self.depth_threshold:
-                    payload.extend([float(object_id), depth_value, dist_center])
-
+                    payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
                     if self.type_yolo == 'obb':
                         # ----------- DRAW OBB -----------
                         cv2.polylines(
@@ -271,44 +270,34 @@ class YoloNode(Node):
                             1
                         )
 
-        # ----------- PUBLISH DEPTH DATA -----------
-        msg = Float32MultiArray()
-        msg.data = payload
-
-        nb_objects = len(payload) // 3
-        msg.layout.dim = [
-            MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-            MultiArrayDimension(label='fields', size=3, stride=3)
-        ]
-        msg.layout.data_offset = 0
-
-        self.obj_depth_dist_pub.publish(msg)
-
         # ----------- ANGLE BETWEEN OBJECTS -----------
         if PREQUALIFICATION:
             dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED)
-            payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode)
+            payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode, PREQUALIFICATION)
         else:
             objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
-            payload_angle_bet = switch_case_sub_angle(objects, self.mode)
+            payload_angle_bet = switch_case_sub_angle(objects, self.mode, PREQUALIFICATION)
 
         if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
-            angle = payload_angle_bet[1]
+            angle = payload_angle_bet[3]
             self.angle_history.append(angle)
             angle_filtered = float(np.median(self.angle_history))
-            payload_angle_bet[1] = angle_filtered
+            payload_angle_bet[3] = angle_filtered
 
-        msg_angle = Float32MultiArray()
-        msg_angle.data = payload_angle_bet
+        payload.extend(payload_angle_bet)
 
-        nb_objects_angle = len(payload_angle_bet) // 3
-        msg_angle.layout.dim = [
-            MultiArrayDimension(label='objects', size=nb_objects_angle, stride=max(len(payload_angle_bet), 1)),
-            MultiArrayDimension(label='fields', size=3, stride=3)
+        # ----------- PUBLISH DETECTION -----------
+        msg = Float32MultiArray()
+        msg.data = payload
+
+        nb_objects = len(payload) // 4
+        msg.layout.dim = [
+            MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
+            MultiArrayDimension(label='fields', size=4, stride=4)
         ]
-        msg_angle.layout.data_offset = 0
+        msg.layout.data_offset = 0
 
-        self.region_angle_topic.publish(msg_angle)
+        self.detection_topic.publish(msg)
 
         # ----------- IMAGE OUTPUT -----------
         out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
@@ -447,7 +436,7 @@ class YoloNode(Node):
 
         x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-        half = 5
+        half = 1
 
         return box_cx, box_cy, x1, y1, x2, y2, half
 
