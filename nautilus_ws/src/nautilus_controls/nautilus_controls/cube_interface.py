@@ -5,8 +5,6 @@ import argparse
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16, Int8
-
-from nautilus_bringup.RobotState import RobotState
 from nautilus_controls.auv_pymavlink import AuvPymavlink
 
 
@@ -34,8 +32,6 @@ class CubeInterface(Node):
 
         self.cmd_timeout_s = 0.5
 
-        self.state = None
-
         self.last_yaw_cmd = None
         self.last_yaw_cmd_time = None
 
@@ -57,9 +53,6 @@ class CubeInterface(Node):
             'forward_cmd': self.create_subscription(
                 Int16, '/control/cmd/forward', self.forward_cmd_callback, 10
             ),
-            'state': self.create_subscription(
-                Int8, '/mission/state', self.state_callback, 10
-            ),
         }
 
         self.timer = self.create_timer(1.0 / 200.0, self.timer_callback)
@@ -75,9 +68,6 @@ class CubeInterface(Node):
 
         self.auv.apply_param_profile(profile)
         self.auv.start_receiver()
-
-    def state_callback(self, msg):
-        self.state = RobotState(msg.data)
 
     def yaw_cmd_callback(self, msg):
         self.last_yaw_cmd = msg.data
