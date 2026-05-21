@@ -19,13 +19,6 @@ install(
 
 install(
   PROGRAMS
-    nautilus_controls/vision_controller.py
-  DESTINATION lib/${PROJECT_NAME}
-  RENAME vision_controller
-)
-
-install(
-  PROGRAMS
     nautilus_controls/pid_node.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME pid_node
@@ -42,6 +35,8 @@ install(
     nautilus_controls/
   DESTINATION share/${PROJECT_NAME}/nautilus_controls
 )
+
+
 
 # # Install resource index + package.xml
 # install(

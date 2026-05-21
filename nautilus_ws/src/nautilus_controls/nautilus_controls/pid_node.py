@@ -39,6 +39,9 @@ class VisionPidNode(Node):
         self.prev_error = 0.0
         self.prev_time = None
 
+        self.derivative_alpha = 0.2
+        self.filtered_derivative = 0.0
+
         # Subscriber
         self.sub = self.create_subscription(
             Float32,
@@ -77,14 +80,21 @@ class VisionPidNode(Node):
             # Integral
             self.integral += error * dt
 
-            # Derivative
-            derivative = (error - self.prev_error) / dt
+            # Raw derivative
+            raw_derivative = (error - self.prev_error) / dt
+
+            #Low-pass filtered derivative
+            self.filtered_derivative = (
+               self.derivative_alpha * raw_derivative
+               + (1.0 - self.derivative_alpha) * self.filtered_derivative
+            )
+
 
             # PID output
             output = (
                 self.kp * error +
                 self.ki * self.integral +
-                self.kd * derivative
+                self.kd * self.filtered_derivative
             )
 
             output *= self.output_sign

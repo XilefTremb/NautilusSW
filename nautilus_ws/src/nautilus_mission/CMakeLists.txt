@@ -17,10 +17,22 @@ install(
 )
 
 install(
+  DIRECTORY
+    enums/
+  DESTINATION share/${PROJECT_NAME}/enums
+)
+
+install(
+  DIRECTORY
+    nautilus_mission/
+  DESTINATION share/${PROJECT_NAME}/nautilus_mission
+)
+
+install(
   PROGRAMS
-    nautilus_mission/state_machine.py
+    nautilus_mission/master_node.py
   DESTINATION lib/${PROJECT_NAME}
-  RENAME state_machine
+  RENAME master_node
 )
 
 ament_python_install_package(${PROJECT_NAME})

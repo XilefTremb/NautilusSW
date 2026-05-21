@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-class VisonAction(IntEnum):
+class VisionAction(IntEnum):
     IDLE = 0
     CENTER_TARGET = 1
     APPROACH_TARGET = 2

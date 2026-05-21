@@ -1,5 +1,5 @@
 import numpy as np
-from nautilus_bringup.ObjectID import ObjectID
+from enums.ObjectID import ObjectID
 from vision.Pixel_and_depth import params_cams
 
 
