@@ -31,8 +31,9 @@ class StateMachine:
         self.mean_depth_forward_cam: Optional[int] = None
 
         self.target_missing_count = 0
-        self.target_missing_limit = 5
+        self.target_missing_limit = 10
         self.state_start_time = time.monotonic()
+        self.execute_action_start_time = None
 
         states = [
             'IDLE',
@@ -77,16 +78,16 @@ class StateMachine:
 
         elif self.state == 'CENTER_TARGET':
             self.vision_action = VisionAction.CENTER_TARGET
-            if self.is_target_lost_filtered():
-                self.target_lost()
-            elif self.is_target_centered() and self.is_target_perpendicular() and self.state_lifespan > 5.0:
+            # if self.is_target_lost_filtered():
+            #     self.target_lost()
+            if self.is_target_centered() and self.is_target_perpendicular():
                 self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
             self.vision_action = VisionAction.APPROACH_TARGET
-            if self.is_target_lost_filtered():
-                self.target_lost()
-            elif self.is_target_approached():
+            # if self.is_target_lost_filtered():
+            #     self.target_lost()
+            if self.is_target_approached():
                 self.target_reached()
 
         elif self.state == 'EXECUTE_ACTION':
@@ -135,6 +136,8 @@ class StateMachine:
         if self.current_objective is None:
             self.finish_mission()
             return
+    
+        self.execute_action_start_time = time.monotonic()
 
         self.node.get_logger().info(
             f'Executing action {self.current_objective.action_type.name} '
@@ -173,8 +176,7 @@ class StateMachine:
             return True
 
         if action == ActionType.FORWARD:
-            required_time = max(self.current_objective.action_duration, self.current_objective.min_action_lifespan)
-            return self.state_lifespan >= required_time
+            return (self.state_lifespan - self.execute_action_start_time) >= self.current_objective.action_duration
 
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.mean_depth_target is None:

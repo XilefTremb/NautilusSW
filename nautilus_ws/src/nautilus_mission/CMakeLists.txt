@@ -16,11 +16,11 @@ install(
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(
-  DIRECTORY
-    enums/
-  DESTINATION share/${PROJECT_NAME}/enums
-)
+# install(
+#   DIRECTORY
+#     enums/
+#   DESTINATION share/${PROJECT_NAME}/enums
+# )
 
 install(
   DIRECTORY
@@ -36,6 +36,7 @@ install(
 )
 
 ament_python_install_package(${PROJECT_NAME})
+ament_python_install_package(enums)
 
 # --------------------------------------------------------------------------- #
 #  Build tests.

@@ -15,7 +15,7 @@ from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
 from collections import deque
 
-from nautilus_bringup.ObjectID import ObjectID
+from enums import ObjectID
 
 MOVING_MEAN_ACTIVATED =  False
 PREQUALIFICATION = False
@@ -44,7 +44,7 @@ class YoloNode(Node):
         if args.sim:
             self.mode = 'sim'
             self.model = YOLO(
-                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/sim_640_bbox_18mars.pt')
+                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/sim_640_bbox_18mars.pt')
         else:
             self.mode = 'real'
             self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
@@ -57,7 +57,7 @@ class YoloNode(Node):
             self.type_yolo = 'bbox'
 
         # ----------- INIT PARAMS FILTER-----------
-        self.depth_threshold = 9999999
+        self.depth_threshold = 6000
 
         if PREQUALIFICATION:
             self.depth_history = {
