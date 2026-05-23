@@ -47,8 +47,8 @@ class StateMachine:
 
         transitions = [
             {'trigger': 'start_mission', 'source': 'IDLE', 'dest': 'LOAD_OBJECTIVE'},
-            {'trigger': 'objective_loaded', 'source': 'LOAD_OBJECTIVE', 'dest': 'SEARCH_TARGET'},
-            {'trigger': 'no_more_objectives', 'source': 'LOAD_OBJECTIVE', 'dest': 'MISSION_COMPLETE'},
+            {'trigger': 'load_next_objective', 'source': 'LOAD_OBJECTIVE', 'dest': 'SEARCH_TARGET', 'conditions': 'has_more_objectives', 'after': 'load_current_objective'},
+            {'trigger': 'load_next_objective', 'source': 'LOAD_OBJECTIVE', 'dest': 'MISSION_COMPLETE', 'unless': 'has_more_objectives'},
             {'trigger': 'target_found', 'source': 'SEARCH_TARGET', 'dest': 'CENTER_TARGET'},
             {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
             {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
@@ -65,10 +65,15 @@ class StateMachine:
             transitions=transitions,
             after_state_change='state_changed',
             ignore_invalid_triggers=True,
+            send_event=True,
         )
 
     def tick(self):
-        if self.target_ids is None:
+        if self.state == 'LOAD_OBJECTIVE':
+            self.load_next_objective()
+
+        elif self.target_ids is None and self.state == 'SEARCH_TARGET':
+            self.node.get_logger().info("allo")
             self.no_target_to_be_reached()
 
         if self.state == 'SEARCH_TARGET':
@@ -97,24 +102,22 @@ class StateMachine:
                 self.objective_index += 1
                 self.action_done()
 
+        elif self.state == 'MISSION_COMPLETE':
+            return
+
         else:
             self.vision_action = VisionAction.IDLE
 
-    def on_enter_LOAD_OBJECTIVE(self):
+    def on_enter_LOAD_OBJECTIVE(self, event):
         self.vision_action = VisionAction.IDLE
         self.node.publish_forward_cmd(1500)
 
-        if self.objective_index >= len(self.objectives):
-            self.no_more_objectives()
-            return
-
+    def load_current_objective(self, event):
         self.current_objective = self.objectives[self.objective_index]
         self.target_ids = self.current_objective.target_ids
 
-        self.node.get_logger().info(
-            f'Loaded objective {self.objective_index + 1}/{len(self.objectives)}: '
-            f'{self.current_objective.name}'
-        )
+        self.node.get_logger().info('\n')
+        self.node.get_logger().info(f'Loaded objective {self.objective_index + 1}/{len(self.objectives)}: 'f'{self.current_objective.name}')
 
         if self.target_ids is not None:
             self.node.get_logger().info('Target IDs: ' + ', '.join(target.name for target in self.target_ids))
@@ -124,16 +127,15 @@ class StateMachine:
         if self.current_objective.depth_threshold is not None:
             self.node.publish_depth_threshold(self.current_objective.depth_threshold)
 
-        self.objective_loaded()
-
-    def on_enter_CENTER_TARGET(self):
+    def on_enter_CENTER_TARGET(self, event):
         self.target_missing_count = 0
 
-    def on_enter_APPROACH_TARGET(self):
+    def on_enter_APPROACH_TARGET(self, event):
         self.target_missing_count = 0
 
-    def on_enter_EXECUTE_ACTION(self):
+    def on_enter_EXECUTE_ACTION(self, event):
         if self.current_objective is None:
+            self.node.get_logger().info("wtf")
             self.finish_mission()
             return
     
@@ -144,11 +146,14 @@ class StateMachine:
             f'for objective {self.current_objective.name}'
         )
 
-    def on_enter_MISSION_COMPLETE(self):
+    def on_enter_MISSION_COMPLETE(self, event):
         self.target_ids = None
         self.vision_action = VisionAction.IDLE
         self.node.publish_forward_cmd(1500)
         self.node.get_logger().info('Mission complete')
+
+    def has_more_objectives(self, event):
+        return self.objective_index < len(self.objectives)
 
     def run_current_action(self):
         if self.state != 'EXECUTE_ACTION' or self.current_objective is None:
@@ -176,7 +181,7 @@ class StateMachine:
             return True
 
         if action == ActionType.FORWARD:
-            return (self.state_lifespan - self.execute_action_start_time) >= self.current_objective.action_duration
+            return self.state_lifespan >= self.current_objective.action_duration
 
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.mean_depth_target is None:
@@ -233,9 +238,11 @@ class StateMachine:
         angle = target[DetectionIndex.ANGLE_DEG]
         return abs(angle) < self.current_objective.angle_tolerance_deg
 
-    def state_changed(self):
+    def state_changed(self, event):
         self.state_start_time = time.monotonic()
+        self.node.get_logger().info('\n')
         self.node.get_logger().info(f'Entered state {self.state}')
+        self.node.get_logger().info(f'Transition: {event.transition.source} -> {event.transition.dest}, current state: {self.state}')
 
     @property
     def state_lifespan(self):
