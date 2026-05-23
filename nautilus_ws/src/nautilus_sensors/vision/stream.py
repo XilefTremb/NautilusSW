@@ -5,6 +5,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from vision.blue_filter import blue_filter
+from datetime import timedelta
 
 import cv2
 import depthai as dai
@@ -26,10 +27,11 @@ from gi.repository import Gst
 # =========================================================
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
-FPS = 15
+FPS = 10
 SAVE_INTERVAL = 1000.0
 START_BLUE_FILTER = False
 START_DEPTH_COLOR = True
+START_OVERLAY = True
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
@@ -62,8 +64,10 @@ class DualOakNode(Node):
         # ROS Publishers
         self.rgb_pub = self.create_publisher(Image, "/oakd/camera/image_raw", 10)
         self.depth_pub = self.create_publisher(Image, "/oakd/camera/depth/image_raw", 10)
-        self.rgb1_pub = self.create_publisher(Image, "/oak1/camera/image_raw", 10)
+        self.overlay_pub = self.create_publisher(Image, "/oakd/camera/rgb_depth_overlay", 10)
         self.depth_color_pub = self.create_publisher(Image, "/oakd/camera/depth/color",10)
+
+        self.rgb1_pub = self.create_publisher(Image, "/oak1/camera/image_raw", 10)
 
         # GStreamer init
         Gst.init(None)
@@ -73,6 +77,7 @@ class DualOakNode(Node):
         self.rgb_oakd_latest = None
         self.rgb_oak1_latest = None
         self.depth_latest = None
+        self.overlay_latest = None
 
         self.last_save_time = time.time()
 
@@ -132,6 +137,20 @@ class DualOakNode(Node):
         self.gst_pipeline.set_state(Gst.State.PLAYING)
 
     # =====================================================
+    # QUEUE HELPER
+    # =====================================================
+    def get_latest(self, queue):
+        latest = None
+
+        while True:
+            pkt = queue.tryGet()
+            if pkt is None:
+                break
+            latest = pkt
+
+        return latest
+
+    # =====================================================
     # PIPELINES
     # =====================================================
     def create_oak1_pipeline(self, pipeline):
@@ -160,53 +179,82 @@ class DualOakNode(Node):
         return rgb_queue, h264_queue
 
     def create_oakd_pipeline(self, pipeline):
-        camRgb = pipeline.create(dai.node.Camera).build(
-            dai.CameraBoardSocket.CAM_A
+        RGB_SOCKET = dai.CameraBoardSocket.CAM_A
+        LEFT_SOCKET = dai.CameraBoardSocket.CAM_B
+        RIGHT_SOCKET = dai.CameraBoardSocket.CAM_C
+
+        RGB_SIZE = (1280, 960)
+        MONO_SIZE = (640, 400)
+
+        platform = pipeline.getDefaultDevice().getPlatform()
+
+        camRgb = pipeline.create(dai.node.Camera).build(RGB_SOCKET)
+        left = pipeline.create(dai.node.Camera).build(LEFT_SOCKET)
+        right = pipeline.create(dai.node.Camera).build(RIGHT_SOCKET)
+
+        stereo = pipeline.create(dai.node.StereoDepth)
+        sync = pipeline.create(dai.node.Sync)
+
+        align = None
+        if platform == dai.Platform.RVC4:
+            align = pipeline.create(dai.node.ImageAlign)
+
+        # Same idea as Alignement.py
+        stereo.setExtendedDisparity(True)
+        stereo.setLeftRightCheck(True)
+        stereo.setRectification(True)
+
+        sync.setSyncThreshold(timedelta(seconds=1 / (2 * FPS)))
+
+        rgb_out = camRgb.requestOutput(
+            size=RGB_SIZE,
+            fps=FPS,
+            enableUndistortion=True,
+            type=dai.ImgFrame.Type.NV12,
+            resizeMode=dai.ImgResizeMode.STRETCH,
         )
 
+        left_out = left.requestOutput(size=MONO_SIZE, fps=FPS)
+        right_out = right.requestOutput(size=MONO_SIZE, fps=FPS)
+
+        left_out.link(stereo.left)
+        right_out.link(stereo.right)
+
+        rgb_out.link(sync.inputs["rgb"])
+
+        if platform == dai.Platform.RVC4:
+            stereo.depth.link(align.input)
+            rgb_out.link(align.inputAlignTo)
+            align.outputAligned.link(sync.inputs["depth_aligned"])
+        else:
+            stereo.depth.link(sync.inputs["depth_aligned"])
+            rgb_out.link(stereo.inputAlignTo)
+
+        # H264 UDP stream
         manip = pipeline.create(dai.node.ImageManip)
-        manip.setMaxOutputFrameSize(1500000)
+        manip.setMaxOutputFrameSize(2_000_000)
         manip.initialConfig.addRotateDeg(180)
         manip.initialConfig.setFrameType(dai.ImgFrame.Type.NV12)
 
-        cam_rgb_out = camRgb.requestOutput(
-            size=(1280, 704),
-            fps=FPS,
-            type=dai.ImgFrame.Type.NV12
-        )
-
-        cam_rgb_out.link(manip.inputImage)
+        rgb_out.link(manip.inputImage)
 
         enc = pipeline.create(dai.node.VideoEncoder)
         enc.setDefaultProfilePreset(
             FPS,
-            dai.VideoEncoderProperties.Profile.H264_MAIN
+            dai.VideoEncoderProperties.Profile.H264_MAIN,
         )
         enc.setBitrate(7_000_000)
         enc.setKeyframeFrequency(FPS)
 
         manip.out.link(enc.input)
 
+        sync_queue = sync.out.createOutputQueue(maxSize=1, blocking=False)
+
+        raw_depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
+
         h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
 
-        monoLeft = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_B)
-        monoRight = pipeline.create(dai.node.Camera).build(dai.CameraBoardSocket.CAM_C)
-
-        stereo = pipeline.create(dai.node.StereoDepth)
-
-        stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
-
-        monoLeft.requestOutput(size=(1280, 720)).link(stereo.left)
-        monoRight.requestOutput(size=(1280, 720)).link(stereo.right)
-
-        stereo.setRectification(True)
-        stereo.setExtendedDisparity(True)
-        stereo.setLeftRightCheck(True)
-
-        depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
-        rgb_queue = cam_rgb_out.createOutputQueue(maxSize=1, blocking=False)
-
-        return rgb_queue, depth_queue, h264_queue
+        return sync_queue, raw_depth_queue, h264_queue
 
     # =====================================================
     # DEVICE SETUP
@@ -221,14 +269,14 @@ class DualOakNode(Node):
             cameras = device.getConnectedCameras()
 
             if len(cameras) > 1:
-                rgb_q, depth_q, h264_q = self.create_oakd_pipeline(pipeline)
+                sync_q, depth_q, h264_q = self.create_oakd_pipeline(pipeline)
                 pipeline.start()
 
                 self.devices_data.append({
                     "type": "oakd",
-                    "rgb": rgb_q,
-                    "depth": depth_q,
-                    "h264": h264_q
+                    "sync": sync_q,
+                    "raw_depth": depth_q,
+                    "h264": h264_q,
                 })
             else:
                 rgb_q, h264_q = self.create_oak1_pipeline(pipeline)
@@ -249,50 +297,103 @@ class DualOakNode(Node):
 
         for dev in self.devices_data:
 
-            rgb_pkt = dev["rgb"].tryGet()
-            if rgb_pkt is not None:
-                frame = rgb_pkt.getCvFrame()
-                frame = cv2.rotate(frame, cv2.ROTATE_180)
-
-                if START_BLUE_FILTER:
-                    frame = blue_filter(frame)
-
-                if dev["type"] == "oakd":
-                    self.rgb_oakd_latest = frame
-                    self.rgb_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
-                else:
-                    self.rgb_oak1_latest = frame
-                    self.rgb1_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
-
-            # STREAM SWITCH
-            if "h264" in dev and dev["type"] == self.active_stream:
-                h264_pkt = dev["h264"].tryGet()
-                if h264_pkt is not None:
-                    data = h264_pkt.getData()
-                    if data is not None and data.size > 0:
-                        buf = Gst.Buffer.new_wrapped(data.tobytes())
-                        self.appsrc.emit("push-buffer", buf)
-
-                        
-
+            # =================================================
+            # OAK-D
+            # =================================================
             if dev["type"] == "oakd":
-                depth_pkt = dev["depth"].tryGet()
-                if depth_pkt is not None:
-                    self.depth_latest = cv2.rotate(depth_pkt.getFrame(), cv2.ROTATE_180)
-                    self.depth_pub.publish(
-                        self.bridge.cv2_to_imgmsg(self.depth_latest, "16UC1")
+                sync_pkt = self.get_latest(dev["sync"])
+
+                if sync_pkt is not None:
+                    rgb_msg = sync_pkt["rgb"]
+                    depth_msg = sync_pkt["depth_aligned"]
+
+                    frame_rgb = rgb_msg.getCvFrame()
+                    frame_depth = depth_msg.getFrame()
+
+                    frame_rgb = cv2.rotate(frame_rgb, cv2.ROTATE_180)
+                    frame_depth = cv2.rotate(frame_depth, cv2.ROTATE_180)
+
+                    if START_BLUE_FILTER:
+                        frame_rgb = blue_filter(frame_rgb)
+
+                    self.rgb_oakd_latest = frame_rgb
+                    self.depth_latest = frame_depth
+
+                    # Publish RGB
+                    self.rgb_pub.publish(
+                        self.bridge.cv2_to_imgmsg(frame_rgb, "bgr8")
                     )
 
+                    # Publish aligned depth
+                    self.depth_pub.publish(
+                        self.bridge.cv2_to_imgmsg(frame_depth, "16UC1")
+                    )
+
+                    # Publish color depth
                     if START_DEPTH_COLOR:
                         depth_color = self.depth_to_colormap(
-                            self.depth_latest,
-                            max_depth_mm=10000
+                            frame_depth,
+                            max_depth_mm=10000,
                         )
+
                         self.depth_color_pub.publish(
                             self.bridge.cv2_to_imgmsg(depth_color, "bgr8")
                         )
 
+                        # Publish overlay RGB + depth
+                        if START_OVERLAY:
+                            if depth_color.shape[:2] != frame_rgb.shape[:2]:
+                                depth_color = cv2.resize(
+                                    depth_color,
+                                    (frame_rgb.shape[1], frame_rgb.shape[0]),
+                                )
+
+                            overlay = cv2.addWeighted(
+                                frame_rgb,
+                                0.6,
+                                depth_color,
+                                0.4,
+                                0,
+                            )
+
+                            self.overlay_latest = overlay
+
+                            self.overlay_pub.publish(
+                                self.bridge.cv2_to_imgmsg(overlay, "bgr8")
+                            )
+
+            # =================================================
+            # OAK-1
+            # =================================================
+            elif dev["type"] == "oak1":
+                rgb_pkt = self.get_latest(dev["rgb"])
+
+                if rgb_pkt is not None:
+                    frame = rgb_pkt.getCvFrame()
+                    frame = cv2.rotate(frame, cv2.ROTATE_180)
+
+                    self.rgb_oak1_latest = frame
+
+                    self.rgb1_pub.publish(
+                        self.bridge.cv2_to_imgmsg(frame, "bgr8")
+                    )
+
+            # =================================================
+            # H264 UDP stream switchable
+            # =================================================
+            if "h264" in dev and dev["type"] == self.active_stream:
+                h264_pkt = self.get_latest(dev["h264"])
+
+                if h264_pkt is not None:
+                    data = h264_pkt.getData()
+
+                    if data is not None and data.size > 0:
+                        buf = Gst.Buffer.new_wrapped(data.tobytes())
+                        self.appsrc.emit("push-buffer", buf)
+
+        # =====================================================
         # SAVE
+        # =====================================================
         if self.save_images and (now - self.last_save_time >= SAVE_INTERVAL):
             if self.rgb_oakd_latest is not None and self.rgb_oak1_latest is not None and self.depth_latest is not None:
                 timestamp = time.strftime("%Y%m%d_%H%M%S")
@@ -315,16 +416,10 @@ class DualOakNode(Node):
         super().destroy_node()
 
     def depth_to_colormap(self, depth_frame, max_depth_mm=10000):
-        # Clamp entre 0 et 10000 mm
+
         depth_clipped = np.clip(depth_frame, 0, max_depth_mm)
-
-        # Normalisation 0-10000 mm vers 0-255
         depth_norm = ((depth_clipped / max_depth_mm) * 255).astype(np.uint8)
-
-        # Appliquer une carte de couleur
         depth_color = cv2.applyColorMap(depth_norm, cv2.COLORMAP_JET)
-
-        # Pixels avec profondeur 0 en noir
         depth_color[depth_frame == 0] = [0, 0, 0]
 
         return depth_color
