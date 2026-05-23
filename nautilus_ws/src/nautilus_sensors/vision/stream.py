@@ -416,14 +416,74 @@ class DualOakNode(Node):
         super().destroy_node()
 
     def depth_to_colormap(self, depth_frame, max_depth_mm=10000):
+        invalid_mask = depth_frame == 0
 
-        depth_clipped = np.clip(depth_frame, 0, max_depth_mm)
-        depth_norm = ((depth_clipped / max_depth_mm) * 255).astype(np.uint8)
-        depth_color = cv2.applyColorMap(depth_norm, cv2.COLORMAP_JET)
-        depth_color[depth_frame == 0] = [0, 0, 0]
+        try:
+            valid_depth = depth_frame[depth_frame != 0]
 
-        return depth_color
+            if valid_depth.size == 0:
+                return np.zeros(
+                    (depth_frame.shape[0], depth_frame.shape[1], 3),
+                    dtype=np.uint8
+                )
 
+            min_depth = np.percentile(valid_depth, 3)
+            max_depth = np.percentile(valid_depth, 95)
+
+            # Évite log(0) ou log de valeurs invalides
+            if min_depth <= 0 or max_depth <= 0 or min_depth >= max_depth:
+                return np.zeros(
+                    (depth_frame.shape[0], depth_frame.shape[1], 3),
+                    dtype=np.uint8
+                )
+
+            log_depth = np.zeros_like(depth_frame, dtype=np.float32)
+
+            np.log(
+                depth_frame,
+                where=depth_frame != 0,
+                out=log_depth
+            )
+
+            log_min_depth = np.log(min_depth)
+            log_max_depth = np.log(max_depth)
+
+            np.nan_to_num(
+                log_depth,
+                copy=False,
+                nan=log_min_depth,
+                posinf=log_max_depth,
+                neginf=log_min_depth
+            )
+
+            log_depth = np.clip(
+                log_depth,
+                log_min_depth,
+                log_max_depth
+            )
+
+            depth_norm = np.interp(
+                log_depth,
+                (log_min_depth, log_max_depth),
+                (0, 255)
+            )
+
+            depth_norm = np.nan_to_num(depth_norm)
+            depth_norm = depth_norm.astype(np.uint8)
+
+            depth_color = cv2.applyColorMap(
+                depth_norm,
+                cv2.COLORMAP_JET
+            )
+            depth_color[invalid_mask] = [0, 0, 0]
+
+            return depth_color
+
+        except Exception:
+            return np.zeros(
+                (depth_frame.shape[0], depth_frame.shape[1], 3),
+                dtype=np.uint8
+            )
 
 # =========================================================
 # MAIN
