@@ -36,6 +36,7 @@ install(
 )
 
 ament_python_install_package(${PROJECT_NAME})
+ament_python_install_package(enums)
 
 # --------------------------------------------------------------------------- #
 #  Build tests.

@@ -89,21 +89,6 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
 
     return center_depth
 
-
-def find_angle(x_center, depth_mean, mode):
-    cx, fx, fy, cy = params_cams(mode)
-
-    if depth_mean is None or int(depth_mean) == 0:
-        return None
-    #X pos
-    X = (x_center - cx) * depth_mean / fx
-
-    #Yaw compare with middle cam
-    yaw = np.arctan2(X, depth_mean)
-    yaw_deg = np.degrees(yaw)
-
-    return yaw_deg
-
 def find_dist_from_center(x_center, mode):
     cx, fx, fy, cy = params_cams(mode)
 

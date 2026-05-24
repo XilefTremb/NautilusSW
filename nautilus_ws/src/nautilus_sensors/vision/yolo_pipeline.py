@@ -3,7 +3,6 @@
 import argparse
 import rclpy
 import torch
-import cv2
 import numpy as np
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -13,11 +12,12 @@ from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
 
-from vision.Pixel_and_depth import *
-from vision.Angle_between_object import *
+from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam
+from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
+from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
 
-from nautilus_bringup.ObjectID import ObjectID
+from enums.ObjectID import ObjectID
 
 MOVING_MEAN_ACTIVATED =  True
 PREQUALIFICATION = False
@@ -46,7 +46,7 @@ class YoloNode(Node):
         if args.sim:
             self.mode = 'sim'
             self.model = YOLO(
-                '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/sim_640_bbox_18mars.pt')
+                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt')
         else:
             self.mode = 'real'
             self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
@@ -124,12 +124,8 @@ class YoloNode(Node):
         results = self.model(frame, conf=0.4, verbose=False)
         payload = []
 
-        if PREQUALIFICATION:
-            gate_legs_detected = []
-            dict_leg = {}
-        else:
-            objects = {}
-            slalom_tab = []
+        objects = {}
+        slalom_tab = []
 
         annotated_frame = frame.copy()
 
@@ -143,9 +139,10 @@ class YoloNode(Node):
 
                 # ----------- BOX INFORMATION-----------
                 if self.type_yolo == 'obb':
-                    box_cx, box_cy, x1, y1, x2, y2, half, points = self.obb_model(box)
+                    box_cx, box_cy, x1, y1, x2, y2, half, points = obb_model_coordinates(box)
                 else:
-                    box_cx, box_cy, x1, y1, x2, y2, half = self.bbox_model(box)
+                    box_cx, box_cy, x1, y1, x2, y2, half = bbox_model_coordinates(box)
+                    points = None
 
                 # Clamp to image
                 h, w = depth.shape
@@ -177,65 +174,51 @@ class YoloNode(Node):
                 dist_center = find_dist_from_center(box_cx, self.mode)
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
+                if int(object_id) == int(ObjectID.SLALOM_SIDE):
+                    slalom_tab.append({
+                        "depth": depth_value,
+                        "dist_center": dist_center,
+                        "box_cx": box_cx,
+                        "box_cy": box_cy,
+                        "confidence": confidence,
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2,
+                        "points": points
+                    })
+                    continue
 
-                if PREQUALIFICATION:
-                    if object_id == ObjectID.GATE_LEG:
-                        gate_legs_detected.append({
-                            "depth": depth_value,
-                            "box_cx": box_cx
-                        })
-
-                else:
-                    if int(object_id) == int(ObjectID.SLALOM_SIDE):
-                        slalom_tab.append({
-                            "depth": depth_value,
-                            "dist_center": dist_center,
-                            "box_cx": box_cx,
-                            "box_cy": box_cy,
-                            "confidence": confidence,
-                            "x1": x1,
-                            "y1": y1,
-                            "x2": x2,
-                            "y2": y2,
-                            "points": points if self.type_yolo == 'obb' else None
-                        })
-                        continue
-
-                    elif object_id not in objects or depth_value < objects[object_id]["depth"]:
-                        objects[object_id] = {
-                            "depth": depth_value,
-                            "box_cx": box_cx}
+                elif object_id not in objects or depth_value < objects[object_id]["depth"]:
+                    if MOVING_MEAN_ACTIVATED:
+                            depth_value = self.temporal_filter.moving_median_filter(
+                                key=f"depth_{object_id}",
+                                new_value=depth_value
+                            )
+                    objects[object_id] = {
+                        "depth": depth_value,
+                        "box_cx": box_cx}
 
                 if depth_value < self.depth_threshold:
                     payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
-                    self.draw_detection(
-                        annotated_frame, object_id, confidence,
+                    draw_detection(
+                        annotated_frame, self.type_yolo, object_id, confidence,
                         depth_value, dist_center,
                         box_cx, box_cy, x1, y1, x2, y2,
-                        points if self.type_yolo == 'obb' else None
-                    )
+                        points)
 
         # ----------- ANGLE BETWEEN OBJECTS -----------
-        if PREQUALIFICATION:
-            dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED)
-            payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode, PREQUALIFICATION)
+        objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
+        payload_angle_bet = find_gate_angle(objects, self.mode)
 
-            if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
-                angle = payload_angle_bet[3]
-                self.angle_history.append(angle)
-                angle_filtered = float(np.median(self.angle_history))
-                payload_angle_bet[3] = angle_filtered
+        if MOVING_MEAN_ACTIVATED:
+            for i in range(0, len(payload_angle_bet), 4):
+                group_id = int(payload_angle_bet[i])
+                angle_index = i + 3
 
-        else:
-            objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
-            objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
-            payload_angle_bet = switch_case_sub_angle(objects, self.mode, PREQUALIFICATION)
-
-        if len(payload_angle_bet) >= 4 and MOVING_MEAN_ACTIVATED:
-            angle = payload_angle_bet[3]
-            self.angle_history.append(angle)
-            angle_filtered = float(np.median(self.angle_history))
-            payload_angle_bet[3] = angle_filtered
+                payload_angle_bet[angle_index] = self.temporal_filter.moving_median_filter(
+                    key=f"angle_{group_id}",
+                    new_value=payload_angle_bet[angle_index])
 
         payload.extend(payload_angle_bet)
 
@@ -268,33 +251,6 @@ class YoloNode(Node):
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
 
-    def filter_objects_depth(self, objects, activated):
-        if not activated:
-            return objects
-
-        filtered_objects = {}
-        for object_id, obj in objects.items():
-            key = str(object_id)
-
-            if key not in self.depth_history:
-                self.depth_history[key] = deque(maxlen=10)
-                self.last_seen[key] = None
-
-            filtered_depth = self.spike_filter_with_timeout(
-                obj["depth"],
-                self.depth_history[key],
-                key
-            )
-
-            self.depth_history[key].append(filtered_depth)
-
-            filtered_objects[object_id] = {
-                "depth": float(np.median(self.depth_history[key])),
-                "box_cx": obj["box_cx"]
-            }
-
-        return filtered_objects
-
     def slalom_organizer(self, slalom_tab, objects, annotated_frame, payload):
         
         if len(slalom_tab) == 0:
@@ -305,8 +261,9 @@ class YoloNode(Node):
 
                 payload.extend([float(ObjectID.SLALOM_SIDE), float(closest_side["dist_center"]), float(closest_side["depth"]),0.0])
 
-                self.draw_detection(
+                draw_detection(
                     annotated_frame,
+                    self.type_yolo,
                     ObjectID.SLALOM_SIDE,
                     closest_side["confidence"],
                     closest_side["depth"],
@@ -342,8 +299,8 @@ class YoloNode(Node):
         if slalom_left is not None:
             objects[ObjectID.SLALOM_LEFT] = slalom_left
             payload.extend([float(ObjectID.SLALOM_LEFT),float(slalom_left["dist_center"]), float(slalom_left["depth"]),0.0])
-            self.draw_detection(
-                annotated_frame, ObjectID.SLALOM_LEFT,
+            draw_detection(
+                annotated_frame, self.type_yolo, ObjectID.SLALOM_LEFT,
                 slalom_left["confidence"], slalom_left["depth"],
                 slalom_left["dist_center"],
                 slalom_left["box_cx"], slalom_left["box_cy"],
@@ -355,8 +312,8 @@ class YoloNode(Node):
         if slalom_right is not None:
             objects[ObjectID.SLALOM_RIGHT] = slalom_right
             payload.extend([float(ObjectID.SLALOM_RIGHT),float(slalom_right["dist_center"]), float(slalom_right["depth"]),0.0])
-            self.draw_detection(
-                annotated_frame, ObjectID.SLALOM_RIGHT,
+            draw_detection(
+                annotated_frame, self.type_yolo, ObjectID.SLALOM_RIGHT,
                 slalom_right["confidence"], slalom_right["depth"],
                 slalom_right["dist_center"],
                 slalom_right["box_cx"], slalom_right["box_cy"],
@@ -366,162 +323,6 @@ class YoloNode(Node):
             )
 
         return objects, payload
-
-    def build_gate_leg_dict(self, gate_legs_detected, activated):
-        """
-        Sort gate legs left/right using their x-position in the camera,
-        then smooth left and right depths with a moving average of 10 frames.
-        """
-        if len(gate_legs_detected) < 2:
-            return {}
-
-        # If more than two legs are detected, keep the leftmost and rightmost ones.
-        gate_legs_detected = sorted(gate_legs_detected, key=lambda obj: obj["box_cx"])
-        gate_left = gate_legs_detected[0]
-        gate_right = gate_legs_detected[-1]
-
-        if activated:
-            left_filtered = self.spike_filter_with_timeout(
-                gate_left["depth"],
-                self.depth_history["gate_left"],
-                "gate_left"
-            )
-
-            right_filtered = self.spike_filter_with_timeout(
-                gate_right["depth"],
-                self.depth_history["gate_right"],
-                "gate_right"
-            )
-
-            self.depth_history["gate_left"].append(left_filtered)
-            self.depth_history["gate_right"].append(right_filtered)
-
-            gate_left["depth"] = float(np.median(self.depth_history["gate_left"]))
-            gate_right["depth"] = float(np.median(self.depth_history["gate_right"]))
-
-        # 0 = left, 1 = right. Angle_between_object.py now assumes this is already ordered.
-        return {
-            0: gate_left,
-            1: gate_right,
-        }
-
-    def spike_filter_with_timeout(self, new_value, history, key):
-        now = self.get_clock().now().nanoseconds / 1e9
-
-        last_seen = self.last_seen[key]
-
-        if last_seen is None or len(history) == 0:
-            self.last_seen[key] = now
-            return new_value
-
-        time_since_seen = now - last_seen
-        self.last_seen[key] = now
-
-        if time_since_seen > self.reset_after_sec:
-            return new_value
-
-        last_value = history[-1]
-
-        if abs(new_value - last_value) > self.spike_threshold_mm:
-            return last_value
-
-        return new_value
-
-    def draw_detection(self, annotated_frame, object_id, confidence, depth_value,
-                   dist_center, box_cx, box_cy, x1, y1, x2, y2, points=None):
-
-        if self.type_yolo == 'obb' and points is not None:
-            cv2.polylines(annotated_frame, [points], True, (0, 255, 0), 2)
-        else:
-            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-        label = f"{object_id} | {confidence:.2f}"
-
-        cv2.putText(annotated_frame, label, (x1, y1 - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-
-        cv2.putText(annotated_frame, f"{depth_value:.2f}mm", (box_cx, box_cy),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-
-        cv2.putText(annotated_frame, f"{dist_center:.2f}px", (box_cx, box_cy + 15),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-
-    def obb_model(self, box):
-        xywhr = box.xywhr[0].cpu().numpy()
-        box_cx = int(xywhr[0])
-        box_cy = int(xywhr[1])
-
-        # ----------- CORNERS -----------
-        points = box.xyxyxyxy[0].cpu().numpy().astype(int)
-
-        x_coords = points[:, 0]
-        y_coords = points[:, 1]
-
-        x1, x2 = x_coords.min(), x_coords.max()
-        y1, y2 = y_coords.min(), y_coords.max()
-
-        # ----------- DEPTH ZONE -----------
-        depth_zone_h = abs(y2 - y1)
-        depth_zone_w = abs(x2 - x1)
-
-        if depth_zone_w > depth_zone_h:
-            half = 0.40 * depth_zone_h
-        else:
-            half = 0.40 * depth_zone_w
-
-        half = max(1, min(8, int(np.ceil(half))))
-
-        return box_cx, box_cy, x1, y1, x2, y2, half, points
-
-    def bbox_model(self, box):
-        xywh = box.xywh[0].cpu().numpy()
-        box_cx = int(xywh[0])
-        box_cy = int(xywh[1])
-
-        x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-        half = 1
-
-        return box_cx, box_cy, x1, y1, x2, y2, half
-
-    def build_gate_leg_dict(self, gate_legs_detected, activated):
-        """
-        Sort gate legs left/right using their x-position in the camera,
-        then smooth left and right depths with a moving average of 10 frames.
-        ONLY FOR PREQUALIFICATION
-        """
-        if len(gate_legs_detected) < 2:
-            return {}
-
-        # If more than two legs are detected, keep the leftmost and rightmost ones.
-        gate_legs_detected = sorted(gate_legs_detected, key=lambda obj: obj["box_cx"])
-        gate_left = gate_legs_detected[0]
-        gate_right = gate_legs_detected[-1]
-
-        if activated:
-            left_filtered = self.spike_filter_with_timeout(
-                gate_left["depth"],
-                self.depth_history["gate_left"],
-                "gate_left"
-            )
-
-            right_filtered = self.spike_filter_with_timeout(
-                gate_right["depth"],
-                self.depth_history["gate_right"],
-                "gate_right"
-            )
-
-            self.depth_history["gate_left"].append(left_filtered)
-            self.depth_history["gate_right"].append(right_filtered)
-
-            gate_left["depth"] = float(np.median(self.depth_history["gate_left"]))
-            gate_right["depth"] = float(np.median(self.depth_history["gate_right"]))
-
-        # 0 = left, 1 = right. Angle_between_object.py now assumes this is already ordered.
-        return {
-            0: gate_left,
-            1: gate_right,
-        }
 
 
 def main():
