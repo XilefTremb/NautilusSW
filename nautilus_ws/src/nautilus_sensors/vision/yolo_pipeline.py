@@ -2,22 +2,24 @@
 
 import argparse
 import rclpy
+import torch
+import cv2
+import numpy as np
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int16
-import cv2
-import numpy as np
 from ultralytics import YOLO
 from cv_bridge import CvBridge
-import torch
 from message_filters import Subscriber, ApproximateTimeSynchronizer
+from collections import deque
+
 from vision.Pixel_and_depth import *
 from vision.Angle_between_object import *
-from collections import deque
+from vision.filters import TemporalFilter
 
 from nautilus_bringup.ObjectID import ObjectID
 
-MOVING_MEAN_ACTIVATED =  False
+MOVING_MEAN_ACTIVATED =  True
 PREQUALIFICATION = False
 
 def parse_args():
@@ -58,6 +60,8 @@ class YoloNode(Node):
 
         # ----------- INIT PARAMS FILTER-----------
         self.depth_threshold = 9999999
+
+        self.temporal_filter = TemporalFilter(self)
 
         if PREQUALIFICATION:
             self.depth_history = {
@@ -200,8 +204,7 @@ class YoloNode(Node):
                     elif object_id not in objects or depth_value < objects[object_id]["depth"]:
                         objects[object_id] = {
                             "depth": depth_value,
-                            "box_cx": box_cx
-                        }
+                            "box_cx": box_cx}
 
                 if depth_value < self.depth_threshold:
                     payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
@@ -216,6 +219,13 @@ class YoloNode(Node):
         if PREQUALIFICATION:
             dict_leg = self.build_gate_leg_dict(gate_legs_detected, MOVING_MEAN_ACTIVATED)
             payload_angle_bet = switch_case_sub_angle(dict_leg, self.mode, PREQUALIFICATION)
+
+            if len(payload_angle_bet) >= 2 and MOVING_MEAN_ACTIVATED:
+                angle = payload_angle_bet[3]
+                self.angle_history.append(angle)
+                angle_filtered = float(np.median(self.angle_history))
+                payload_angle_bet[3] = angle_filtered
+
         else:
             objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
             objects = self.filter_objects_depth(objects, MOVING_MEAN_ACTIVATED)
@@ -473,6 +483,45 @@ class YoloNode(Node):
         half = 1
 
         return box_cx, box_cy, x1, y1, x2, y2, half
+
+    def build_gate_leg_dict(self, gate_legs_detected, activated):
+        """
+        Sort gate legs left/right using their x-position in the camera,
+        then smooth left and right depths with a moving average of 10 frames.
+        ONLY FOR PREQUALIFICATION
+        """
+        if len(gate_legs_detected) < 2:
+            return {}
+
+        # If more than two legs are detected, keep the leftmost and rightmost ones.
+        gate_legs_detected = sorted(gate_legs_detected, key=lambda obj: obj["box_cx"])
+        gate_left = gate_legs_detected[0]
+        gate_right = gate_legs_detected[-1]
+
+        if activated:
+            left_filtered = self.spike_filter_with_timeout(
+                gate_left["depth"],
+                self.depth_history["gate_left"],
+                "gate_left"
+            )
+
+            right_filtered = self.spike_filter_with_timeout(
+                gate_right["depth"],
+                self.depth_history["gate_right"],
+                "gate_right"
+            )
+
+            self.depth_history["gate_left"].append(left_filtered)
+            self.depth_history["gate_right"].append(right_filtered)
+
+            gate_left["depth"] = float(np.median(self.depth_history["gate_left"]))
+            gate_right["depth"] = float(np.median(self.depth_history["gate_right"]))
+
+        # 0 = left, 1 = right. Angle_between_object.py now assumes this is already ordered.
+        return {
+            0: gate_left,
+            1: gate_right,
+        }
 
 
 def main():
