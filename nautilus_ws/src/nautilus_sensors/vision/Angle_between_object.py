@@ -1,5 +1,5 @@
 import numpy as np
-from nautilus_bringup.ObjectID import ObjectID
+from enums.ObjectID import ObjectID
 from vision.Pixel_and_depth import params_cams
 
 
@@ -31,7 +31,8 @@ def switch_case_sub_angle(objects, mode, PREQUALIFICATION):
         gate_left = ObjectID.GATE_LEG_L in objects
         gate_right = ObjectID.GATE_LEG_R in objects
         gate_middle = ObjectID.GATE_LEG_CENTER in objects
-        slalom_side = ObjectID.SLALOM_SIDE in objects
+        slalom_left = ObjectID.SLALOM_LEFT in objects
+        slalom_right = ObjectID.SLALOM_RIGHT in objects
         slalom_middle = ObjectID.SLALOM_CENTER in objects
 
         if gate_left and gate_middle:
@@ -41,8 +42,9 @@ def switch_case_sub_angle(objects, mode, PREQUALIFICATION):
             angle_calc = find_angle_plane_V2(right_obj["depth"],left_obj["depth"],1524, right_obj["box_cx"],left_obj["box_cx"], mode)
             cx, _, _, _= params_cams(mode)
             dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
+            mean_distance = (right_obj["depth"] + left_obj["depth"]) / 2
             if angle_calc is not None and dist_center_gate is not None:
-                results_angle.extend([float(ObjectID.GATE_LEFT_MID), float(dist_center_gate), 0.0, float(angle_calc)])
+                results_angle.extend([float(ObjectID.GATE_LEFT_MID), float(dist_center_gate), float(mean_distance), float(angle_calc)])
 
         if gate_right and gate_middle:
             left_obj = objects[ObjectID.GATE_LEG_CENTER]
@@ -51,19 +53,31 @@ def switch_case_sub_angle(objects, mode, PREQUALIFICATION):
             angle_calc = find_angle_plane_V2(left_obj["depth"],right_obj["depth"],1524, left_obj["box_cx"],right_obj["box_cx"], mode)
             cx, _, _, _= params_cams(mode)
             dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
+            mean_distance = (right_obj["depth"] + left_obj["depth"]) / 2
             if angle_calc is not None and dist_center_gate is not None:
-                results_angle.extend([float(ObjectID.GATE_MID_RIGHT), float(dist_center_gate), 0.0, float(angle_calc)])
+                results_angle.extend([float(ObjectID.GATE_MID_RIGHT), float(dist_center_gate), float(mean_distance), float(angle_calc)])
 
-        if slalom_side and slalom_middle:
-            # TODO: may have to treat case if side slalom is on the left or right of center slalom
-            left_obj = objects[ObjectID.SLALOM_SIDE]
+        if slalom_left and slalom_middle:
+            left_obj = objects[ObjectID.SLALOM_LEFT]
             right_obj = objects[ObjectID.SLALOM_CENTER]
 
             angle_calc = find_angle_plane_V2(right_obj["depth"],left_obj["depth"],1524, right_obj["box_cx"],left_obj["box_cx"], mode)
             cx, _, _, _= params_cams(mode)
             dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
+            mean_distance = (right_obj["depth"] + left_obj["depth"]) / 2
             if angle_calc is not None and dist_center_gate is not None:
-                results_angle.extend([float(ObjectID.SLALOM_SIDE_MID),float(dist_center_gate), 0.0, float(angle_calc)])
+                results_angle.extend([float(ObjectID.SLALOM_LEFT_MID),float(dist_center_gate), float(mean_distance), float(angle_calc)])
+
+        if slalom_right and slalom_middle:
+            left_obj = objects[ObjectID.SLALOM_CENTER]
+            right_obj = objects[ObjectID.SLALOM_RIGHT]
+
+            angle_calc = find_angle_plane_V2(right_obj["depth"],left_obj["depth"],1524, right_obj["box_cx"],left_obj["box_cx"], mode)
+            cx, _, _, _= params_cams(mode)
+            dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
+            mean_distance = (right_obj["depth"] + left_obj["depth"]) / 2
+            if angle_calc is not None and dist_center_gate is not None:
+                results_angle.extend([float(ObjectID.SLALOM_MID_RIGHT),float(dist_center_gate), float(mean_distance), float(angle_calc)])
 
 
     else:

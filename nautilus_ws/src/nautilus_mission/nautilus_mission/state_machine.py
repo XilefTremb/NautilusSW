@@ -1,258 +1,240 @@
 #!/usr/bin/env python3
 
-import rclpy
+import time
+from typing import Optional
+
 from rclpy.node import Node
-from std_msgs.msg import Float32MultiArray, Int8, Int16
-
-from nautilus_bringup.RobotState import RobotState
-from nautilus_bringup.ObjectID import ObjectID
-from nautilus_mission.state import State
+from transitions import Machine
 
 
-class StateMachine(Node):
-    def __init__(self):
-        super().__init__('state_machine')
+from enums.ObjectID import ObjectID
+from enums.VisionAction import VisionAction
+from enums.DetectionIndex import DetectionIndex
+from .detection_store import DetectionStore
 
-        self._state = State()
+from .mission_objectives import mission_list, Objective, ActionType
 
-        # Current target can be one ID or a list of IDs
-        self.target_ids = None
 
-        # Parsed detections: list of [id, px, angle, depth]
-        self.detections = []
+class StateMachine:
+    """Mission decision logic only. No ROS subscriptions and no vision error calculation."""
 
-        self.mean_depth_forward_cam = None
+    def __init__(self, node: Node, detection_store: DetectionStore):
+        self.node = node
+        self.detection_store = detection_store
 
-        # Subscribers
-        self.detection_sub = self.create_subscription(
-            Float32MultiArray,
-            '/yolo/detections',
-            self.detection_callback,
-            10
-        )
+        self.objectives : list[Objective] = mission_list
 
-        self.mean_depth_sub = self.create_subscription(
-            Int16,
-            '/yolo/mean_depth_forward_cam',
-            self.mean_depth_callback,
-            10
-        )
+        self.objective_index = 0
+        self.current_objective: Optional[Objective] = None
+        self.target_ids: Optional[list[ObjectID]] = None
+        self.vision_action = VisionAction.IDLE
+        self.mean_depth_forward_cam: Optional[int] = None
 
-        # Publishers
-        self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
+        self.target_missing_count = 0
+        self.target_missing_limit = 5
+        self.state_start_time = time.monotonic()
 
-        self.target_detection_pub = self.create_publisher(
-            Float32MultiArray,
-            '/mission/target_detection',
-            10
-        )
-
-        self.forward_cmd_pub = self.create_publisher(
-            Int16,
-            '/control/cmd/forward',
-            10
-        )
-
-        self.depth_threshold_pub = self.create_publisher(
-            Int16,
-            '/yolo/depth_threshold',
-            10
-        )
-
-        # Timers
-        self.timer_state_machine = self.create_timer(1 / 20, self.state_machine)
-        self.timer_state_sender = self.create_timer(1 / 10, self.state_targets_sender)
-
-        # Initial state
-        self.state = RobotState.TRAVERSE_GATE
-
-        self.set_target([ObjectID.GATE_TOTAL])
-
-    def state_machine(self):
-        if self.state == RobotState.SEARCH:
-            if self.is_target_present():
-                self.state = RobotState.CENTER_GATE
-
-        elif self.state == RobotState.CENTER_GATE:
-            if self.is_target_centered() and self.state.lifespan > 10.0:
-                self.set_target([ObjectID.GATE_TOTAL])
-                self.state = RobotState.APPROACH_GATE
-
-        elif self.state == RobotState.APPROACH_GATE:
-            if not self.is_target_present():
-                self.publish_depth_threshold(15000)
-                self.state = RobotState.TRAVERSE_GATE
-
-        elif self.state == RobotState.TRAVERSE_GATE:
-            self.publish_forward_cmd(1700)
-
-            if self.state.lifespan > 2.0:
-                self.set_target([ObjectID.MARQUEUR])
-
-                if self.is_target_approached(5000):
-                    self.publish_depth_threshold(15000)
-
-                    # Example: gate-like object IDs are now simple higher IDs
-                    # Replace 17 with your actual SLALOM_SIDE_MID ID
-                    self.set_target([17])
-
-                    self.state = RobotState.CIRCLE_MARKER
-
-        elif self.state == RobotState.CIRCLE_MARKER:
-            if (
-                self.state.lifespan > 10.0
-                and self.is_target_present()
-                and self.mean_depth_forward_cam is not None
-                and self.mean_depth_forward_cam > 8200
-            ):
-                self.publish_depth_threshold(15000)
-                self.state = RobotState.RETURN_GATE
-
-        elif self.state == RobotState.RETURN_GATE:
-            self.publish_forward_cmd(1700)
-
-            if self.state.lifespan > 5.0:
-                self.set_target([
-                    ObjectID.GATE_LEG,
-                    ObjectID.GATE_TOTAL,
-                    ObjectID.LUMIERE
-                ])
-
-                self.state = RobotState.APPROACH_ANY
-
-        elif self.state == RobotState.APPROACH_ANY:
-            if self.is_target_approached(2000):
-                self.publish_depth_threshold(5000)
-                self.state = RobotState.CENTER_GATE
-
-    def state_targets_sender(self):
-        if self.state._state is not None:
-            msg = Int8()
-            msg.data = self.state.value
-            self.state_pub.publish(msg)
-
-        target = self.get_target_detection()
-
-        if target is not None:
-            msg = Float32MultiArray()
-            msg.data = [
-                float(target[0]),  # id
-                float(target[1]),  # px
-                float(target[2]),  # angle
-                float(target[3]),  # depth
-            ]
-            self.target_detection_pub.publish(msg)
-
-    def detection_callback(self, msg):
-        data = msg.data
-
-        if len(data) % 4 != 0:
-            self.get_logger().warn(
-                f'Received malformed detection array of length {len(data)}. Expected multiple of 4.'
-            )
-            return
-
-        self.detections = [
-            data[i:i + 4]
-            for i in range(0, len(data), 4)
+        states = [
+            'IDLE',
+            'LOAD_OBJECTIVE',
+            'SEARCH_TARGET',
+            'CENTER_TARGET',
+            'APPROACH_TARGET',
+            'EXECUTE_ACTION',
+            'MISSION_COMPLETE',
         ]
 
-    def mean_depth_callback(self, msg):
-        self.mean_depth_forward_cam = msg.data
+        transitions = [
+            {'trigger': 'start_mission', 'source': 'IDLE', 'dest': 'LOAD_OBJECTIVE'},
+            {'trigger': 'objective_loaded', 'source': 'LOAD_OBJECTIVE', 'dest': 'SEARCH_TARGET'},
+            {'trigger': 'no_more_objectives', 'source': 'LOAD_OBJECTIVE', 'dest': 'MISSION_COMPLETE'},
+            {'trigger': 'target_found', 'source': 'SEARCH_TARGET', 'dest': 'CENTER_TARGET'},
+            {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
+            {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
+            {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION'},
+            {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
+            {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
+            {'trigger': 'finish_mission', 'source': '*', 'dest': 'MISSION_COMPLETE'},
+        ]
 
-    def set_target(self, target_ids):
-        if target_ids is None:
-            self.target_ids = None
-            return
-
-        if not isinstance(target_ids, list):
-            target_ids = [target_ids]
-
-        self.target_ids = [int(target_id) for target_id in target_ids]
-
-        self.get_logger().info(f'Set target IDs to: {self.target_ids}')
-
-    def get_target_detection(self):
-        if self.target_ids is None:
-            return None
-
-        return next(
-            (
-                detection for detection in self.detections
-                if int(detection[0]) in self.target_ids
-            ),
-            None
+        self.machine = Machine(
+            model=self,
+            states=states,
+            initial='IDLE',
+            transitions=transitions,
+            after_state_change='state_changed',
+            ignore_invalid_triggers=True,
         )
 
-    def is_target_present(self):
-        target = self.get_target_detection()
+    def tick(self):
+        if self.target_ids is None:
+            self.no_target_to_be_reached()
 
-        if target is not None:
-            self.get_logger().info(f'Target ID {int(target[0])} was found!')
+        if self.state == 'SEARCH_TARGET':
+            self.vision_action = VisionAction.IDLE
+            if self.is_target_present():
+                self.target_found()
+
+        elif self.state == 'CENTER_TARGET':
+            self.vision_action = VisionAction.CENTER_TARGET
+            if self.is_target_lost_filtered():
+                self.target_lost()
+            elif self.is_target_centered() and self.is_target_perpendicular() and self.state_lifespan > 5.0:
+                self.target_centered_event()
+
+        elif self.state == 'APPROACH_TARGET':
+            self.vision_action = VisionAction.APPROACH_TARGET
+            if self.is_target_lost_filtered():
+                self.target_lost()
+            elif self.is_target_approached():
+                self.target_reached()
+
+        elif self.state == 'EXECUTE_ACTION':
+            self.vision_action = self.get_vision_action_for_current_objective()
+            self.run_current_action()
+            if self.is_current_action_done():
+                self.objective_index += 1
+                self.action_done()
+
+        else:
+            self.vision_action = VisionAction.IDLE
+
+    def on_enter_LOAD_OBJECTIVE(self):
+        self.vision_action = VisionAction.IDLE
+        self.node.publish_forward_cmd(1500)
+
+        if self.objective_index >= len(self.objectives):
+            self.no_more_objectives()
+            return
+
+        self.current_objective = self.objectives[self.objective_index]
+        self.target_ids = self.current_objective.target_ids
+
+        self.node.get_logger().info(
+            f'Loaded objective {self.objective_index + 1}/{len(self.objectives)}: '
+            f'{self.current_objective.name}'
+        )
+
+        if self.target_ids is not None:
+            self.node.get_logger().info('Target IDs: ' + ', '.join(target.name for target in self.target_ids))
+        else:
+            self.node.get_logger().info('Target IDs: None')
+
+        if self.current_objective.depth_threshold is not None:
+            self.node.publish_depth_threshold(self.current_objective.depth_threshold)
+
+        self.objective_loaded()
+
+    def on_enter_CENTER_TARGET(self):
+        self.target_missing_count = 0
+
+    def on_enter_APPROACH_TARGET(self):
+        self.target_missing_count = 0
+
+    def on_enter_EXECUTE_ACTION(self):
+        if self.current_objective is None:
+            self.finish_mission()
+            return
+
+        self.node.get_logger().info(
+            f'Executing action {self.current_objective.action_type.name} '
+            f'for objective {self.current_objective.name}'
+        )
+
+    def on_enter_MISSION_COMPLETE(self):
+        self.target_ids = None
+        self.vision_action = VisionAction.IDLE
+        self.node.publish_forward_cmd(1500)
+        self.node.get_logger().info('Mission complete')
+
+    def run_current_action(self):
+        if self.state != 'EXECUTE_ACTION' or self.current_objective is None:
+            return
+
+        if self.current_objective.action_type == ActionType.FORWARD:
+            self.node.publish_forward_cmd(self.current_objective.action_forward_pwm)
+
+    def get_vision_action_for_current_objective(self) -> VisionAction:
+        if self.current_objective is None:
+            return VisionAction.IDLE
+
+        if self.current_objective.action_type == ActionType.CIRCLE_MARKER:
+            return VisionAction.CIRCLE_MARKER
+
+        return VisionAction.IDLE
+
+    def is_current_action_done(self) -> bool:
+        if self.current_objective is None:
             return True
 
-        return False
+        action = self.current_objective.action_type
 
-    def is_target_centered(self):
-        target = self.get_target_detection()
-
-        if target is None:
-            return False
-
-        px = target[1]
-        angle = target[2]
-
-        # For normal objects, angle may be the useful centering error.
-        # For gate-like objects, px and angle can both matter.
-        if abs(angle) < 15:
-            self.get_logger().info(f'Target ID {int(target[0])} is centered!')
+        if action == ActionType.NONE:
             return True
 
-        return False
+        if action == ActionType.FORWARD:
+            required_time = max(self.current_objective.action_duration, self.current_objective.min_action_lifespan)
+            return self.state_lifespan >= required_time
 
-    def is_target_approached(self, distance):
-        target = self.get_target_detection()
+        if action == ActionType.CIRCLE_MARKER:
+            if self.current_objective.mean_depth_target is None:
+                return False
 
-        if target is None:
-            return False
-
-        depth = target[3]
-
-        if depth < distance:
-            self.get_logger().info(
-                f'Target ID {int(target[0])} is in range! Depth: {depth}'
+            return (
+                self.mean_depth_forward_cam == self.current_objective.mean_depth_target
+                and self.state_lifespan >= self.current_objective.min_action_lifespan
             )
-            return True
 
         return False
 
-    def publish_forward_cmd(self, value):
-        msg = Int16()
-        msg.data = value
-        self.forward_cmd_pub.publish(msg)
+    def is_target_present(self) -> bool:
+        return self.detection_store.get_detection(self.target_ids) is not None
 
-    def publish_depth_threshold(self, value):
-        msg = Int16()
-        msg.data = value
-        self.depth_threshold_pub.publish(msg)
+    def is_target_lost_filtered(self) -> bool:
+        if self.is_target_present():
+            self.target_missing_count = 0
+            return False
+
+        self.target_missing_count += 1
+        return self.target_missing_count >= self.target_missing_limit
+
+    def is_target_centered(self) -> bool:
+        if self.current_objective is None:
+            return False
+
+        target = self.detection_store.get_detection(self.target_ids)
+        if target is None:
+            return False
+
+        px = target[DetectionIndex.CENTER_PX]
+        return abs(px) < self.current_objective.center_tolerance_px
+
+    def is_target_approached(self) -> bool:
+        if self.current_objective is None:
+            return False
+
+        target = self.detection_store.get_detection(self.target_ids)
+        if target is None:
+            return False
+
+        depth = target[DetectionIndex.DEPTH_MM]
+        return depth < self.current_objective.approach_distance
+
+    def is_target_perpendicular(self) -> bool:
+        if self.current_objective is None:
+            return False
+
+        target = self.detection_store.get_detection(self.target_ids)
+        if target is None:
+            return False
+
+        angle = target[DetectionIndex.ANGLE_DEG]
+        return abs(angle) < self.current_objective.angle_tolerance_deg
+
+    def state_changed(self):
+        self.state_start_time = time.monotonic()
+        self.node.get_logger().info(f'Entered state {self.state}')
 
     @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, new_state):
-        self._state.set(new_state)
-        self.get_logger().info(f'Set state to: {new_state.name}')
-
-
-def main(args=None):
-    rclpy.init(args=args)
-    node = StateMachine()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
-
-
-if __name__ == "__main__":
-    main()
+    def state_lifespan(self):
+        return time.monotonic() - self.state_start_time
