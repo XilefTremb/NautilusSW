@@ -31,7 +31,7 @@ class StateMachine:
         self.mean_depth_forward_cam: Optional[int] = None
 
         self.target_missing_count = 0
-        self.target_missing_limit = 10
+        self.target_missing_limit = 50
         self.state_start_time = time.monotonic()
         self.execute_action_start_time = None
 
@@ -76,17 +76,24 @@ class StateMachine:
             self.node.get_logger().info("allo")
             self.no_target_to_be_reached()
 
-        if self.state == 'SEARCH_TARGET':
+        elif self.state == 'SEARCH_TARGET':
+            self.spin_search()
             self.vision_action = VisionAction.IDLE
             if self.is_target_present():
                 self.target_found()
 
         elif self.state == 'CENTER_TARGET':
-            self.vision_action = VisionAction.CENTER_TARGET
-            # if self.is_target_lost_filtered():
-            #     self.target_lost()
-            if self.is_target_centered() and self.is_target_perpendicular():
-                self.target_centered_event()
+            if self.current_objective.full_centering:
+                self.vision_action = VisionAction.CENTER_TARGET
+            else:
+                self.vision_action = VisionAction.CENTER_FOV
+            if self.is_target_lost_filtered():
+                self.target_lost()
+            if self.is_target_centered():
+                if self.is_target_perpendicular() and self.current_objective.full_centering:
+                    self.target_centered_event()
+                elif not self.current_objective.full_centering:
+                    self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
             self.vision_action = VisionAction.APPROACH_TARGET
@@ -162,6 +169,10 @@ class StateMachine:
         if self.current_objective.action_type == ActionType.FORWARD:
             self.node.publish_forward_cmd(self.current_objective.action_forward_pwm)
 
+    def spin_search(self):
+        cmd = self.current_objective.spin_pwm
+        self.node.publish_yaw_cmd(cmd)
+        
     def get_vision_action_for_current_objective(self) -> VisionAction:
         if self.current_objective is None:
             return VisionAction.IDLE
