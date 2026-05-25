@@ -3,7 +3,9 @@
 import argparse
 import rclpy
 import torch
+import time 
 import numpy as np
+
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int16
@@ -19,18 +21,24 @@ from vision.display_model_boxes import draw_detection, obb_model_coordinates, bb
 
 from enums.ObjectID import ObjectID
 
-MOVING_MEAN_ACTIVATED =  True
+
+# =========================================================
+# CONFIG
+# =========================================================
+MOVING_MEAN_ACTIVATED = True
 PREQUALIFICATION = False
+
+FORWARD_CAM_RATE_HZ = 10       
+DOWNWARD_CAM_RATE_HZ = 2  
+
 
 def parse_args():
     p = argparse.ArgumentParser()
 
-    # -------- MODE --------
     mode = p.add_mutually_exclusive_group(required=True)
     mode.add_argument("--sim", action="store_true")
     mode.add_argument("--real", action="store_true")
 
-    # -------- MODEL TYPE --------
     model_type = p.add_mutually_exclusive_group(required=True)
     model_type.add_argument("--obb", action="store_true")
     model_type.add_argument("--bbox", action="store_true")
@@ -38,63 +46,45 @@ def parse_args():
     return p.parse_args()
 
 
+# =========================================================
+# YOLO NODE
+# =========================================================
 class YoloNode(Node):
+
     def __init__(self, args):
         super().__init__('yolo_node')
 
-        # ----------- MODE -----------
+        # -------- MODE --------
         if args.sim:
             self.mode = 'sim'
-            self.model = YOLO(
-                '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt')
+            model_path = '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt'
         else:
             self.mode = 'real'
-            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
+            model_path = '/home/nautilus/.../model_prequal.pt'
 
-        # -------- MODEL TYPE --------
-        if args.obb:
-            self.type_yolo = 'obb'
+        # -------- MODEL --------
+        self.model = YOLO(model_path)
 
-        else:
-            self.type_yolo = 'bbox'
-
-        # ----------- INIT PARAMS FILTER-----------
-        self.depth_threshold = 9999999
-
-        self.temporal_filter = TemporalFilter(self)
-
-        if PREQUALIFICATION:
-            self.depth_history = {
-                "gate_left": deque(maxlen=10),
-                "gate_right": deque(maxlen=10),}
-            self.last_seen = {
-                "gate_left": None,
-                "gate_right": None, }
-
-        else:
-            self.depth_history = {}
-            self.last_seen = {}
-
-        self.angle_history = deque(maxlen=10)
-        self.spike_threshold_mm = 1000
-        self.reset_after_sec = 2.0
-
-        # ----------- GPU -----------
         if torch.cuda.is_available():
             self.model.to('cuda')
 
+        self.type_yolo = 'obb' if args.obb else 'bbox'
+
         self.bridge = CvBridge()
 
-        # ----------- SUBSCRIBER -----------
+        # -------- FILTERS --------
+        self.temporal_filter = TemporalFilter(self)
+        self.depth_threshold = 999999
+
+        # -------- FRAME QUEUE (LOW LATENCY CORE) --------
+        self.forward_queue = deque(maxlen=1)
+        self.downward_queue = deque(maxlen=1)
+
+        # -------- SUBSCRIBERS --------
+
+        # Forward cam (RGB + depth sync)
         self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
-
-        self.depth_threshold_sub = self.create_subscription(
-            Int16,
-            '/yolo/depth_threshold',
-            self.depth_threshold_callback,
-            10
-        )
 
         self.ts = ApproximateTimeSynchronizer(
             [self.rgb_sub, self.depth_sub],
@@ -102,229 +92,192 @@ class YoloNode(Node):
             slop=0.1,
             allow_headerless=True
         )
+        self.ts.registerCallback(self.forward_callback)
 
-        self.ts.registerCallback(self.synced_callback)
+        # Downward cam (RGB only)
+        self.down_sub = self.create_subscription(
+            Image,
+            'oak1/camera/image_raw',
+            self.downward_callback,
+            10
+        )
 
-        # ----------- PUBLISHER -----------
-        #self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
-        #self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
+        # -------- PUBLISHERS --------
         self.detection_pub = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
         self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
 
-        self.get_logger().info(f'YOLOv8 node started, mode: {self.mode}, type: {self.type_yolo}')
+        # -------- TIMER (MAIN INFERENCE LOOP) --------
+        self.timer = self.create_timer(0.01, self.inference_loop)
 
-    def synced_callback(self, rgb_msg, depth_msg):
+        self.last_forward_time = 0
+        self.last_downward_time = 0
 
-        # ----------- FRAME -----------
-        frame = self.bridge.imgmsg_to_cv2(rgb_msg, desired_encoding='bgr8')
-        depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='32FC1')
+        self.forward_interval = 1.0 / FORWARD_CAM_RATE_HZ
+        self.downward_interval = 1.0 / DOWNWARD_CAM_RATE_HZ
 
-        # ----------- MODEL -----------
-        results = self.model(frame, conf=0.4, verbose=False)
+        self.get_logger().info("YOLO dual-camera node started")
+
+    # =====================================================
+    # CALLBACKS (JUST PUSH DATA)
+    # =====================================================
+    def forward_callback(self, rgb_msg, depth_msg):
+        frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
+        depth = self.bridge.imgmsg_to_cv2(depth_msg, '32FC1')
+
+        self.forward_queue.append((frame, depth))
+
+    def downward_callback(self, rgb_msg):
+        frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
+
+        self.downward_queue.append(frame)
+
+    def inference_loop(self):
+        now = time.time()
+
+        # =====================================================
+        # 1. PRIORITY: FORWARD CAMERA
+        # =====================================================
+        if self.forward_queue and (now - self.last_forward_time > self.forward_interval):
+
+            frame, depth = self.forward_queue.pop()
+            self.last_forward_time = now
+
+            results = self.model(frame, conf=0.4, verbose=False)
+            annotated = frame.copy()
+
+            self.process_forward(results, annotated, depth)
+
+            msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
+            self.image_pub.publish(msg)
+            return  # IMPORTANT: prevent double compute
+
+        # =====================================================
+        # 2. DOWNWARD CAMERA (LOW PRIORITY)
+        # =====================================================
+        if self.downward_queue and (now - self.last_downward_time > self.downward_interval):
+
+            frame = self.downward_queue.pop()
+            self.last_downward_time = now
+
+            results = self.model(frame, conf=0.4, verbose=False)
+            annotated = frame.copy()
+
+            self.process_downward(results, annotated)
+
+            msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
+            self.image_pub.publish(msg)
+
+            
+    # =====================================================
+    # FORWARD CAMERA PIPELINE (FULL LOGIC)
+    # =====================================================
+    def process_forward(self, results, annotated_frame, depth):
+
         payload = []
-
         objects = {}
         slalom_tab = []
 
-        annotated_frame = frame.copy()
+        detection = results[0].obb if self.type_yolo == 'obb' else results[0].boxes
 
-        if self.type_yolo == 'obb':
-            detection = results[0].obb
-        else:
-            detection = results[0].boxes
+        if detection is None:
+            return
 
-        if detection is not None:
-            for box in detection:
+        for box in detection:
 
-                # ----------- BOX INFORMATION-----------
-                if self.type_yolo == 'obb':
-                    box_cx, box_cy, x1, y1, x2, y2, half, points = obb_model_coordinates(box)
-                else:
-                    box_cx, box_cy, x1, y1, x2, y2, half = bbox_model_coordinates(box)
-                    points = None
+            # ---- BOX ----
+            if self.type_yolo == 'obb':
+                box_cx, box_cy, x1, y1, x2, y2, half, points = obb_model_coordinates(box)
+            else:
+                box_cx, box_cy, x1, y1, x2, y2, half = bbox_model_coordinates(box)
+                points = None
 
-                # Clamp to image
-                h, w = depth.shape
-                x1, x2 = np.clip([x1, x2], 0, w - 1)
-                y1, y2 = np.clip([y1, y2], 0, h - 1)
+            # ---- DEPTH ----
+            try:
+                depth_value = find_depth(depth, half, box_cy, box_cx, self.mode)
+            except:
+                continue
 
-                # ----------- CLASS / CONF -----------
-                object_id = int(box.cls[0])
-                confidence = float(box.conf[0])
+            if depth_value is None:
+                continue
 
-                # ----------- DEPTH -----------
-                try:
-                    depth_value = find_depth(
-                        depth_frame=depth,
-                        half=half,
-                        bbox_cy=box_cy,
-                        bbox_cx=box_cx,
-                        mode=self.mode
-                    )
-                
-                except Exception as e:
-                    self.get_logger().warn(f'Depth error for obj {object_id}: {e}')
-                    depth_value = None
+            # ---- DIST ----
+            dist_center = find_dist_from_center(box_cx, self.mode)
 
-                if depth_value is None:
-                    continue
+            object_id = int(box.cls[0])
+            confidence = float(box.conf[0])
 
-                # ----------- DIST / ANGLE -----------
-                dist_center = find_dist_from_center(box_cx, self.mode)
+            payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
 
-                # ----------- DICT FOR ANGLE BETWEEN -----------
-                if int(object_id) == int(ObjectID.SLALOM_SIDE):
-                    slalom_tab.append({
-                        "depth": depth_value,
-                        "dist_center": dist_center,
-                        "box_cx": box_cx,
-                        "box_cy": box_cy,
-                        "confidence": confidence,
-                        "x1": x1,
-                        "y1": y1,
-                        "x2": x2,
-                        "y2": y2,
-                        "points": points
-                    })
-                    continue
+            draw_detection(
+                annotated_frame,
+                self.type_yolo,
+                object_id,
+                confidence,
+                depth_value,
+                dist_center,
+                box_cx,
+                box_cy,
+                x1,
+                y1,
+                x2,
+                y2,
+                points
+            )
 
-                elif object_id not in objects or depth_value < objects[object_id]["depth"]:
-                    if MOVING_MEAN_ACTIVATED:
-                            depth_value = self.temporal_filter.moving_median_filter(
-                                key=f"depth_{object_id}",
-                                new_value=depth_value
-                            )
-                    objects[object_id] = {
-                        "depth": depth_value,
-                        "box_cx": box_cx}
-
-                if depth_value < self.depth_threshold:
-                    payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
-                    draw_detection(
-                        annotated_frame, self.type_yolo, object_id, confidence,
-                        depth_value, dist_center,
-                        box_cx, box_cy, x1, y1, x2, y2,
-                        points)
-
-        # ----------- ANGLE BETWEEN OBJECTS -----------
-        objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
-        payload_angle_bet = find_gate_angle(objects, self.mode)
-
-        if MOVING_MEAN_ACTIVATED:
-            for i in range(0, len(payload_angle_bet), 4):
-                group_id = int(payload_angle_bet[i])
-                angle_index = i + 3
-
-                payload_angle_bet[angle_index] = self.temporal_filter.moving_median_filter(
-                    key=f"angle_{group_id}",
-                    new_value=payload_angle_bet[angle_index])
-
-        payload.extend(payload_angle_bet)
-
-        # ----------- PUBLISH DETECTION -----------
+        # ---- PUBLISH ----
         msg = Float32MultiArray()
         msg.data = payload
-
-        nb_objects = len(payload) // 4
-        msg.layout.dim = [
-            MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-            MultiArrayDimension(label='fields', size=4, stride=4)
-        ]
-        msg.layout.data_offset = 0
-
         self.detection_pub.publish(msg)
 
-        # ----------- IMAGE OUTPUT -----------
-        out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
-        out_msg.header = rgb_msg.header
-        self.image_pub.publish(out_msg)
+        # ---- GLOBAL DEPTH ----
+        depth_mean = global_median_forward_cam(depth, self.mode)
+        msg_depth = Int16()
+        msg_depth.data = int(depth_mean)
+        self.mean_depth_forward_cam.publish(msg_depth)
 
-        # ----------- GLOBAL DEPTH -----------
-        depth_global_mean = global_median_forward_cam(depth, self.mode)
-        if not depth_global_mean < -32767 and not depth_global_mean > 32767:
-            msg_depth = Int16()
-            msg_depth.data = int(depth_global_mean)
-            self.mean_depth_forward_cam.publish(msg_depth)
+    # =====================================================
+    # DOWNWARD CAMERA PIPELINE (MODULAR 🔥)
+    # =====================================================
+    def process_downward(self, results, annotated_frame):
 
-    def depth_threshold_callback(self, msg):
-        self.depth_threshold = msg.data
-        self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
+        # 👉 RIGHT NOW: same YOLO
+        # 👉 LATER: replace with line detection / color / etc.
 
-    def slalom_organizer(self, slalom_tab, objects, annotated_frame, payload):
-        
-        if len(slalom_tab) == 0:
-            return objects, payload
-        
-        if ObjectID.SLALOM_CENTER not in objects:
-                closest_side = min(slalom_tab, key=lambda s: s["depth"])
+        detection = results[0].boxes
 
-                payload.extend([float(ObjectID.SLALOM_SIDE), float(closest_side["dist_center"]), float(closest_side["depth"]),0.0])
+        if detection is None:
+            return
 
-                draw_detection(
-                    annotated_frame,
-                    self.type_yolo,
-                    ObjectID.SLALOM_SIDE,
-                    closest_side["confidence"],
-                    closest_side["depth"],
-                    closest_side["dist_center"],
-                    closest_side["box_cx"],
-                    closest_side["box_cy"],
-                    closest_side["x1"],
-                    closest_side["y1"],
-                    closest_side["x2"],
-                    closest_side["y2"],
-                    closest_side["points"]
-                )
+        for box in detection:
+            box_cx, box_cy, x1, y1, x2, y2, half = bbox_model_coordinates(box)
 
-                return objects, payload
+            object_id = int(box.cls[0])
+            confidence = float(box.conf[0])
 
-        slalom_middle_cx = objects[ObjectID.SLALOM_CENTER]["box_cx"]
-
-        slalom_left = None
-        slalom_right = None
-
-        for slalom in slalom_tab:
-            depth_value = slalom["depth"]
-            box_cx = slalom["box_cx"]
-
-            if box_cx < slalom_middle_cx:
-                if slalom_left is None or depth_value < slalom_left["depth"]:
-                    slalom_left = slalom
-
-            elif box_cx > slalom_middle_cx:
-                if slalom_right is None or depth_value < slalom_right["depth"]:
-                    slalom_right = slalom
-
-        if slalom_left is not None:
-            objects[ObjectID.SLALOM_LEFT] = slalom_left
-            payload.extend([float(ObjectID.SLALOM_LEFT),float(slalom_left["dist_center"]), float(slalom_left["depth"]),0.0])
             draw_detection(
-                annotated_frame, self.type_yolo, ObjectID.SLALOM_LEFT,
-                slalom_left["confidence"], slalom_left["depth"],
-                slalom_left["dist_center"],
-                slalom_left["box_cx"], slalom_left["box_cy"],
-                slalom_left["x1"], slalom_left["y1"],
-                slalom_left["x2"], slalom_left["y2"],
-                slalom_left["points"]
+                annotated_frame,
+                self.type_yolo,
+                object_id,
+                confidence,
+                0.0,  # no depth
+                0.0,
+                box_cx,
+                box_cy,
+                x1,
+                y1,
+                x2,
+                y2,
+                None
             )
 
-        if slalom_right is not None:
-            objects[ObjectID.SLALOM_RIGHT] = slalom_right
-            payload.extend([float(ObjectID.SLALOM_RIGHT),float(slalom_right["dist_center"]), float(slalom_right["depth"]),0.0])
-            draw_detection(
-                annotated_frame, self.type_yolo, ObjectID.SLALOM_RIGHT,
-                slalom_right["confidence"], slalom_right["depth"],
-                slalom_right["dist_center"],
-                slalom_right["box_cx"], slalom_right["box_cy"],
-                slalom_right["x1"], slalom_right["y1"],
-                slalom_right["x2"], slalom_right["y2"],
-                slalom_right["points"]
-            )
-
-        return objects, payload
+        # ⚠️ No detection_pub here by default
+        # You can create a separate topic later if needed
 
 
+# =========================================================
+# MAIN
+# =========================================================
 def main():
     args = parse_args()
     rclpy.init()
