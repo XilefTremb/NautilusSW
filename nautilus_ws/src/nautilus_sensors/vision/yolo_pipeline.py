@@ -4,6 +4,7 @@ import argparse
 import rclpy
 import torch
 import numpy as np
+
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int16
@@ -16,6 +17,7 @@ from vision.object_depth import find_depth, find_dist_from_center, global_median
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
+from vision.edge_detector import *
 
 from enums.ObjectID import ObjectID
 
@@ -111,6 +113,7 @@ class YoloNode(Node):
         self.detection_pub = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
         self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
+        self.edge_mask_pub = self.create_publisher(Image, '/yolo/edge_mask', 10)
 
         self.get_logger().info(f'YOLOv8 node started, mode: {self.mode}, type: {self.type_yolo}')
 
@@ -120,6 +123,7 @@ class YoloNode(Node):
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, desired_encoding='bgr8')
         depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='32FC1')
 
+
         # ----------- MODEL -----------
         results = self.model(frame, conf=0.4, verbose=False)
         payload = []
@@ -128,6 +132,7 @@ class YoloNode(Node):
         slalom_tab = []
 
         annotated_frame = frame.copy()
+        edge_debug = np.zeros(frame.shape[:2], dtype=np.uint8)
 
         if self.type_yolo == 'obb':
             detection = results[0].obb
@@ -154,18 +159,53 @@ class YoloNode(Node):
                 confidence = float(box.conf[0])
 
                 # ----------- DEPTH -----------
-                try:
-                    depth_value = find_depth(
+                if self.mode == "real" and (object_id == ObjectID.GATE_LEG_L or object_id == ObjectID.GATE_LEG_CENTER
+                or object_id == ObjectID.GATE_LEG_R or object_id == ObjectID.SLALOM_SIDE or object_id == ObjectID.SLALOM_CENTER):
+
+                    roi = frame[y1:y2, x1:x2]
+
+                    if roi.size == 0:
+                        continue
+
+                    filled_mask = detect_dark_object_in_roi(roi)
+
+                    edge_debug[y1:y2, x1:x2][filled_mask > 0] = 255
+
+                    depth_value = find_depth_from_mask(
                         depth_frame=depth,
-                        half=half,
-                        bbox_cy=box_cy,
-                        bbox_cx=box_cx,
-                        mode=self.mode
+                        x1=x1,
+                        y1=y1,
+                        x2=x2,
+                        y2=y2,
+                        mask=filled_mask
                     )
-                
-                except Exception as e:
-                    self.get_logger().warn(f'Depth error for obj {object_id}: {e}')
-                    depth_value = None
+
+                    #annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] for debug
+
+                    if depth_value is None:
+                        depth_value = find_depth(
+                            depth_frame=depth,
+                            half=half,
+                            bbox_cy=box_cy,
+                            bbox_cx=box_cx,
+                            mode=self.mode
+                        )
+
+                else:
+
+                    try:
+                        depth_value = find_depth(
+                            depth_frame=depth,
+                            half=half,
+                            bbox_cy=box_cy,
+                            bbox_cx=box_cx,
+                            mode=self.mode
+                        )
+
+                    except Exception as e:
+                        self.get_logger().warn(f'Depth error for obj {object_id}: {e}')
+                        depth_value = None
+
 
                 if depth_value is None:
                     continue
@@ -235,10 +275,15 @@ class YoloNode(Node):
 
         self.detection_pub.publish(msg)
 
-        # ----------- IMAGE OUTPUT -----------
+        # ----------- PUBLISH IMAGE OUTPUT -----------
         out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
         out_msg.header = rgb_msg.header
         self.image_pub.publish(out_msg)
+
+        # ----------- PUBLISH IMAGE MASK DEPTH -----------
+        edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
+        edge_msg.header = rgb_msg.header
+        self.edge_mask_pub.publish(edge_msg)
 
         # ----------- GLOBAL DEPTH -----------
         depth_global_mean = global_median_forward_cam(depth, self.mode)
