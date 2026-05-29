@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from geometry_msgs.msg import TwistStamped
+from geometry_msgs.msg import TwistWithCovarianceStamped
 import socket
 import math
 from nautilus_mission.auv_pymavlink import AuvPymavlink
@@ -22,7 +22,7 @@ class DVLSensor(Node):
         super().__init__("dvl_sensor_node")
 
         # Publisher
-        self.dvl_pub = self.create_publisher(TwistStamped, "/dvl/twist", 10)
+        self.dvl_pub = self.create_publisher(TwistWithCovarianceStamped, "/dvl/twist", 10)
         # self.timer = self.create_timer(1.0 / PUBLISH_HZ, self.timer_callback)
 
         # UDP socket
@@ -124,17 +124,20 @@ class DVLSensor(Node):
             dz = float(fields[8])
             confidence = float(fields[9].split('*')[0])
 
-            twist_msg = TwistStamped()
+            twist_msg = TwistWithCovarianceStamped()
             twist_msg.header.stamp = self.get_clock().now().to_msg()
             twist_msg.header.frame_id = "base_link"
             
-            twist_msg.twist.linear.x = dx / dt
-            twist_msg.twist.linear.y = dy / dt
-            twist_msg.twist.linear.z = dz / dt
+            twist_msg.twist.twist.linear.x = dx / dt
+            twist_msg.twist.twist.linear.y = dy / dt
+            twist_msg.twist.twist.linear.z = dz / dt
 
-            twist_msg.twist.angular.x = droll / dt
-            twist_msg.twist.angular.y = dpitch / dt
-            twist_msg.twist.angular.z = dyaw / dt
+            twist_msg.twist.twist.angular.x = droll / dt
+            twist_msg.twist.twist.angular.y = dpitch / dt
+            twist_msg.twist.twist.angular.z = dyaw / dt
+
+            twist_msg.twist.covariance[0] = 0.05
+            twist_msg.twist.covariance[7] = 0.05
 
             self.dvl_pub.publish(twist_msg)
 
