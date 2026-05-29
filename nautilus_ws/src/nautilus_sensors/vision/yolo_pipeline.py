@@ -28,8 +28,8 @@ from enums.ObjectID import ObjectID
 MOVING_MEAN_ACTIVATED = True
 PREQUALIFICATION = False
 
-FORWARD_CAM_RATE_HZ = 10       
-DOWNWARD_CAM_RATE_HZ = 2  
+FORWARD_CAM_RATE_HZ = 20       
+DOWNWARD_CAM_RATE_HZ = 20  
 
 
 def parse_args():
@@ -60,7 +60,7 @@ class YoloNode(Node):
             model_path = '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt'
         else:
             self.mode = 'real'
-            model_path = '/home/nautilus/.../model_prequal.pt'
+            model_path = '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt'
 
         # -------- MODEL --------
         self.model = YOLO(model_path)
@@ -104,7 +104,8 @@ class YoloNode(Node):
 
         # -------- PUBLISHERS --------
         self.detection_pub = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
-        self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
+        self.image_forward_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
+        self.image_downward_pub = self.create_publisher(Image, '/yolo/image_annotated_downwards', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
 
         # -------- TIMER (MAIN INFERENCE LOOP) --------
@@ -149,7 +150,7 @@ class YoloNode(Node):
             self.process_forward(results, annotated, depth)
 
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
-            self.image_pub.publish(msg)
+            self.image_forward_pub.publish(msg)
             return  # IMPORTANT: prevent double compute
 
         # =====================================================
@@ -166,7 +167,7 @@ class YoloNode(Node):
             self.process_downward(results, annotated)
 
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
-            self.image_pub.publish(msg)
+            self.image_downward_pub.publish(msg)
 
             
     # =====================================================
