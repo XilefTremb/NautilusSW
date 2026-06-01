@@ -5,6 +5,7 @@ class VisionAction(IntEnum):
     CENTER_TARGET = 1
     APPROACH_TARGET = 2
     CIRCLE_MARKER = 3
+    CENTER_FOV = 4
 
 
     
