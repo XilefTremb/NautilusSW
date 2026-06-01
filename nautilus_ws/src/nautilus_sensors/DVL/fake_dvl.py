@@ -5,10 +5,11 @@ from rclpy.node import Node
 import math
 import numpy as np
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import TwistWithCovarianceStamped
 import time
 from pymavlink import mavutil
 import os
-from nautilus_mission.auv_pymavlink import AuvPymavlink
+from nautilus_controls.auv_pymavlink import AuvPymavlink
 
 def euleur_from_quat(x,y,z,w):
     roll = math.atan2(2*(x*w+y*z), 1-2*(x**2+y**2))
@@ -24,7 +25,6 @@ class FakeDVL(Node):
         os.environ["MAVLINK_DIALECT"] = "ardupilotmega"
 
         self.last_pose_enu = None
-        self.last_t = 0.0
         self.msg = None
         self.last_msg = None
 
@@ -41,10 +41,12 @@ class FakeDVL(Node):
             10
         )
 
+        self.dvl_pub = self.create_publisher(TwistWithCovarianceStamped, "/dvl/twist", 10)
+
         self.timer = self.create_timer(0.1,self.timer_callback)
 
         self.dvl = AuvPymavlink(self)
-        self.dvl.Connect("udpin:localhost:14552",False)
+        self.dvl.connect("udpin:localhost:14552",False)
         self.get_logger().info('Fake DVL started')
     
     def msg_callback(self,msg):
@@ -89,7 +91,26 @@ class FakeDVL(Node):
                 pose_msg.pose.orientation.x = delta_pose_frd[4]
                 pose_msg.pose.orientation.y = delta_pose_frd[5]
                 pose_msg.pose.orientation.z = delta_pose_frd[6]
-                pose_msg.pose.orientation.w = 0.0        
+                pose_msg.pose.orientation.w = 0.0    
+
+                self.dt = delta_pose_frd[0]
+
+                twist_msg = TwistWithCovarianceStamped()
+                twist_msg.header.stamp = self.get_clock().now().to_msg()
+                twist_msg.header.frame_id = "base_link"
+                
+                twist_msg.twist.twist.linear.x = delta_pose_frd[1] / self.dt
+                twist_msg.twist.twist.linear.y = delta_pose_frd[2] / self.dt
+                twist_msg.twist.twist.linear.z = delta_pose_frd[3] / self.dt
+
+                twist_msg.twist.twist.angular.x = delta_pose_frd[4] / self.dt
+                twist_msg.twist.twist.angular.y = delta_pose_frd[5] / self.dt
+                twist_msg.twist.twist.angular.z = delta_pose_frd[6] / self.dt
+
+                twist_msg.twist.covariance[0] = 0.05
+                twist_msg.twist.covariance[7] = 0.05
+
+                self.dvl_pub.publish(twist_msg)    
 
                 self.pose_pub.publish(pose_msg)
                 self.SendDVLAsGps(t, delta_pose_frd[0], delta_pose_frd[1],delta_pose_frd[2],delta_pose_frd[3])
