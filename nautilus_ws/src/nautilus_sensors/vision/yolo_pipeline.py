@@ -29,8 +29,8 @@ from enums.ObjectID import ObjectID
 MOVING_MEAN_ACTIVATED = True
 PREQUALIFICATION = False
 
-FORWARD_CAM_RATE_HZ = 10       
-DOWNWARD_CAM_RATE_HZ = 2  
+FORWARD_CAM_RATE_HZ = 20       
+DOWNWARD_CAM_RATE_HZ = 20  
 
 
 def parse_args():
@@ -146,7 +146,7 @@ class YoloNode(Node):
             self.process_forward(results, annotated, depth)
 
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
-            self.image_pub.publish(msg)
+            self.image_forward_pub.publish(msg)
             return  # IMPORTANT: prevent double compute
 
         # =====================================================
@@ -163,7 +163,7 @@ class YoloNode(Node):
             self.process_downward(results, annotated)
 
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
-            self.image_pub.publish(msg)
+            self.image_downward_pub.publish(msg)
 
             
     # =====================================================
