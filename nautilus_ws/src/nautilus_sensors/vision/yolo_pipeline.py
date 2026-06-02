@@ -5,6 +5,7 @@ import rclpy
 import torch
 import time 
 import numpy as np
+import os
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -57,10 +58,14 @@ class YoloNode(Node):
         # -------- MODE --------
         if args.sim:
             self.mode = 'sim'
+<<<<<<< HEAD
             model_path = '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_24_mai.pt'
+=======
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt')
+>>>>>>> 6f713029cb9089796584e3e52ecd75136c1d79c0
         else:
             self.mode = 'real'
-            model_path = '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt'
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
 
         # -------- MODEL --------
         self.model = YOLO(model_path)
@@ -89,16 +94,24 @@ class YoloNode(Node):
         # -------- SUBSCRIBERS --------
 
         # Forward cam (RGB + depth sync)
-        self.rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
+        self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
+        self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback,10)
+        self.depth_threshold_sub = self.create_subscription(Int16,'/yolo/depth_threshold',self.depth_threshold_callback,10)
+
+         # -------- PUBLISHERS --------
+        self.detection_pub = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
+        self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
+        self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
 
         self.ts = ApproximateTimeSynchronizer(
-            [self.rgb_sub, self.depth_sub],
+            [self.fwd_rgb_sub, self.depth_sub],
             queue_size=10,
             slop=0.1,
             allow_headerless=True
         )
         self.ts.registerCallback(self.forward_callback)
+<<<<<<< HEAD
 
         # Downward cam (RGB only)
         self.down_sub = self.create_subscription(
@@ -115,6 +128,9 @@ class YoloNode(Node):
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
         self.depth_threshold_sub = self.create_subscription(Int16,'/yolo/depth_threshold',self.depth_threshold_callback,10)
 
+=======
+       
+>>>>>>> 6f713029cb9089796584e3e52ecd75136c1d79c0
         # -------- TIMER (MAIN INFERENCE LOOP) --------
         self.timer = self.create_timer(0.01, self.inference_loop)
 
@@ -132,16 +148,23 @@ class YoloNode(Node):
     def forward_callback(self, rgb_msg, depth_msg):
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
         depth = self.bridge.imgmsg_to_cv2(depth_msg, '32FC1')
+<<<<<<< HEAD
 
         self.forward_queue.append((frame, depth, rgb_msg.header))
     
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data
+=======
+        self.forward_queue.append((frame, depth))
+>>>>>>> 6f713029cb9089796584e3e52ecd75136c1d79c0
 
     def downward_callback(self, rgb_msg):
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
-
         self.downward_queue.append(frame)
+
+    def depth_threshold_callback(self, msg):
+        self.depth_threshold = msg.data
+        self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
 
     def inference_loop(self):
         now = time.time()
