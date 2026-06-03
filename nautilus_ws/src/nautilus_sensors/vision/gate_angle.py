@@ -34,6 +34,8 @@ def build_payload(GATE_ID, left_obj, right_obj, results_angle, mode):
 def find_gate_angle(objects, mode):
     results_angle = []
 
+    print(f"{objects}")
+
     gate_left = ObjectID.GATE_LEG_L in objects
     gate_right = ObjectID.GATE_LEG_R in objects
     gate_middle = ObjectID.GATE_LEG_CENTER in objects

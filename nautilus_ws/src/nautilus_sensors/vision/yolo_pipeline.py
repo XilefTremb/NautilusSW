@@ -51,7 +51,7 @@ class YoloNode(Node):
                 '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt')
         else:
             self.mode = 'real'
-            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_competition_23_mai.pt')
 
         # -------- MODEL TYPE --------
         if args.obb:
@@ -180,7 +180,7 @@ class YoloNode(Node):
                         mask=filled_mask
                     )
 
-                    #annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] for debug
+                    annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] #for debug
 
                     if depth_value is None:
                         depth_value = find_depth(

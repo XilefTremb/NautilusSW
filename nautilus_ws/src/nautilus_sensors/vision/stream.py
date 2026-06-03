@@ -28,7 +28,7 @@ from gi.repository import Gst
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 10
-SAVE_INTERVAL = 1000.0
+SAVE_INTERVAL = 10.0
 START_BLUE_FILTER = False
 START_DEPTH_COLOR = True
 START_OVERLAY = True
@@ -53,8 +53,8 @@ class DualOakNode(Node):
         self.get_logger().info("Starting Dual OAK ROS2 Node...")
 
         self.declare_parameter("save_images", False)
-        self.save_images = self.get_parameter("save_images").value
-
+        # self.save_images = self.get_parameter("save_images").value
+        self.save_images = True
         # Active stream (switchable)
         self.active_stream = "oakd"
 
