@@ -116,6 +116,7 @@ class DVLSensor(Node):
 
             t = float(fields[1])
             dt = float(fields[2])
+            dt_s = dt
             droll = float(fields[3])
             dpitch = float(fields[4])
             dyaw = float(fields[5])
