@@ -58,11 +58,7 @@ class YoloNode(Node):
         # -------- MODE --------
         if args.sim:
             self.mode = 'sim'
-<<<<<<< HEAD
             model_path = '/home/devs/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_24_mai.pt'
-=======
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt')
->>>>>>> 6f713029cb9089796584e3e52ecd75136c1d79c0
         else:
             self.mode = 'real'
             model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
@@ -111,15 +107,6 @@ class YoloNode(Node):
             allow_headerless=True
         )
         self.ts.registerCallback(self.forward_callback)
-<<<<<<< HEAD
-
-        # Downward cam (RGB only)
-        self.down_sub = self.create_subscription(
-            Image,
-            'oak1/camera/image_raw',
-            self.downward_callback,
-            10
-        )
 
         # -------- PUBLISHERS --------
         self.detection_pub = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
@@ -128,9 +115,6 @@ class YoloNode(Node):
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
         self.depth_threshold_sub = self.create_subscription(Int16,'/yolo/depth_threshold',self.depth_threshold_callback,10)
 
-=======
-       
->>>>>>> 6f713029cb9089796584e3e52ecd75136c1d79c0
         # -------- TIMER (MAIN INFERENCE LOOP) --------
         self.timer = self.create_timer(0.01, self.inference_loop)
 
@@ -148,15 +132,11 @@ class YoloNode(Node):
     def forward_callback(self, rgb_msg, depth_msg):
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
         depth = self.bridge.imgmsg_to_cv2(depth_msg, '32FC1')
-<<<<<<< HEAD
 
         self.forward_queue.append((frame, depth, rgb_msg.header))
     
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data
-=======
-        self.forward_queue.append((frame, depth))
->>>>>>> 6f713029cb9089796584e3e52ecd75136c1d79c0
 
     def downward_callback(self, rgb_msg):
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
@@ -204,6 +184,65 @@ class YoloNode(Node):
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
             self.image_downward_pub.publish(msg)
 
+    
+    # =====================================================
+    # DOWNWARD CAMERA PIPELINE (FULL LOGIC)
+    # =====================================================
+
+    def process_downward(self, results, annotated_frame):
+
+        payload = []
+
+        detection = results[0].boxes
+
+        if detection is None:
+            return
+
+        for box in detection:
+            box_cx, box_cy, x1, y1, x2, y2, half = bbox_model_coordinates(box)
+
+            object_id = int(box.cls[0])
+            confidence = float(box.conf[0])
+
+            dist_center = find_dist_from_center(box_cx, self.mode)
+
+            payload.extend([
+                float(object_id),
+                float(dist_center),
+                -1.0,   # no depth
+                0.0     # no angle
+            ])
+
+            draw_detection(
+                annotated_frame,
+                self.type_yolo,
+                object_id,
+                confidence,
+                0.0,
+                dist_center,
+                box_cx,
+                box_cy,
+                x1,
+                y1,
+                x2,
+                y2,
+                None
+            )
+
+        # ✅ publish EXACT same format as forward
+        if payload:
+            msg = Float32MultiArray()
+            msg.data = payload
+
+            nb_objects = len(payload) // 4
+
+            msg.layout.dim = [
+                MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
+                MultiArrayDimension(label='fields', size=4, stride=4)
+            ]
+            msg.layout.data_offset = 0
+
+            self.detection_pub.publish(msg)
             
     # =====================================================
     # FORWARD CAMERA PIPELINE (FULL LOGIC)
