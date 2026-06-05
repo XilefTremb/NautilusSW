@@ -10,6 +10,7 @@ class ActionType(Enum):
     NONE = auto()
     FORWARD = auto()
     CIRCLE_MARKER = auto()
+    FIRE_TORPEDO = auto()
 
 
 @dataclass
@@ -80,5 +81,17 @@ mission_list = [
                 action_type=ActionType.FORWARD,
                 action_forward_pwm= 1540,
                 action_duration=2.0,
+            ),
+            Objective(
+                name="Torpedo Board",
+                target_ids=[ObjectID.TORPEDO],
+
+                center_tolerance_px=25,
+                angle_tolerance_deg=10,
+                approach_distance=1500,  # tune this (depends on your launcher range)
+
+                action_type=ActionType.FIRE_TORPEDO,
+                action_duration=3.0,
+                min_action_lifespan=2.0,
             ),
         ]

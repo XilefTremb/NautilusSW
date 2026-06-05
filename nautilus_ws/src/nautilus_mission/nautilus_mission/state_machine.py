@@ -168,6 +168,9 @@ class StateMachine:
 
         if self.current_objective.action_type == ActionType.FORWARD:
             self.node.publish_forward_cmd(self.current_objective.action_forward_pwm)
+        
+        if self.current_objective.action_type == ActionType.FIRE_TORPEDO:
+            self.node.fire_torpedo()   # 👈 you implement this
 
     def spin_search(self):
         cmd = self.current_objective.spin_pwm
@@ -202,7 +205,8 @@ class StateMachine:
                 self.mean_depth_forward_cam == self.current_objective.mean_depth_target
                 and self.state_lifespan >= self.current_objective.min_action_lifespan
             )
-
+        if action == ActionType.FIRE_TORPEDO:
+            return self.state_lifespan >= self.current_objective.min_action_lifespan
         return False
 
     def is_target_present(self) -> bool:
