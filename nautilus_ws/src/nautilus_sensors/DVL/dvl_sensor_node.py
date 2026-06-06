@@ -114,8 +114,10 @@ class DVLSensor(Node):
         try:
             fields = msg.split(",")
 
+
             t_usec = float(fields[1])
             dt_usec = float(fields[2])
+            dt_s = dt
             droll = float(fields[3])
             dpitch = float(fields[4])
             dyaw = float(fields[5])

@@ -6,13 +6,13 @@ from typing import Optional
 from rclpy.node import Node
 from transitions import Machine
 
-
 from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
-from .detection_store import DetectionStore
 
+from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
+from .ekf_reset import reset_ekf_pose
 
 
 class StateMachine:
@@ -29,6 +29,8 @@ class StateMachine:
         self.target_ids: Optional[list[ObjectID]] = None
         self.vision_action = VisionAction.IDLE
         self.mean_depth_forward_cam: Optional[int] = None
+        self.forward_position = 0.0
+        self.lateral_position = 0.0
 
         self.target_missing_count = 0
         self.target_missing_limit = 50
@@ -147,6 +149,7 @@ class StateMachine:
             return
     
         self.execute_action_start_time = time.monotonic()
+        reset_ekf_pose(self.node)
 
         self.node.get_logger().info(
             f'Executing action {self.current_objective.action_type.name} '
@@ -192,7 +195,9 @@ class StateMachine:
             return True
 
         if action == ActionType.FORWARD:
-            return self.state_lifespan >= self.current_objective.action_duration
+            #done = self.state_lifespan >= self.current_objective.action_duration
+            done = self.forward_position >= self.current_objective.action_forward_distance
+            return done
 
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.mean_depth_target is None:

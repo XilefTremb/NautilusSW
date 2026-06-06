@@ -3,7 +3,10 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
+from robot_localization.srv import SetPose
+
 from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16
+from nav_msgs.msg import Odometry
 
 from nautilus_mission.detection_store import DetectionStore
 from nautilus_mission.state_machine import StateMachine
@@ -25,10 +28,11 @@ class MasterNode(Node):
         self.vision_controller = VisionController(self)
 
         # Subscribers
-        self.detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections',self.detection_callback,fast_qos)
-        self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
+        self.detection_sub = self.create_subscription(Float32MultiArray, '/yolo/detections',self.detection_callback,fast_qos)
+        self.mean_depth_sub = self.create_subscription(Int16, '/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
+        self.odometry_filtered_sub = self.create_subscription(Odometry, '/odometry/filtered', self.odometry_filtered_callback, fast_qos)
 
-        # Publishers kept from the original nodes
+        # Publishers
         self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
@@ -38,7 +42,10 @@ class MasterNode(Node):
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
         self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
 
-        # Timer remains for mission/action housekeeping, but detections also trigger immediate processing.
+        # Service client
+        self.set_pose_client = self.create_client(SetPose,'/set_pose')
+
+        # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
 
         self.get_logger().info('Master mission + vision node started.')
@@ -54,6 +61,10 @@ class MasterNode(Node):
 
     def mean_depth_callback(self, msg: Int16):
         self.fsm.mean_depth_forward_cam = msg.data
+
+    def odometry_filtered_callback(self, msg: Odometry):
+        self.fsm.forward_position = msg.pose.pose.position.x
+        self.fsm.lateral_position = msg.pose.pose.position.y
 
     def pipeline_tick(self):
         self.fsm.tick()
