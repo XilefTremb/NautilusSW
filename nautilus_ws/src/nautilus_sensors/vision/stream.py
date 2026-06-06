@@ -58,8 +58,8 @@ class DualOakNode(Node):
         self.get_logger().info("Starting Dual OAK ROS2 Node...")
 
         self.declare_parameter("save_images", False)
-        # self.save_images = self.get_parameter("save_images").value
-        self.save_images = False
+        self.save_images = self.get_parameter("save_images").value
+        # self.save_images = False
         # Active stream (switchable)
         self.active_stream = "oakd"
 
