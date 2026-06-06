@@ -1,6 +1,6 @@
 import numpy as np
 from enums.ObjectID import ObjectID
-from vision.Pixel_and_depth import params_cams
+from vision.object_depth import params_cams
 
 
 def find_angle_plane(left_depth, right_depth, C, left_x, right_x):

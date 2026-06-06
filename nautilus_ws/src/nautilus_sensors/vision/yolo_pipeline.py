@@ -49,7 +49,7 @@ class YoloNode(Node):
                 '/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt')
         else:
             self.mode = 'real'
-            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/model_prequal.pt')
+            self.model = YOLO('/home/nautilus/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_competition_14_avril.pt')
 
         # -------- MODEL TYPE --------
         if args.obb:
@@ -257,27 +257,32 @@ class YoloNode(Node):
             return objects, payload
         
         if ObjectID.SLALOM_CENTER not in objects:
+            valid_slaloms = [s for s in slalom_tab if s["depth"] != -1000]
+
+            if valid_slaloms:
+                closest_side = min(valid_slaloms, key=lambda s: s["depth"])
+            else:
                 closest_side = min(slalom_tab, key=lambda s: s["depth"])
 
-                payload.extend([float(ObjectID.SLALOM_SIDE), float(closest_side["dist_center"]), float(closest_side["depth"]),0.0])
+            payload.extend([float(ObjectID.SLALOM_SIDE), float(closest_side["dist_center"]), float(closest_side["depth"]),0.0])
 
-                draw_detection(
-                    annotated_frame,
-                    self.type_yolo,
-                    ObjectID.SLALOM_SIDE,
-                    closest_side["confidence"],
-                    closest_side["depth"],
-                    closest_side["dist_center"],
-                    closest_side["box_cx"],
-                    closest_side["box_cy"],
-                    closest_side["x1"],
-                    closest_side["y1"],
-                    closest_side["x2"],
-                    closest_side["y2"],
-                    closest_side["points"]
-                )
+            draw_detection(
+                annotated_frame,
+                self.type_yolo,
+                ObjectID.SLALOM_SIDE,
+                closest_side["confidence"],
+                closest_side["depth"],
+                closest_side["dist_center"],
+                closest_side["box_cx"],
+                closest_side["box_cy"],
+                closest_side["x1"],
+                closest_side["y1"],
+                closest_side["x2"],
+                closest_side["y2"],
+                closest_side["points"]
+            )
 
-                return objects, payload
+            return objects, payload
 
         slalom_middle_cx = objects[ObjectID.SLALOM_CENTER]["box_cx"]
 
@@ -289,13 +294,21 @@ class YoloNode(Node):
             box_cx = slalom["box_cx"]
 
             if box_cx < slalom_middle_cx:
-                if slalom_left is None or depth_value < slalom_left["depth"]:
+                if slalom_left is None:
+                    slalom_left = slalom
+                elif slalom_left["depth"] == -1000 and depth_value != -1000:
+                    slalom_left = slalom
+                elif depth_value != -1000 and depth_value < slalom_left["depth"]:
                     slalom_left = slalom
 
             elif box_cx > slalom_middle_cx:
-                if slalom_right is None or depth_value < slalom_right["depth"]:
+                if slalom_right is None:
                     slalom_right = slalom
-
+                elif slalom_right["depth"] == -1000 and depth_value != -1000:
+                    slalom_right = slalom
+                elif depth_value != -1000 and depth_value < slalom_right["depth"]:
+                    slalom_right = slalom
+                
         if slalom_left is not None:
             objects[ObjectID.SLALOM_LEFT] = slalom_left
             payload.extend([float(ObjectID.SLALOM_LEFT),float(slalom_left["dist_center"]), float(slalom_left["depth"]),0.0])
