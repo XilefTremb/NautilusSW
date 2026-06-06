@@ -30,7 +30,7 @@ MOVING_MEAN_ACTIVATED = True
 PREQUALIFICATION = False
 
 FORWARD_CAM_RATE_HZ = 20       
-DOWNWARD_CAM_RATE_HZ = 20  
+DOWNWARD_CAM_RATE_HZ = 1
 
 
 def parse_args():
@@ -58,7 +58,7 @@ class YoloNode(Node):
         # -------- MODE --------
         if args.sim:
             self.mode = 'sim'
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640.pt')
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_24_mai.pt')
         else:
             self.mode = 'real'
             model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
@@ -86,13 +86,14 @@ class YoloNode(Node):
         # Forward cam (RGB + depth sync)
         self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
-        self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback,10)
+        # self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback,10)
         self.depth_threshold_sub = self.create_subscription(Int16,'/yolo/depth_threshold',self.depth_threshold_callback,10)
 
          # -------- PUBLISHERS --------
         self.detection_pub = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
-        self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
+        self.fwd_image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
+        self.down_image_pub = self.create_publisher(Image, '/yolo/down_image_annotated', 10)
 
         self.ts = ApproximateTimeSynchronizer(
             [self.fwd_rgb_sub, self.depth_sub],
@@ -146,7 +147,7 @@ class YoloNode(Node):
             self.process_forward(results, annotated, depth)
 
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
-            self.image_forward_pub.publish(msg)
+            self.fwd_image_pub.publish(msg)
             return  # IMPORTANT: prevent double compute
 
         # =====================================================
@@ -163,7 +164,7 @@ class YoloNode(Node):
             self.process_downward(results, annotated)
 
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
-            self.image_downward_pub.publish(msg)
+            self.down_image_pub.publish(msg)
 
             
     # =====================================================
