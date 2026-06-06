@@ -30,7 +30,7 @@ MOVING_MEAN_ACTIVATED = True
 PREQUALIFICATION = False
 
 FORWARD_CAM_RATE_HZ = 20       
-DOWNWARD_CAM_RATE_HZ = 1
+DOWNWARD_CAM_RATE_HZ = 20
 
 
 def parse_args():
@@ -84,15 +84,15 @@ class YoloNode(Node):
         self.last_filter_time = {}
 
         # -------- FRAME QUEUE (LOW LATENCY CORE) --------
-        self.forward_queue = deque()
-        self.downward_queue = deque()
+        self.forward_queue = deque(maxlen=1)
+        self.downward_queue = deque(maxlen=1)
 
         # -------- SUBSCRIBERS --------
 
         # Forward cam (RGB + depth sync)
         self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
-        # self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback,10)
+        self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback,10)
         self.depth_threshold_sub = self.create_subscription(Int16,'/yolo/depth_threshold',self.depth_threshold_callback,10)
 
          # -------- PUBLISHERS --------
@@ -100,7 +100,6 @@ class YoloNode(Node):
         self.fwd_image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
         self.down_image_pub = self.create_publisher(Image, '/yolo/down_image_annotated', 10)
-        self.depth_threshold_sub = self.create_subscription(Int16,'/yolo/depth_threshold',self.depth_threshold_callback,10)
 
 
         self.ts = ApproximateTimeSynchronizer(
@@ -137,7 +136,7 @@ class YoloNode(Node):
 
     def downward_callback(self, rgb_msg):
         frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
-        self.downward_queue.append(frame)
+        self.downward_queue.append((frame, rgb_msg.header))
 
     def depth_threshold_callback(self, msg):
         self.depth_threshold = msg.data
@@ -151,7 +150,8 @@ class YoloNode(Node):
         # =====================================================
         if self.forward_queue and (now - self.last_forward_time > self.forward_interval):
 
-            frame, depth, header = self.forward_queue.popleft()
+            frame, depth, header = self.forward_queue.pop()
+            self.forward_queue.clear()
             self.last_forward_time = now
 
             results = self.model(frame, conf=0.4, verbose=False)
@@ -162,7 +162,6 @@ class YoloNode(Node):
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
             msg.header = header
             self.fwd_image_pub.publish(msg)
-           
 
             return  # IMPORTANT: prevent double compute
 
@@ -171,7 +170,8 @@ class YoloNode(Node):
         # =====================================================
         if self.downward_queue and (now - self.last_downward_time > self.downward_interval):
 
-            frame = self.downward_queue.popleft()
+            frame, header = self.downward_queue.pop()  # newest frame
+            self.downward_queue.clear()               # drop stale frames
             self.last_downward_time = now
 
             results = self.model(frame, conf=0.4, verbose=False)
@@ -180,6 +180,7 @@ class YoloNode(Node):
             self.process_downward(results, annotated)
 
             msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
+            msg.header = header
             self.down_image_pub.publish(msg)
 
     
