@@ -369,14 +369,33 @@ class YoloNode(Node):
 
         return objects, payload
 
+    def destroy_node(self):
+        self.get_logger().info("Destroying YOLO node")
+
+        if hasattr(self, "model"):
+            del self.model
+
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+        super().destroy_node()
+
 
 def main():
     args = parse_args()
+
     rclpy.init()
     node = YoloNode(args)
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+
+    try:
+        rclpy.spin(node)
+
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
