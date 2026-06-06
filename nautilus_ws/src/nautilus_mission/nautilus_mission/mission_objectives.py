@@ -32,6 +32,41 @@ class Objective:
 
     mean_depth_target: Optional[int] = None
 
+# mission_list = [
+#             Objective(
+#                 name='marker',
+#                 target_ids=[ObjectID.GATE_LEG_L],
+#                 center_tolerance_px=50.0,
+#                 approach_distance=5000.0,
+#                 depth_threshold=15000,
+#                 action_type=ActionType.CIRCLE_MARKER,
+#                 mean_depth_target=20000,
+#                 min_action_lifespan=8.0,
+#             ),
+#             Objective(
+#                 name='marker_blind',
+#                 target_ids=None,
+#                 action_type=ActionType.FORWARD,
+#                 min_action_lifespan=3.0,
+#             ),
+#             Objective(
+#                 name='return_gate_area',
+#                 target_ids=[ObjectID.GATE_LEFT_MID, ObjectID.REQUIN, ObjectID.POISSON],
+#                 center_tolerance_px=80.0,
+#                 approach_distance=6000.0,
+#                 action_type=ActionType.NONE,
+#             ),
+#             Objective(
+#                 name='return_home',
+#                 target_ids=[ObjectID.GATE_LEFT_MID],
+#                 center_tolerance_px=50.0,
+#                 approach_distance=2000.0,
+#                 action_type=ActionType.FORWARD,
+#                 action_duration=3.0,
+#                 action_forward_pwm=1700,
+#             ),
+#         ]
+
 mission_list = [
             Objective(
                 name='gate',

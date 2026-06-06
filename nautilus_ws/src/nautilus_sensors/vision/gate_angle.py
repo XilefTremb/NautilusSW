@@ -1,6 +1,6 @@
 import numpy as np
 from enums.ObjectID import ObjectID
-from vision.Pixel_and_depth import params_cams
+from vision.object_depth import params_cams
 
 
 def find_angle_plane(left_depth, right_depth, C, left_x, right_x):
@@ -33,6 +33,8 @@ def build_payload(GATE_ID, left_obj, right_obj, results_angle, mode):
     
 def find_gate_angle(objects, mode):
     results_angle = []
+
+    #print(f"{objects}")
 
     gate_left = ObjectID.GATE_LEG_L in objects
     gate_right = ObjectID.GATE_LEG_R in objects
