@@ -92,7 +92,7 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
 def find_dist_from_center(x_center, mode):
     cx, fx, fy, cy = params_cams(mode)
 
-    return float(x_center - cx)
+    return float((x_center - cx)/cx)
 
 def global_median_forward_cam(depth_frame, mode):
     cx, fx, fy, cy = params_cams(mode)

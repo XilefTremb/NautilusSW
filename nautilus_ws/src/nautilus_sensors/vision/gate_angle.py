@@ -21,7 +21,7 @@ def find_angle_plane(left_depth, right_depth, C, left_x, right_x):
         return 90 - angle
 
 def find_dist_center_gate(cx, left_x, right_x):
-    return min(left_x, right_x) + abs(int((left_x - right_x)/2)) - cx 
+    return (min(left_x, right_x) + abs(int((left_x - right_x)/2)) - cx) / cx
 
 def build_payload(GATE_ID, left_obj, right_obj, results_angle, mode):
     angle_calc = find_angle_plane(right_obj["depth"],left_obj["depth"],1524, right_obj["box_cx"],left_obj["box_cx"])
