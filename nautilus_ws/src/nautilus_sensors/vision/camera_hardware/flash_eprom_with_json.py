@@ -35,7 +35,7 @@ with dai.Device() as device:
         exit(0)
 
     try:
-        success = device.flashCalibration2(calib)
+        success = device.flashCalibration(calib)
 
         print(f"\nRésultat du flash : {success}")
         print("Calibration flashée dans l'EEPROM avec succès.")

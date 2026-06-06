@@ -130,7 +130,7 @@ with dai.Pipeline() as pipeline:
 
                     if answer in ["y", "yes"]:
                         try:
-                            device.flashCalibration2(
+                            device.flashCalibration(
                                 calibrationData.newCalibration
                             )
                             print("Calibration permanently flashed to EEPROM.")
