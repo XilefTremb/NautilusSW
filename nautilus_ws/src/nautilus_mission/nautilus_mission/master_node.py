@@ -33,6 +33,7 @@ class MasterNode(Node):
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
         self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
+        self.yaw_cmd_pub = self.create_publisher(Int16, '/control/cmd/yaw', 10)
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
         self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
@@ -91,6 +92,10 @@ class MasterNode(Node):
         msg.data = int(pwm)
         self.lateral_cmd_pub.publish(msg)
 
+    def publish_yaw_cmd(self, pwm: int):
+        msg = Int16()
+        msg.data = int(pwm)
+        self.yaw_cmd_pub.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)

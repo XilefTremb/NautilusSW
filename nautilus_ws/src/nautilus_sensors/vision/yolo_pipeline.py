@@ -61,7 +61,7 @@ class YoloNode(Node):
             self.type_yolo = 'bbox'
 
         # ----------- INIT PARAMS FILTER-----------
-        self.depth_threshold = 9999999
+        self.depth_threshold = 6000
 
         self.temporal_filter = TemporalFilter(self)
 

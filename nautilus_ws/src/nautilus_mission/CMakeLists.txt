@@ -16,11 +16,11 @@ install(
   DESTINATION share/${PROJECT_NAME}/launch
 )
 
-install(
-  DIRECTORY
-    enums/
-  DESTINATION share/${PROJECT_NAME}/enums
-)
+# install(
+#   DIRECTORY
+#     enums/
+#   DESTINATION share/${PROJECT_NAME}/enums
+# )
 
 install(
   DIRECTORY

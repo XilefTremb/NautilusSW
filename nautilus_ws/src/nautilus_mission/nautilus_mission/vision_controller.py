@@ -34,6 +34,8 @@ class VisionController:
             self.approach_target(target_detection)
         elif vision_action == VisionAction.CIRCLE_MARKER:
             self.circle_marker(target_detection)
+        elif vision_action == VisionAction.CENTER_FOV:
+            self.center_fov(target_detection)
 
     def center_target(self, target_detection):
         if target_detection is None:
@@ -52,7 +54,7 @@ class VisionController:
             px = target_detection[DetectionIndex.CENTER_PX]
             self.node.publish_yaw_error(float(px))
 
-        self.node.publish_forward_cmd(1600)
+        self.node.publish_forward_cmd(1515)
 
     def circle_marker(self, target_detection):
         if target_detection is None:
@@ -65,6 +67,13 @@ class VisionController:
 
         if self.circle_marker_pixel_offset < 280.0:
             self.circle_marker_pixel_offset += 1.0
+
+    def center_fov(self, target_detection):
+        if target_detection is None:
+            return
+        
+        px = target_detection[DetectionIndex.CENTER_PX]
+        self.node.publish_yaw_error(float(px))
 
     def split_angle(self, angle_deg):
         angle = math.radians(angle_deg)
