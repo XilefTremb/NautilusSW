@@ -38,8 +38,8 @@ with dai.Pipeline() as pipeline:
     time.sleep(1)
 
     print("\nDynamic calibration started.")
-    print("Bouge lentement la caméra devant une scène texturée.")
-    print("Ctrl+C pour quitter.\n")
+    print("Move cam")
+    print("Ctrl+C to quit.\n")
 
     state = STATE_COLLECTING
     last_check = time.time()
