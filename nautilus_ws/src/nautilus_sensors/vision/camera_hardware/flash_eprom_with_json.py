@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 import depthai as dai
+from pathlib import Path
 
-CALIB_JSON = "calibration_backup.json"
+CALIB_JSON = Path("calibration_restore_clean.json")
+
+
 
 print(f"Calibration à flasher : {CALIB_JSON}")
 
@@ -35,7 +38,7 @@ with dai.Device() as device:
         exit(0)
 
     try:
-        success = device.flashCalibration(calib)
+        success = device.flashCalibration(calib, flashProtected=False)
 
         print(f"\nRésultat du flash : {success}")
         print("Calibration flashée dans l'EEPROM avec succès.")

@@ -68,7 +68,7 @@ class Objective:
 mission_list = [
     Objective(
                 name='center_gate',
-                target_ids=[ObjectID.GATE_MID_RIGHT],
+                target_ids=[ObjectID.GATE_LEFT_MID],
                 center_tolerance_px=0.0,
                 angle_tolerance_deg=0.0,
                 approach_distance=5000.0,

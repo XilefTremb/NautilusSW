@@ -2,10 +2,14 @@
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, Imu
 from cv_bridge import CvBridge
 from vision.blue_filter import blue_filter
 from datetime import timedelta
+from geometry_msgs.msg import Vector3
+from scipy.spatial.transform import Rotation as R
+
+
 
 import cv2
 import depthai as dai
@@ -17,6 +21,7 @@ import threading
 import sys
 import select
 import numpy as np
+
 
 gi.require_version("Gst", "1.0")
 from gi.repository import Gst
@@ -54,7 +59,7 @@ class DualOakNode(Node):
 
         self.declare_parameter("save_images", False)
         # self.save_images = self.get_parameter("save_images").value
-        self.save_images = True
+        self.save_images = False
         # Active stream (switchable)
         self.active_stream = "oakd"
 
@@ -66,6 +71,8 @@ class DualOakNode(Node):
         self.depth_pub = self.create_publisher(Image, "/oakd/camera/depth/image_raw", 10)
         self.overlay_pub = self.create_publisher(Image, "/oakd/camera/rgb_depth_overlay", 10)
         self.depth_color_pub = self.create_publisher(Image, "/oakd/camera/depth/color",10)
+        self.imu_pub = self.create_publisher(Imu, "/oakd/imu/data_raw", 10)
+        self.rpy_pub = self.create_publisher(Vector3, "/oakd/imu/rpy",10)
 
         self.rgb1_pub = self.create_publisher(Image, "/oak1/camera/image_raw", 10)
 
@@ -254,7 +261,19 @@ class DualOakNode(Node):
 
         h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
 
-        return sync_queue, raw_depth_queue, h264_queue
+        # IMU Data OAKD
+        imu = pipeline.create(dai.node.IMU)
+
+        imu.enableIMUSensor(dai.IMUSensor.ACCELEROMETER, 200)
+        imu.enableIMUSensor(dai.IMUSensor.GYROSCOPE_CALIBRATED, 200)
+        imu.enableIMUSensor(dai.IMUSensor.ROTATION_VECTOR, 200)
+
+        imu.setBatchReportThreshold(1)
+        imu.setMaxBatchReports(10)
+
+        imu_queue = imu.out.createOutputQueue(maxSize=10, blocking=False)
+
+        return sync_queue, raw_depth_queue, h264_queue, imu_queue
 
     # =====================================================
     # DEVICE SETUP
@@ -269,7 +288,7 @@ class DualOakNode(Node):
             cameras = device.getConnectedCameras()
 
             if len(cameras) > 1:
-                sync_q, depth_q, h264_q = self.create_oakd_pipeline(pipeline)
+                sync_q, depth_q, h264_q, imu_q = self.create_oakd_pipeline(pipeline)
                 pipeline.start()
 
                 self.devices_data.append({
@@ -277,6 +296,7 @@ class DualOakNode(Node):
                     "sync": sync_q,
                     "raw_depth": depth_q,
                     "h264": h264_q,
+                    "imu": imu_q,
                 })
             else:
                 rgb_q, h264_q = self.create_oak1_pipeline(pipeline)
@@ -302,6 +322,7 @@ class DualOakNode(Node):
             # =================================================
             if dev["type"] == "oakd":
                 sync_pkt = self.get_latest(dev["sync"])
+                imu_pkt = self.get_latest(dev["imu"])
 
                 if sync_pkt is not None:
                     rgb_msg = sync_pkt["rgb"]
@@ -361,6 +382,50 @@ class DualOakNode(Node):
                             self.overlay_pub.publish(
                                 self.bridge.cv2_to_imgmsg(overlay, "bgr8")
                             )
+                    
+
+                if imu_pkt is not None:
+                    for packet in imu_pkt.packets:
+                        imu_msg = Imu()
+                        imu_msg.header.stamp = self.get_clock().now().to_msg()
+                        imu_msg.header.frame_id = "oakd_imu_frame"
+
+                        accel = packet.acceleroMeter
+                        gyro = packet.gyroscope
+
+                        imu_msg.linear_acceleration.x = accel.x
+                        imu_msg.linear_acceleration.y = accel.y
+                        imu_msg.linear_acceleration.z = accel.z
+
+                        imu_msg.angular_velocity.x = gyro.x
+                        imu_msg.angular_velocity.y = gyro.y
+                        imu_msg.angular_velocity.z = gyro.z
+                        
+                        self.imu_pub.publish(imu_msg)
+
+                        rot = packet.rotationVector
+
+                        imu_msg.orientation.x = rot.i
+                        imu_msg.orientation.y = rot.j
+                        imu_msg.orientation.z = rot.k
+                        imu_msg.orientation.w = rot.real
+
+                        r = R.from_quat([
+                            rot.i,
+                            rot.j,
+                            rot.k,
+                            rot.real
+                        ])
+
+                        roll, pitch, yaw = r.as_euler('xyz', degrees=True)
+
+                        rpy_msg = Vector3()
+                        rpy_msg.x = roll
+                        rpy_msg.y = pitch
+                        rpy_msg.z = yaw
+
+                        self.rpy_pub.publish(rpy_msg)
+
 
             # =================================================
             # OAK-1

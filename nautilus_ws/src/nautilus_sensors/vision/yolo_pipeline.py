@@ -17,7 +17,7 @@ from vision.object_depth import find_depth, find_dist_from_center, global_median
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
-from vision.edge_detector import *
+from vision.edge_detector import find_depth_from_mask, detect_dark_object_in_roi
 
 from enums.ObjectID import ObjectID
 

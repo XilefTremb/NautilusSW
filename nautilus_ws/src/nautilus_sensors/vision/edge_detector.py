@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-DARK_THRESHOLD = 180
+DARK_THRESHOLD = 150
 CLOSE_KERNEL_SIZE = (5, 15)
 OPEN_KERNEL_SIZE = (3, 3)
 
