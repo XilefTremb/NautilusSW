@@ -97,8 +97,8 @@ class StateMachine:
 
         elif self.state == 'APPROACH_TARGET':
             self.vision_action = VisionAction.APPROACH_TARGET
-            # if self.is_target_lost_filtered():
-            #     self.target_lost()
+            if self.is_target_lost_filtered():
+                self.target_lost()
             if self.is_target_approached():
                 self.target_reached()
 

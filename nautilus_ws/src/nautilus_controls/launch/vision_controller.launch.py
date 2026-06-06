@@ -12,7 +12,7 @@ def generate_launch_description():
                 'input_topic': '/control/vision_errors/yaw',
                 'output_topic': '/control/cmd/yaw',
                 'kp': 192.0,
-                'ki': 1.6,
+                'ki': 0.0,
                 'kd': 32.0,
             }]
         ),

@@ -83,11 +83,11 @@ class VisionPidNode(Node):
             # Raw derivative
             raw_derivative = (error - self.prev_error) / dt
 
-            #Low-pass filtered derivative
-            self.filtered_derivative = (
-               self.derivative_alpha * raw_derivative
-               + (1.0 - self.derivative_alpha) * self.filtered_derivative
-            )
+            # #Low-pass filtered derivative
+            # self.filtered_derivative = (
+            #    self.derivative_alpha * raw_derivative
+            #    + (1.0 - self.derivative_alpha) * self.filtered_derivative
+            # )
 
 
             # PID output
