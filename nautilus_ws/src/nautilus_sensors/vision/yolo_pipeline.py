@@ -300,6 +300,8 @@ class YoloNode(Node):
         
         if len(slalom_tab) == 0:
             return objects, payload
+
+        self.get_logger().info(f"{objects}")
         
         if ObjectID.SLALOM_CENTER not in objects:
             valid_slaloms = [s for s in slalom_tab if s["depth"] != -1000]

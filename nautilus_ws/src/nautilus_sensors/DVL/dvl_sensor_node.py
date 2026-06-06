@@ -77,8 +77,9 @@ class DVLSensor(Node):
             try:
                 data, addr = self.sock.recvfrom(2048)
                 msg_str = data.decode("utf-8").strip()
-                # self.get_logger().info(msg_str)
+                # self.get_logger().info("Running loop...")
                 if msg_str.startswith("$DVPDL"):
+                    # self.get_logger().info("Received DVPDL...")
                     self.parse_dvpdl(msg_str)
                 elif msg_str.startswith("$DVTXT"):
                     self.parse_dvtxt(msg_str)
@@ -117,7 +118,7 @@ class DVLSensor(Node):
 
             t_usec = float(fields[1])
             dt_usec = float(fields[2])
-            dt_s = dt
+            dt_s = dt_usec / 10e6
             droll = float(fields[3])
             dpitch = float(fields[4])
             dyaw = float(fields[5])
@@ -129,16 +130,14 @@ class DVLSensor(Node):
             twist_msg = TwistWithCovarianceStamped()
             twist_msg.header.stamp = self.get_clock().now().to_msg()
             twist_msg.header.frame_id = "base_link"
-            
-            dt = dt_usec/(10**6)    
 
-            twist_msg.twist.twist.linear.x = dx / dt
-            twist_msg.twist.twist.linear.y = dy / dt
-            twist_msg.twist.twist.linear.z = dz / dt
+            twist_msg.twist.twist.linear.x = dx / dt_s
+            twist_msg.twist.twist.linear.y = dy / dt_s
+            twist_msg.twist.twist.linear.z = dz / dt_s
 
-            twist_msg.twist.twist.angular.x = droll / dt
-            twist_msg.twist.twist.angular.y = dpitch / dt
-            twist_msg.twist.twist.angular.z = dyaw / dt
+            twist_msg.twist.twist.angular.x = droll / dt_s
+            twist_msg.twist.twist.angular.y = dpitch / dt_s
+            twist_msg.twist.twist.angular.z = dyaw / dt_s
 
             twist_msg.twist.covariance[0] = 0.05
             twist_msg.twist.covariance[7] = 0.05
