@@ -1,4 +1,5 @@
 import cv2 
+import numpy as np
    
 def draw_detection(annotated_frame, model_type, object_id, confidence, depth_value,
                    dist_center, box_cx, box_cy, x1, y1, x2, y2, points=None):
@@ -54,6 +55,6 @@ def bbox_model_coordinates(box):
 
     x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-    half = 1
+    half = 5
 
     return box_cx, box_cy, x1, y1, x2, y2, half
