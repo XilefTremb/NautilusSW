@@ -74,7 +74,7 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
     if mode == "real":
         center_patch = filter_depth_bbox(depth_frame, x1, y1, x2, y2, 5, half)
         if center_patch is None or center_patch.size == 0:
-            return -1000
+            return -1000.0
 
     else:
         center_patch = depth_frame[y1:y2, x1:x2]
@@ -92,7 +92,7 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
 def find_dist_from_center(x_center, mode):
     cx, fx, fy, cy = params_cams(mode)
 
-    return float(x_center - cx)
+    return float((x_center - cx)/cx)
 
 def global_median_forward_cam(depth_frame, mode):
     cx, fx, fy, cy = params_cams(mode)
