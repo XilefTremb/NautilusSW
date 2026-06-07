@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.ndimage import median_filter
 from scipy import ndimage
-from edge_detector import *
+from vision.edge_detector import *
 
 # ---------------- FILL ZEROS ----------------
 def fill_zeros_with_nearest_fast(depth_patch):

@@ -92,7 +92,7 @@ class YoloNode(Node):
         # ----------- PUBLISHER -----------
         self.detection_forward_pub = self.create_publisher(Float32MultiArray, '/yolo/detections_forward', 10)
         self.detection_downward_pub = self.create_publisher(Float32MultiArray, '/yolo/detections_downward', 10)
-        self.down_image_pub = self.create_publisher(Image, '/yolo/down_image_annotated', 10)
+        self.down_image_pub = self.create_publisher(Image, '/yolo/image_annotated_dwd_cam', 10)
         self.fwd_image_pub = self.create_publisher(Image, '/yolo/image_annotated_fwd_cam', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int32, '/yolo/mean_depth_forward_cam', 10)
         self.edge_mask_pub = self.create_publisher(Image, '/yolo/edge_mask', 10)
@@ -352,18 +352,21 @@ class YoloNode(Node):
                 if depth_value < self.depth_threshold:
 
                     payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
+                    color = (0, 255, 0)
 
-                    draw_detection(
-                        annotated_frame,
-                        self.type_yolo,
-                        object_id,
-                        confidence,
-                        depth_value,
-                        dist_center,
-                        box_cx, box_cy,
-                        x1, y1, x2, y2,
-                        points
-                    )
+                else:
+                    color = (250,0,0)
+
+                draw_detection(
+                    annotated_frame,
+                    self.type_yolo,
+                    object_id,
+                    confidence,
+                    depth_value,
+                    dist_center,
+                    box_cx, box_cy,
+                    x1, y1, x2, y2,
+                    color, points)
 
         # -------- SLALOM LOGIC --------
         objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
@@ -398,24 +401,23 @@ class YoloNode(Node):
 
     def slalom_organizer(self, slalom_tab, objects, annotated_frame, payload):
 
-            if len(slalom_tab) == 0:
-                return objects, payload
+        if len(slalom_tab) == 0:
+            return objects, payload
+        
+        selected_ids = {}
 
-            if ObjectID.SLALOM_CENTER not in objects:
-                    closest_side = min(slalom_tab, key=lambda s: s["depth"])
-                    payload.extend([float(ObjectID.SLALOM_SIDE), float(closest_side["dist_center"]), float(closest_side["depth"]),0.0])
-                    draw_detection(
-                        annotated_frame, self.type_yolo, ObjectID.SLALOM_SIDE,
-                        closest_side["confidence"], closest_side["depth"],
-                        closest_side["dist_center"],
-                        closest_side["box_cx"], closest_side["box_cy"],
-                        closest_side["x1"], closest_side["y1"],
-                        closest_side["x2"], closest_side["y2"],
-                        closest_side["points"]
-                    )
+        if ObjectID.SLALOM_CENTER not in objects:
+                closest_side = min(slalom_tab, key=lambda s: s["depth"])
+                selected_ids[id(closest_side)] = ObjectID.SLALOM_SIDE
 
-                    return objects, payload
+                payload.extend([
+                    float(ObjectID.SLALOM_SIDE),
+                    float(closest_side["dist_center"]),
+                    float(closest_side["depth"]),
+                    0.0
+                ])
 
+        else:
             slalom_middle_cx = objects[ObjectID.SLALOM_CENTER]["box_cx"]
             slalom_left = None
             slalom_right = None
@@ -434,31 +436,32 @@ class YoloNode(Node):
 
             if slalom_left is not None:
                 objects[ObjectID.SLALOM_LEFT] = slalom_left
-                payload.extend([float(ObjectID.SLALOM_LEFT),float(slalom_left["dist_center"]), float(slalom_left["depth"]),0.0])
-                draw_detection(
-                    annotated_frame, self.type_yolo, ObjectID.SLALOM_LEFT,
-                    slalom_left["confidence"], slalom_left["depth"],
-                    slalom_left["dist_center"],
-                    slalom_left["box_cx"], slalom_left["box_cy"],
-                    slalom_left["x1"], slalom_left["y1"],
-                    slalom_left["x2"], slalom_left["y2"],
-                    slalom_left["points"]
-                )
+                selected_ids[id(slalom_left)] = ObjectID.SLALOM_LEFT
+
+                payload.extend([float(ObjectID.SLALOM_LEFT), float(slalom_left["dist_center"]), float(slalom_left["depth"]), 0.0])
 
             if slalom_right is not None:
                 objects[ObjectID.SLALOM_RIGHT] = slalom_right
-                payload.extend([float(ObjectID.SLALOM_RIGHT),float(slalom_right["dist_center"]), float(slalom_right["depth"]),0.0])
-                draw_detection(
-                    annotated_frame, self.type_yolo, ObjectID.SLALOM_RIGHT,
-                    slalom_right["confidence"], slalom_right["depth"],
-                    slalom_right["dist_center"],
-                    slalom_right["box_cx"], slalom_right["box_cy"],
-                    slalom_right["x1"], slalom_right["y1"],
-                    slalom_right["x2"], slalom_right["y2"],
-                    slalom_right["points"]
-                )
+                selected_ids[id(slalom_right)] = ObjectID.SLALOM_RIGHT
 
-            return objects, payload
+                payload.extend([float(ObjectID.SLALOM_RIGHT), float(slalom_right["dist_center"]), float(slalom_right["depth"]), 0.0])
+
+        for slalom in slalom_tab:
+            display_id  = selected_ids.get(id(slalom), ObjectID.SLALOM_SIDE)
+            color = (0, 255, 0) if id(slalom) in selected_ids else (255, 0, 0)
+
+            draw_detection(
+                annotated_frame,
+                self.type_yolo,
+                display_id,
+                slalom["confidence"], slalom["depth"],
+                slalom["dist_center"],
+                slalom["box_cx"], slalom["box_cy"],
+                slalom["x1"], slalom["y1"],
+                slalom["x2"], slalom["y2"],
+                color, slalom["points"])
+
+        return objects, payload
 
     def destroy_node(self):
         self.get_logger().info("Destroying YOLO node")
