@@ -103,7 +103,8 @@ class YoloNode(Node):
         #self.obj_depth_dist_pub = self.create_publisher(Float32MultiArray, '/yolo/obj_depth_dist', 10)
         #self.region_angle_topic = self.create_publisher(Float32MultiArray, '/yolo/obj_angle', 10)
         self.detection_pub = self.create_publisher(Float32MultiArray, '/yolo/detections', 10)
-        self.image_pub = self.create_publisher(Image, '/yolo/image_annotated', 10)
+        self.down_image_pub = self.create_publisher(Image, '/yolo/down_image_annotated', 10)
+        self.fwd_image_pub = self.create_publisher(Image, '/yolo/image_annotated_fwd_cam', 10)
         self.mean_depth_forward_cam = self.create_publisher(Int16, '/yolo/mean_depth_forward_cam', 10)
         self.edge_mask_pub = self.create_publisher(Image, '/yolo/edge_mask', 10)
 
@@ -162,11 +163,24 @@ class YoloNode(Node):
             results = self.model(frame, conf=0.4, verbose=False)
             annotated = frame.copy()
 
-            self.process_forward(results, annotated, depth)
+            annotated_frame, edge_debug = self.process_forward(results, annotated, depth)
 
-            msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
-            msg.header = header
-            self.fwd_image_pub.publish(msg)
+            # ----------- PUBLISH IMAGE OUTPUT -----------
+            out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
+            out_msg.header = header
+            self.fwd_image_pub.publish(out_msg)
+
+            # ----------- PUBLISH IMAGE MASK DEPTH -----------
+            edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
+            edge_msg.header = header
+            self.edge_mask_pub.publish(edge_msg)
+
+            # ----------- GLOBAL DEPTH -----------
+            depth_global_mean = global_median_forward_cam(depth, self.mode)
+            if not depth_global_mean < -32767 and not depth_global_mean > 32767:
+                msg_depth = Int16()
+                msg_depth.data = int(depth_global_mean)
+                self.mean_depth_forward_cam.publish(msg_depth)
 
             return  # IMPORTANT: prevent double compute
 
@@ -195,8 +209,6 @@ class YoloNode(Node):
 
     def process_downward(self, results, annotated_frame):
 
-        # ----------- MODEL -----------
-        results = self.model(frame, conf=0.4, verbose=False)
         payload = []
 
         detection = results[0].boxes
@@ -260,9 +272,9 @@ class YoloNode(Node):
         payload = []
         objects = {}
         slalom_tab = []
+        depth_value = 0
 
-        annotated_frame = frame.copy()
-        edge_debug = np.zeros(frame.shape[:2], dtype=np.uint8)
+        edge_debug = np.zeros(annotated_frame.shape[:2], dtype=np.uint8)
 
         if self.type_yolo == 'obb':
             detection = results[0].obb
@@ -270,6 +282,7 @@ class YoloNode(Node):
             detection = results[0].boxes
 
         if detection is not None:
+        
             for box in detection:
 
                 # ----------- BOX INFORMATION-----------
@@ -292,7 +305,7 @@ class YoloNode(Node):
                 if self.mode == "real" and (object_id == ObjectID.GATE_LEG_L or object_id == ObjectID.GATE_LEG_CENTER
                 or object_id == ObjectID.GATE_LEG_R or object_id == ObjectID.SLALOM_SIDE or object_id == ObjectID.SLALOM_CENTER):
 
-                    roi = frame[y1:y2, x1:x2]
+                    roi = annotated_frame[y1:y2, x1:x2]
 
                     if roi.size == 0:
                         continue
@@ -382,27 +395,27 @@ class YoloNode(Node):
                     "box_cx": box_cx
                 }
 
-            # -------- PAYLOAD + DRAW --------
-            if depth_value < self.depth_threshold:
+                # -------- PAYLOAD + DRAW --------
+                if depth_value < self.depth_threshold:
 
-                payload.extend([
-                    float(object_id),
-                    float(dist_center),
-                    float(depth_value),
-                    0.0
-                ])
+                    payload.extend([
+                        float(object_id),
+                        float(dist_center),
+                        float(depth_value),
+                        0.0
+                    ])
 
-                draw_detection(
-                    annotated_frame,
-                    self.type_yolo,
-                    object_id,
-                    confidence,
-                    depth_value,
-                    dist_center,
-                    box_cx, box_cy,
-                    x1, y1, x2, y2,
-                    points
-                )
+                    draw_detection(
+                        annotated_frame,
+                        self.type_yolo,
+                        object_id,
+                        confidence,
+                        depth_value,
+                        dist_center,
+                        box_cx, box_cy,
+                        x1, y1, x2, y2,
+                        points
+                    )
 
         # -------- SLALOM LOGIC --------
         objects, payload = self.slalom_organizer(
@@ -438,22 +451,8 @@ class YoloNode(Node):
 
         self.detection_pub.publish(msg)
 
-        # ----------- PUBLISH IMAGE OUTPUT -----------
-        out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
-        out_msg.header = rgb_msg.header
-        self.image_pub.publish(out_msg)
+        return annotated_frame, edge_debug
 
-        # ----------- PUBLISH IMAGE MASK DEPTH -----------
-        edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
-        edge_msg.header = rgb_msg.header
-        self.edge_mask_pub.publish(edge_msg)
-
-        # ----------- GLOBAL DEPTH -----------
-        depth_global_mean = global_median_forward_cam(depth, self.mode)
-        if not depth_global_mean < -32767 and not depth_global_mean > 32767:
-            msg_depth = Int16()
-            msg_depth.data = int(depth_mean)
-            self.mean_depth_forward_cam.publish(msg_depth)
 
     def safe_temporal_filter(self, key, value, now):
         last_time = self.last_filter_time.get(key, None)
