@@ -6,13 +6,13 @@ from typing import Optional
 from rclpy.node import Node
 from transitions import Machine
 
-
 from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
 from .detection_store import DetectionStore
 
 from .mission_objectives import mission_list, Objective, ActionType
+from nautilus_services import request_depth_change
 
 
 class StateMachine:
@@ -133,6 +133,9 @@ class StateMachine:
 
         if self.current_objective.depth_threshold is not None:
             self.node.publish_depth_threshold(self.current_objective.depth_threshold)
+
+        if self.current_objective.target_auv_depth is not None:
+            request_depth_change(self.node, self.current_objective.target_auv_depth)
 
     def on_enter_CENTER_TARGET(self, event):
         self.target_missing_count = 0
