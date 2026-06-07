@@ -8,6 +8,7 @@ from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16
 from nautilus_mission.detection_store import DetectionStore
 from nautilus_mission.state_machine import StateMachine
 from nautilus_mission.vision_controller import VisionController
+from nautilus_interfaces.srv import SetTargetDepth
 
 
 class MasterNode(Node):
@@ -37,6 +38,9 @@ class MasterNode(Node):
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
         self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
+
+        # Services
+        self.depth_client = self.create_client(SetTargetDepth,'/mission/set_target_depth')
 
         # Timer remains for mission/action housekeeping, but detections also trigger immediate processing.
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)

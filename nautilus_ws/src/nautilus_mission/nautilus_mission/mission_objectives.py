@@ -31,6 +31,8 @@ class Objective:
     action_forward_pwm: int = 1500
 
     mean_depth_target: Optional[int] = None
+    target_auv_depth: Optional[float] = None
+
 
 # mission_list = [
 #             Objective(
@@ -79,6 +81,7 @@ mission_list = [
                 action_type=ActionType.FORWARD,
                 action_forward_pwm= 1550,
                 action_duration=3.0,
+                target_auv_depth=1.0
             ),
             Objective(
                 name='slalom',

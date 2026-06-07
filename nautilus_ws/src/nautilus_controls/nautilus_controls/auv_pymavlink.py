@@ -564,9 +564,19 @@ class AuvPymavlink:
         self.the_connection.mav.set_position_target_global_int_send(
             0,
             0, 0,
-            mavutil.mavlink.MAV_FRAME_GLOBAL_INT,
+            mavutil.mavlink.MAV_FRAME_GLOBAL,
             self.depth_mask,
-            0, 0, depth,
+            0, 0, -depth, 
             0, 0, 0, #vx vy vz
             0, 0, 0, #ax ay az
             0, 0) #yaw yawrate
+    
+        
+    def go_to_depth(self, depth):
+        z = self.get_local_pos_ned().z
+        while(abs(z-depth)>0.1):
+            z = self.get_local_pos_ned().z
+            if abs(z-depth)>0.1:
+                self.set_target_depth(depth)
+            time.sleep(0.1)
+            self.node.get_logger().info(f"{abs(z-depth)}")

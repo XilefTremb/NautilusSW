@@ -6,6 +6,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16, Int8
 from nautilus_controls.auv_pymavlink import AuvPymavlink
+from nautilus_interfaces.srv import SetTargetDepth
 import time
 
 
@@ -56,6 +57,12 @@ class CubeInterface(Node):
             ),
         }
 
+        self.depth_service = self.create_service(
+            SetTargetDepth,
+            '/mission/set_target_depth',
+            self.set_target_depth_callback
+        )
+
         self.timer = self.create_timer(1.0 / 200.0, self.timer_callback)
 
     def startup(self, args):
@@ -70,9 +77,9 @@ class CubeInterface(Node):
         self.auv.apply_param_profile(profile)
         self.auv.start_receiver()
 
-        time.sleep(2)
+        # time.sleep(2)
         self.auv.change_mode("ALT_HOLD")
-        self.auv.set_target_depth(600)
+        # self.auv.go_to_depth(-0.67)
 
     def yaw_cmd_callback(self, msg):
         self.last_yaw_cmd = msg.data
@@ -116,6 +123,27 @@ class CubeInterface(Node):
         self.get_logger().info(
             f'Sent cmd yaw: {yaw_cmd}, forward: {forward_cmd}, lateral: {lateral_cmd}'
         )
+
+    def set_target_depth_callback(self, request, response):
+
+        depth = request.depth_m
+
+        try:
+            # Your MAVLink code goes here
+            self.auv.go_to_depth(depth)
+
+            self.get_logger().info(
+                f"Received new target depth: {depth:.2f} m"
+            )
+
+            response.success = True
+            response.message = f"Target depth set to {depth:.2f} m"
+
+        except Exception as e:
+            response.success = False
+            response.message = str(e)
+
+        return response
 
 
 def main():
