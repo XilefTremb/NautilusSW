@@ -36,7 +36,7 @@ class MasterNode(Node):
         self.yaw_cmd_pub = self.create_publisher(Int16, '/control/cmd/yaw', 10)
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
-        self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
+        self.detections_depth_filter_mm_pub = self.create_publisher(Int16, '/yolo/detections_depth_filter_mm', 10)
 
         # Timer remains for mission/action housekeeping, but detections also trigger immediate processing.
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
@@ -62,10 +62,10 @@ class MasterNode(Node):
         target_detection = self.detection_store.get_detection(self.fsm.target_ids)
         self.vision_controller.process(self.fsm.vision_action, target_detection)
 
-    def publish_depth_threshold(self, threshold: int):
+    def publish_detections_depth_filter_mm(self, threshold: int):
         msg = Int16()
         msg.data = int(threshold)
-        self.depth_threshold_pub.publish(msg)
+        self.detections_depth_filter_mm_pub.publish(msg)
 
     def publish_yaw_error(self, error: float):
         msg = Float32()
