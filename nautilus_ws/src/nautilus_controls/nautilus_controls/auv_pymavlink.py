@@ -16,6 +16,7 @@ class AuvPymavlink:
         self.pos_mask_no_yaw = int(0b110111111000)
         self.vel_mask = int(0b100111000111)
         self.ignore_all = int(0b111111111111)
+        self.depth_mask = int(0b111111111011)
 
         self.reset_counter = 0
 
@@ -557,3 +558,15 @@ class AuvPymavlink:
                 ch17,
                 ch18,
             )
+
+
+    def set_target_depth(self, depth):
+        self.the_connection.mav.set_position_target_global_int_send(
+            0,
+            0, 0,
+            mavutil.mavlink.MAV_FRAME_GLOBAL_INT,
+            self.depth_mask,
+            0, 0, depth,
+            0, 0, 0, #vx vy vz
+            0, 0, 0, #ax ay az
+            0, 0) #yaw yawrate

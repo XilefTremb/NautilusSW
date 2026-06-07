@@ -6,6 +6,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16, Int8
 from nautilus_controls.auv_pymavlink import AuvPymavlink
+import time
 
 
 def parse_args():
@@ -68,6 +69,10 @@ class CubeInterface(Node):
 
         self.auv.apply_param_profile(profile)
         self.auv.start_receiver()
+
+        time.sleep(2)
+        self.auv.change_mode("ALT_HOLD")
+        self.auv.set_target_depth(600)
 
     def yaw_cmd_callback(self, msg):
         self.last_yaw_cmd = msg.data
