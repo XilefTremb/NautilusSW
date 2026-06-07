@@ -353,7 +353,7 @@ class YoloNode(Node):
                             objects[object_id]["y1"],
                             objects[object_id]["x2"],
                             objects[object_id]["y2"],
-                            color=(255, 0, 0),
+                            color=(0, 0, 255),
                             points=objects[object_id]["points"]
                         )
 
@@ -384,7 +384,7 @@ class YoloNode(Node):
                         dist_center,
                         box_cx, box_cy,
                         x1, y1, x2, y2,
-                        color=(255, 0, 0),
+                        color=(0, 0, 255),
                         points=points
                     )
 
@@ -488,7 +488,7 @@ class YoloNode(Node):
 
         for slalom in slalom_tab:
             display_id  = selected_ids.get(id(slalom), ObjectID.SLALOM_SIDE)
-            color = (0, 255, 0) if id(slalom) in selected_ids else (255, 0, 0)
+            color = (0, 255, 0) if id(slalom) in selected_ids else (0, 0, 255)
 
             draw_detection(
                 annotated_frame,
