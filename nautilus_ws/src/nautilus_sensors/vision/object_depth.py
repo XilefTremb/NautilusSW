@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.ndimage import median_filter
 from scipy import ndimage
+from vision.edge_detector import *
 
 # ---------------- FILL ZEROS ----------------
 def fill_zeros_with_nearest_fast(depth_patch):
@@ -82,7 +83,7 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
     center_depth = float(np.median(center_patch))
 
     if mode == "sim":
-        center_depth = center_depth*1000
+        center_depth = center_depth * 1000
 
     if np.isnan(center_depth) or center_depth == 0 or center_depth is None:
         return -1000.0
@@ -91,7 +92,6 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
 
 def find_dist_from_center(x_center, mode):
     cx, fx, fy, cy = params_cams(mode)
-
     return float((x_center - cx)/cx)
 
 def global_median_forward_cam(depth_frame, mode):
@@ -121,6 +121,30 @@ def global_median_forward_cam(depth_frame, mode):
             global_depth = 20000
 
     return global_depth
+
+def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame):
+
+    roi = annotated_frame[y1:y2, x1:x2]
+
+    if roi.size == 0:
+        return None, None
+
+    filled_mask = detect_dark_object_in_roi(roi) #Line to change if we want to change filter
+
+    depth_roi = depth_frame[y1:y2, x1:x2]
+
+    if depth_roi.size == 0 or filled_mask.size == 0:
+        return None, None
+
+    valid_pixels = depth_roi[
+        (filled_mask > 0) &
+        np.isfinite(depth_roi) &
+        (depth_roi > 0)]
+
+    if valid_pixels.size < 20:
+        return None, None
+
+    return float(np.median(valid_pixels)), filled_mask
 
 def params_cams(mode):
 

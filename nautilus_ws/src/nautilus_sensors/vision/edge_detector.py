@@ -74,20 +74,3 @@ def detect_dark_object_in_roi(roi):
     )
 
     return filled
-
-
-def find_depth_from_mask(depth_frame, x1, y1, x2, y2, mask):
-    depth_roi = depth_frame[y1:y2, x1:x2]
-
-    if depth_roi.size == 0 or mask.size == 0:
-        return None
-
-    valid_pixels = depth_roi[
-        (mask > 0) &
-        np.isfinite(depth_roi) &
-        (depth_roi > 0)]
-
-    if valid_pixels.size < 20:
-        return None
-
-    return float(np.median(valid_pixels))
