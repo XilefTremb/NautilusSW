@@ -339,6 +339,24 @@ class YoloNode(Node):
                     continue
 
                 elif object_id not in objects or depth_value < objects[object_id]["depth"]:
+                    if object_id in objects:
+                        draw_detection(
+                            annotated_frame,
+                            self.type_yolo,
+                            object_id,
+                            objects[object_id]["confidence"],
+                            objects[object_id]["depth"],
+                            objects[object_id]["dist_center"],
+                            objects[object_id]["box_cx"],
+                            objects[object_id]["box_cy"],
+                            objects[object_id]["x1"],
+                            objects[object_id]["y1"],
+                            objects[object_id]["x2"],
+                            objects[object_id]["y2"],
+                            color=(255, 0, 0),
+                            points=objects[object_id]["points"]
+                        )
+
                     if MOVING_MEAN_ACTIVATED:
                             depth_value = self.temporal_filter.moving_median_filter(
                                 key=f"depth_{object_id}",
@@ -346,27 +364,49 @@ class YoloNode(Node):
 
                     objects[object_id] = {
                         "depth": depth_value,
-                        "box_cx": box_cx}
-
-                # -------- PAYLOAD + DRAW --------
-                if depth_value < self.depth_threshold:
-
-                    payload.extend([float(object_id), float(dist_center), float(depth_value), 0.0])
-                    color = (0, 255, 0)
+                        "box_cx": box_cx,
+                        "box_cy": box_cy,
+                        "dist_center": dist_center,
+                        "confidence": confidence,
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2,
+                        "points": points}
 
                 else:
-                    color = (250,0,0)
+                    draw_detection(
+                        annotated_frame,
+                        self.type_yolo,
+                        object_id,
+                        confidence,
+                        depth_value,
+                        dist_center,
+                        box_cx, box_cy,
+                        x1, y1, x2, y2,
+                        color=(255, 0, 0),
+                        points=points
+                    )
 
+        for object_id, obj in objects.items():
+            if obj["depth"] < self.depth_threshold:
+                payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),0.0])
                 draw_detection(
                     annotated_frame,
                     self.type_yolo,
                     object_id,
-                    confidence,
-                    depth_value,
-                    dist_center,
-                    box_cx, box_cy,
-                    x1, y1, x2, y2,
-                    color, points)
+                    obj["confidence"],
+                    obj["depth"],
+                    obj["dist_center"],
+                    obj["box_cx"],
+                    obj["box_cy"],
+                    obj["x1"],
+                    obj["y1"],
+                    obj["x2"],
+                    obj["y2"],
+                    color=(0, 255, 0),
+                    points=obj["points"]
+                )
 
         # -------- SLALOM LOGIC --------
         objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
