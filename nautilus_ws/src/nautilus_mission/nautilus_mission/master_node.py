@@ -26,7 +26,7 @@ class MasterNode(Node):
         self.vision_controller = VisionController(self)
 
         # Subscribers
-        self.detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections',self.detection_callback,fast_qos)
+        self.fwd_detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections_forward',self.fwd_detection_callback,fast_qos)
         self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
 
         # Publishers kept from the original nodes
@@ -49,7 +49,7 @@ class MasterNode(Node):
 
         self.fsm.start_mission()
 
-    def detection_callback(self, msg: Float32MultiArray):
+    def fwd_detection_callback(self, msg: Float32MultiArray):
         if not self.detection_store.update_from_msg(msg):
             return
 

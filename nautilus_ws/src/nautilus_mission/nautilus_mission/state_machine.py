@@ -73,7 +73,6 @@ class StateMachine:
             self.load_next_objective()
 
         elif self.target_ids is None and self.state == 'SEARCH_TARGET':
-            self.node.get_logger().info("allo")
             self.no_target_to_be_reached()
 
         elif self.state == 'SEARCH_TARGET':
