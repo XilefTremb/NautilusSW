@@ -13,6 +13,7 @@ from enums.DetectionIndex import DetectionIndex
 from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
 from .ekf_reset import reset_ekf_pose
+from nautilus_services import request_depth_change
 
 
 class StateMachine:
@@ -75,7 +76,6 @@ class StateMachine:
             self.load_next_objective()
 
         elif self.target_ids is None and self.state == 'SEARCH_TARGET':
-            self.node.get_logger().info("allo")
             self.no_target_to_be_reached()
 
         elif self.state == 'SEARCH_TARGET':
@@ -85,16 +85,16 @@ class StateMachine:
                 self.target_found()
 
         elif self.state == 'CENTER_TARGET':
-            if self.current_objective.full_centering:
+            if self.current_objective.center.full_centering:
                 self.vision_action = VisionAction.CENTER_TARGET
             else:
                 self.vision_action = VisionAction.CENTER_FOV
             if self.is_target_lost_filtered():
                 self.target_lost()
             if self.is_target_centered():
-                if self.is_target_perpendicular() and self.current_objective.full_centering:
+                if self.is_target_perpendicular() and self.current_objective.center.full_centering:
                     self.target_centered_event()
-                elif not self.current_objective.full_centering:
+                elif not self.current_objective.center.full_centering:
                     self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
@@ -133,8 +133,11 @@ class StateMachine:
         else:
             self.node.get_logger().info('Target IDs: None')
 
-        if self.current_objective.depth_threshold is not None:
-            self.node.publish_depth_threshold(self.current_objective.depth_threshold)
+        if self.current_objective.detections_depth_filter_mm is not None:
+            self.node.publish_detections_depth_filter_mm(self.current_objective.detections_depth_filter_mm)
+
+        if self.current_objective.target_auv_depth_m is not None:
+            request_depth_change(self.node, self.current_objective.target_auv_depth_m)
 
     def on_enter_CENTER_TARGET(self, event):
         self.target_missing_count = 0
@@ -144,7 +147,6 @@ class StateMachine:
 
     def on_enter_EXECUTE_ACTION(self, event):
         if self.current_objective is None:
-            self.node.get_logger().info("wtf")
             self.finish_mission()
             return
     
@@ -152,7 +154,7 @@ class StateMachine:
         reset_ekf_pose(self.node)
 
         self.node.get_logger().info(
-            f'Executing action {self.current_objective.action_type.name} '
+            f'Executing action {self.current_objective.action.type.name} '
             f'for objective {self.current_objective.name}'
         )
 
@@ -169,18 +171,18 @@ class StateMachine:
         if self.state != 'EXECUTE_ACTION' or self.current_objective is None:
             return
 
-        if self.current_objective.action_type == ActionType.FORWARD:
-            self.node.publish_forward_cmd(self.current_objective.action_forward_pwm)
+        if self.current_objective.action.type == ActionType.FORWARD:
+            self.node.publish_forward_cmd(self.current_objective.action.forward_pwm)
 
     def spin_search(self):
-        cmd = self.current_objective.spin_pwm
+        cmd = self.current_objective.search.spin_pwm
         self.node.publish_yaw_cmd(cmd)
         
     def get_vision_action_for_current_objective(self) -> VisionAction:
         if self.current_objective is None:
             return VisionAction.IDLE
 
-        if self.current_objective.action_type == ActionType.CIRCLE_MARKER:
+        if self.current_objective.action.type == ActionType.CIRCLE_MARKER:
             return VisionAction.CIRCLE_MARKER
 
         return VisionAction.IDLE
@@ -189,23 +191,22 @@ class StateMachine:
         if self.current_objective is None:
             return True
 
-        action = self.current_objective.action_type
+        action = self.current_objective.action.type
 
         if action == ActionType.NONE:
             return True
 
         if action == ActionType.FORWARD:
             #done = self.state_lifespan >= self.current_objective.action_duration
-            done = self.forward_position >= self.current_objective.action_forward_distance
-            return done
-
+            return self.forward_position >= self.current_objective.action_forward_distance
+            
         if action == ActionType.CIRCLE_MARKER:
-            if self.current_objective.mean_depth_target is None:
+            if self.current_objective.action.camera_mean_depth_target_mm is None:
                 return False
 
             return (
-                self.mean_depth_forward_cam == self.current_objective.mean_depth_target
-                and self.state_lifespan >= self.current_objective.min_action_lifespan
+                self.mean_depth_forward_cam == self.current_objective.action.camera_mean_depth_target_mm
+                and self.state_lifespan >= self.current_objective.action.min_lifespan_s
             )
 
         return False
@@ -230,7 +231,7 @@ class StateMachine:
             return False
 
         px = target[DetectionIndex.CENTER_PX]
-        return abs(px) < self.current_objective.center_tolerance_px
+        return abs(px) < self.current_objective.center.center_tolerance_fov
 
     def is_target_approached(self) -> bool:
         if self.current_objective is None:
@@ -241,7 +242,7 @@ class StateMachine:
             return False
 
         depth = target[DetectionIndex.DEPTH_MM]
-        return depth < self.current_objective.approach_distance
+        return depth < self.current_objective.approach.approach_distance_mm
 
     def is_target_perpendicular(self) -> bool:
         if self.current_objective is None:
@@ -252,7 +253,7 @@ class StateMachine:
             return False
 
         angle = target[DetectionIndex.ANGLE_DEG]
-        return abs(angle) < self.current_objective.angle_tolerance_deg
+        return abs(angle) < self.current_objective.center.angle_tolerance_deg
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()

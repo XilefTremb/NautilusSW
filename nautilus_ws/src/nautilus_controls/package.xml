@@ -17,4 +17,6 @@
   </export>
 
   <depend>rclpy</depend>
+  <depend>nautilus_interfaces</depend>
+
 </package>

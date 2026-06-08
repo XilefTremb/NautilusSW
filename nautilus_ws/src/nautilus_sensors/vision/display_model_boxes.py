@@ -2,11 +2,11 @@ import cv2
 import numpy as np
    
 def draw_detection(annotated_frame, model_type, object_id, confidence, depth_value,
-                   dist_center, box_cx, box_cy, x1, y1, x2, y2, points=None):
+                   dist_center, box_cx, box_cy, x1, y1, x2, y2,color, points=None):
         if model_type == 'obb' and points is not None:
-            cv2.polylines(annotated_frame, [points], True, (0, 255, 0), 2)
+            cv2.polylines(annotated_frame, [points], True, color, 2)
         elif model_type == 'bbox':
-            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), color, 2)
         else:
              raise ValueError("Invalid argument passed to draw_detections, accepted model types are obb or bbox")
         
@@ -55,6 +55,6 @@ def bbox_model_coordinates(box):
 
     x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-    half = 5
+    half = 1
 
     return box_cx, box_cy, x1, y1, x2, y2, half

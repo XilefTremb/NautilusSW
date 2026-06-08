@@ -13,6 +13,7 @@
   <test_depend>python3-pytest</test_depend>
 
   <exec_depend>nautilus_controls</exec_depend>
+  <depend>nautilus_interfaces</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
