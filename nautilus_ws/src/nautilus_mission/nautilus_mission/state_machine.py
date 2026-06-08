@@ -130,8 +130,8 @@ class StateMachine:
         else:
             self.node.get_logger().info('Target IDs: None')
 
-        if self.current_objective.depth_threshold is not None:
-            self.node.publish_depth_threshold(self.current_objective.depth_threshold)
+        if self.current_objective.detections_depth_filter_mm is not None:
+            self.node.publish_detections_depth_filter_mm(self.current_objective.detections_depth_filter_mm)
 
         if self.current_objective.target_auv_depth is not None:
             request_depth_change(self.node, self.current_objective.target_auv_depth)
@@ -144,7 +144,6 @@ class StateMachine:
 
     def on_enter_EXECUTE_ACTION(self, event):
         if self.current_objective is None:
-            self.node.get_logger().info("wtf")
             self.finish_mission()
             return
     
@@ -172,7 +171,7 @@ class StateMachine:
             self.node.publish_forward_cmd(self.current_objective.action_forward_pwm)
 
     def spin_search(self):
-        cmd = self.current_objective.spin_pwm
+        cmd = self.current_objective.search.spin_pwm
         self.node.publish_yaw_cmd(cmd)
         
     def get_vision_action_for_current_objective(self) -> VisionAction:
@@ -188,21 +187,21 @@ class StateMachine:
         if self.current_objective is None:
             return True
 
-        action = self.current_objective.action_type
+        action = self.current_objective.action.type
 
         if action == ActionType.NONE:
             return True
 
         if action == ActionType.FORWARD:
-            return self.state_lifespan >= self.current_objective.action_duration
+            return self.state_lifespan >= self.current_objective.action.duration_s
 
         if action == ActionType.CIRCLE_MARKER:
-            if self.current_objective.mean_depth_target is None:
+            if self.current_objective.action.camera_mean_depth_target_mm is None:
                 return False
 
             return (
-                self.mean_depth_forward_cam == self.current_objective.mean_depth_target
-                and self.state_lifespan >= self.current_objective.min_action_lifespan
+                self.mean_depth_forward_cam == self.current_objective.action.camera_mean_depth_target_mm
+                and self.state_lifespan >= self.current_objective.action.min_lifespan_s
             )
 
         return False
@@ -227,7 +226,7 @@ class StateMachine:
             return False
 
         px = target[DetectionIndex.CENTER_PX]
-        return abs(px) < self.current_objective.center_tolerance_px
+        return abs(px) < self.current_objective.center.center_tolerance_fov
 
     def is_target_approached(self) -> bool:
         if self.current_objective is None:
@@ -238,7 +237,7 @@ class StateMachine:
             return False
 
         depth = target[DetectionIndex.DEPTH_MM]
-        return depth < self.current_objective.approach_distance
+        return depth < self.current_objective.approach.approach_distance_mm
 
     def is_target_perpendicular(self) -> bool:
         if self.current_objective is None:
@@ -249,7 +248,7 @@ class StateMachine:
             return False
 
         angle = target[DetectionIndex.ANGLE_DEG]
-        return abs(angle) < self.current_objective.angle_tolerance_deg
+        return abs(angle) < self.current_objective.center.angle_tolerance_deg
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()
