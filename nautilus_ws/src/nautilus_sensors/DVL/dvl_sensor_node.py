@@ -6,7 +6,7 @@ from std_msgs.msg import String
 from geometry_msgs.msg import TwistWithCovarianceStamped
 import socket
 import math
-from nautilus_mission.auv_pymavlink import AuvPymavlink
+from nautilus_controls.auv_pymavlink import AuvPymavlink
 import time
 
 # ===== CONFIGURATION =====
@@ -33,7 +33,7 @@ class DVLSensor(Node):
         self.sock.settimeout(2)
 
         self.dvl = AuvPymavlink(self)
-        self.dvl.Connect("udpin:localhost:14552",False)
+        self.dvl.connect("udpin:localhost:14552",False)
         self.get_logger().info('Real DVL started')
 
         self.last_dvl_time = None
@@ -77,8 +77,9 @@ class DVLSensor(Node):
             try:
                 data, addr = self.sock.recvfrom(2048)
                 msg_str = data.decode("utf-8").strip()
-                # self.get_logger().info(msg_str)
+                # self.get_logger().info("Running loop...")
                 if msg_str.startswith("$DVPDL"):
+                    # self.get_logger().info("Received DVPDL...")
                     self.parse_dvpdl(msg_str)
                 elif msg_str.startswith("$DVTXT"):
                     self.parse_dvtxt(msg_str)
@@ -114,8 +115,10 @@ class DVLSensor(Node):
         try:
             fields = msg.split(",")
 
-            t = float(fields[1])
-            dt = float(fields[2])
+
+            t_usec = float(fields[1])
+            dt_usec = float(fields[2])
+            dt_s = dt_usec / 10e6
             droll = float(fields[3])
             dpitch = float(fields[4])
             dyaw = float(fields[5])
@@ -127,23 +130,23 @@ class DVLSensor(Node):
             twist_msg = TwistWithCovarianceStamped()
             twist_msg.header.stamp = self.get_clock().now().to_msg()
             twist_msg.header.frame_id = "base_link"
-            
-            twist_msg.twist.twist.linear.x = dx / dt
-            twist_msg.twist.twist.linear.y = dy / dt
-            twist_msg.twist.twist.linear.z = dz / dt
 
-            twist_msg.twist.twist.angular.x = droll / dt
-            twist_msg.twist.twist.angular.y = dpitch / dt
-            twist_msg.twist.twist.angular.z = dyaw / dt
+            twist_msg.twist.twist.linear.x = dx / dt_s
+            twist_msg.twist.twist.linear.y = dy / dt_s
+            twist_msg.twist.twist.linear.z = dz / dt_s
+
+            twist_msg.twist.twist.angular.x = droll / dt_s
+            twist_msg.twist.twist.angular.y = dpitch / dt_s
+            twist_msg.twist.twist.angular.z = dyaw / dt_s
 
             twist_msg.twist.covariance[0] = 0.05
             twist_msg.twist.covariance[7] = 0.05
 
             self.dvl_pub.publish(twist_msg)
 
-            self.SendDVLAsGps(t, dt, droll, dpitch, dyaw, dx, dy, dz, confidence)
+            self.SendDVLAsGps(t_usec, dt_usec, droll, dpitch, dyaw, dx, dy, dz, confidence) #TODO : verify send dvl as gps takes usecs
 
-            self.get_logger().info(f"Sent DVL data t:{t}, dt:{dt}, dx:{dx}, dy:{dy}, dz:{dz}, confidence:{confidence}")
+            self.get_logger().info(f"Sent DVL data t:{t_usec}, dt:{dt_usec}, dx:{dx}, dy:{dy}, dz:{dz}, confidence:{confidence}")
 
         except Exception as e:
             return f"Parse error: {e}"

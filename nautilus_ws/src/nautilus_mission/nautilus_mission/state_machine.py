@@ -9,9 +9,10 @@ from transitions import Machine
 from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
-from .detection_store import DetectionStore
 
+from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
+from .ekf_reset import reset_ekf_pose
 from nautilus_services import request_depth_change
 
 
@@ -29,6 +30,8 @@ class StateMachine:
         self.target_ids: Optional[list[ObjectID]] = None
         self.vision_action = VisionAction.IDLE
         self.mean_depth_forward_cam: Optional[int] = None
+        self.forward_position = 0.0
+        self.lateral_position = 0.0
 
         self.target_missing_count = 0
         self.target_missing_limit = 50
@@ -148,6 +151,7 @@ class StateMachine:
             return
     
         self.execute_action_start_time = time.monotonic()
+        reset_ekf_pose(self.node)
 
         self.node.get_logger().info(
             f'Executing action {self.current_objective.action.type.name} '
@@ -193,8 +197,9 @@ class StateMachine:
             return True
 
         if action == ActionType.FORWARD:
-            return self.state_lifespan >= self.current_objective.action.duration_s
-
+            #done = self.state_lifespan >= self.current_objective.action_duration
+            return self.forward_position >= self.current_objective.action_forward_distance
+            
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
                 return False

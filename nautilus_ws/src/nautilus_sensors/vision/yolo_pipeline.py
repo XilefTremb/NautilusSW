@@ -56,7 +56,7 @@ class YoloNode(Node):
             model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_24_mai.pt')
         else:
             self.mode = 'real'
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/Model_Realtime_18_mars.pt')
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_competition_23_mai.pt')
 
         # -------- MODEL TYPE --------
         self.type_yolo = 'obb' if args.obb else 'bbox'
@@ -443,10 +443,17 @@ class YoloNode(Node):
 
         if len(slalom_tab) == 0:
             return objects, payload
+
+        self.get_logger().info(f"{objects}")
         
         selected_ids = {}
 
         if ObjectID.SLALOM_CENTER not in objects:
+            valid_slaloms = [s for s in slalom_tab if s["depth"] != -1000]
+
+            if valid_slaloms:
+                closest_side = min(valid_slaloms, key=lambda s: s["depth"])
+            else:
                 closest_side = min(slalom_tab, key=lambda s: s["depth"])
                 selected_ids[id(closest_side)] = ObjectID.SLALOM_SIDE
 
