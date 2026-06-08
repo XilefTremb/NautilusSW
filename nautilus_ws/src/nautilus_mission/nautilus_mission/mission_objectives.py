@@ -48,6 +48,7 @@ class Objective:
     name: str
     target_ids: Optional[list[ObjectID]]
     detections_depth_filter_mm: Optional[int] = None
+    target_auv_depth_m: Optional[float] = None #positive down
 
     search: SearchConfig = field(default_factory=SearchConfig)
     center: CenterConfig = field(default_factory=CenterConfig)
@@ -59,9 +60,10 @@ mission_list = [
     Objective(
         name='gate',
         target_ids=[ObjectID.GATE_MID_RIGHT],
+        target_auv_depth_m = 1.0,
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
-            center_tolerance_fov=20.0,
+            center_tolerance_fov=0.05,
             angle_tolerance_deg=5.0,
         ),
         approach=ApproachConfig(
@@ -79,7 +81,7 @@ mission_list = [
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
             full_centering=False,
-            center_tolerance_fov=20.0,
+            center_tolerance_fov=0.05,
         ),
         approach=ApproachConfig(
             approach_distance_mm=1000.0

@@ -82,16 +82,16 @@ class StateMachine:
                 self.target_found()
 
         elif self.state == 'CENTER_TARGET':
-            if self.current_objective.full_centering:
+            if self.current_objective.center.full_centering:
                 self.vision_action = VisionAction.CENTER_TARGET
             else:
                 self.vision_action = VisionAction.CENTER_FOV
             if self.is_target_lost_filtered():
                 self.target_lost()
             if self.is_target_centered():
-                if self.is_target_perpendicular() and self.current_objective.full_centering:
+                if self.is_target_perpendicular() and self.current_objective.center.full_centering:
                     self.target_centered_event()
-                elif not self.current_objective.full_centering:
+                elif not self.current_objective.center.full_centering:
                     self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
@@ -133,8 +133,8 @@ class StateMachine:
         if self.current_objective.detections_depth_filter_mm is not None:
             self.node.publish_detections_depth_filter_mm(self.current_objective.detections_depth_filter_mm)
 
-        if self.current_objective.target_auv_depth is not None:
-            request_depth_change(self.node, self.current_objective.target_auv_depth)
+        if self.current_objective.target_auv_depth_m is not None:
+            request_depth_change(self.node, self.current_objective.target_auv_depth_m)
 
     def on_enter_CENTER_TARGET(self, event):
         self.target_missing_count = 0
@@ -150,7 +150,7 @@ class StateMachine:
         self.execute_action_start_time = time.monotonic()
 
         self.node.get_logger().info(
-            f'Executing action {self.current_objective.action_type.name} '
+            f'Executing action {self.current_objective.action.type.name} '
             f'for objective {self.current_objective.name}'
         )
 
@@ -167,8 +167,8 @@ class StateMachine:
         if self.state != 'EXECUTE_ACTION' or self.current_objective is None:
             return
 
-        if self.current_objective.action_type == ActionType.FORWARD:
-            self.node.publish_forward_cmd(self.current_objective.action_forward_pwm)
+        if self.current_objective.action.type == ActionType.FORWARD:
+            self.node.publish_forward_cmd(self.current_objective.action.forward_pwm)
 
     def spin_search(self):
         cmd = self.current_objective.search.spin_pwm
@@ -178,7 +178,7 @@ class StateMachine:
         if self.current_objective is None:
             return VisionAction.IDLE
 
-        if self.current_objective.action_type == ActionType.CIRCLE_MARKER:
+        if self.current_objective.action.type == ActionType.CIRCLE_MARKER:
             return VisionAction.CIRCLE_MARKER
 
         return VisionAction.IDLE
