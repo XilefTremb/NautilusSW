@@ -198,7 +198,7 @@ class StateMachine:
 
         if action == ActionType.FORWARD:
             #done = self.state_lifespan >= self.current_objective.action_duration
-            return self.forward_position >= self.current_objective.action_forward_distance
+            return self.forward_position >= self.current_objective.action.forward_distance_m
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
