@@ -39,10 +39,4 @@ class ObjectID(IntEnum):
      GATE_MID_RIGHT = 21
      SLALOM_LEFT_MID = 22
      SLALOM_MID_RIGHT = 23
-
-#Prequal model ids
-    # GATE_LEG = 2
-    # GATE_TOTAL = 3
-    # MARQUEUR = 4
-    # LUMIERE = 5
     

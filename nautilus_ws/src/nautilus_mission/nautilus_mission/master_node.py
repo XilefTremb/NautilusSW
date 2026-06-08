@@ -26,7 +26,7 @@ class MasterNode(Node):
         self.vision_controller = VisionController(self)
 
         # Subscribers
-        self.detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections',self.detection_callback,fast_qos)
+        self.fwd_detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections_forward',self.fwd_detection_callback,fast_qos)
         self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
 
         # Publishers kept from the original nodes
@@ -37,7 +37,7 @@ class MasterNode(Node):
         self.yaw_cmd_pub = self.create_publisher(Int16, '/control/cmd/yaw', 10)
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
-        self.depth_threshold_pub = self.create_publisher(Int16, '/yolo/depth_threshold', 10)
+        self.detections_depth_filter_mm_pub = self.create_publisher(Int16, '/yolo/detections_depth_filter_mm', 10)
 
         # Services
         self.depth_client = self.create_client(SetTargetDepth,'/mission/set_target_depth')
@@ -49,7 +49,7 @@ class MasterNode(Node):
 
         self.fsm.start_mission()
 
-    def detection_callback(self, msg: Float32MultiArray):
+    def fwd_detection_callback(self, msg: Float32MultiArray):
         if not self.detection_store.update_from_msg(msg):
             return
 
@@ -66,10 +66,10 @@ class MasterNode(Node):
         target_detection = self.detection_store.get_detection(self.fsm.target_ids)
         self.vision_controller.process(self.fsm.vision_action, target_detection)
 
-    def publish_depth_threshold(self, threshold: int):
+    def publish_detections_depth_filter_mm(self, threshold: int):
         msg = Int16()
         msg.data = int(threshold)
-        self.depth_threshold_pub.publish(msg)
+        self.detections_depth_filter_mm_pub.publish(msg)
 
     def publish_yaw_error(self, error: float):
         msg = Float32()
