@@ -1,0 +1,4 @@
+float32 depth_m
+---
+bool success
+string message

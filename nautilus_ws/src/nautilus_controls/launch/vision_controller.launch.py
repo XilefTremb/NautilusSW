@@ -11,7 +11,7 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/yaw',
                 'output_topic': '/control/cmd/yaw',
-                'kp': 192.0,
+                'kp': 200.0,
                 'ki': 0.0,
                 'kd': 32.0,
             }]
@@ -24,9 +24,9 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/forward',
                 'output_topic': '/control/cmd/forward',
-                'kp': 0.4,
+                'kp': 1.9,
                 'ki': 0.0,
-                'kd': 0.2,
+                'kd': 0.5,
                 'flip_output': True
             }]
         ),
@@ -38,9 +38,9 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/lateral',
                 'output_topic': '/control/cmd/lateral',
-                'kp': 0.4,
+                'kp': 1.9,
                 'ki': 0.0,
-                'kd': 0.2,
+                'kd': 0.5,
                 'flip_output': True
             }]
         ),

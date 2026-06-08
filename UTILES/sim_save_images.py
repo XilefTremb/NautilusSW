@@ -8,7 +8,7 @@ import cv2
 import os
 import time
 
-SAVE_DIR = os.path.expanduser("~/Documents/captured_images")
+SAVE_DIR = os.path.expanduser("~/Documents/captured_images/oakd_640x480")
 TARGET_HZ = 2.0
 MAX_IMAGES = 300
 
@@ -24,7 +24,7 @@ class ImageSaver(Node):
 
         self.sub = self.create_subscription(
             Image,
-            '/camera/image_raw',
+            '/oakd/camera/image_raw',
             self.callback,
             10
         )

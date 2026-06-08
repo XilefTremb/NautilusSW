@@ -61,11 +61,7 @@ class VisionPidNode(Node):
 
     def error_callback(self, msg):
         error = msg.data
-        # objects = [data[i:i+3] for i in range(0, len(data), 3)]
-        # error = None
-        # for obj in objects:
-        #     if int(obj[0]) == 1:
-        #         error = obj[2]
+   
         now = self.get_clock().now()
 
         if error is not None:
@@ -94,7 +90,7 @@ class VisionPidNode(Node):
             output = (
                 self.kp * error +
                 self.ki * self.integral +
-                self.kd * self.filtered_derivative
+                self.kd * raw_derivative
             )
 
             output *= self.output_sign
