@@ -15,7 +15,7 @@ from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
 
-from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector
+from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector, find_depth_side_difference
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
@@ -322,6 +322,17 @@ class YoloNode(Node):
                 # ----------- DIST / ANGLE -----------
                 dist_center = find_dist_from_center(box_cx, self.mode)
 
+                # ----------- LATERAL CENTERING FOR TORPEDO -----------
+                angle = 0.0
+
+                if int(object_id) == int(ObjectID.TORPEDO):
+                    side_diff = find_depth_side_difference(depth,int(x1),int(y1),int(x2),int(y2))
+                    if side_diff is not None:
+                        angle = self.temporal_filter.moving_median_filter(
+                                key=f"torpedo_side_diff_{object_id}",
+                                new_value=side_diff
+                        )
+
                 # ----------- DICT FOR ANGLE BETWEEN -----------
                 if int(object_id) == int(ObjectID.SLALOM_SIDE):
                     slalom_tab.append({
@@ -361,12 +372,13 @@ class YoloNode(Node):
                             depth_value = self.temporal_filter.moving_median_filter(
                                 key=f"depth_{object_id}",
                                 new_value=depth_value)
-
+                            
                     objects[object_id] = {
                         "depth": depth_value,
                         "box_cx": box_cx,
                         "box_cy": box_cy,
                         "dist_center": dist_center,
+                        "angle": angle,
                         "confidence": confidence,
                         "x1": x1,
                         "y1": y1,
@@ -390,7 +402,7 @@ class YoloNode(Node):
 
         for object_id, obj in objects.items():
             if obj["depth"] < self.depth_threshold:
-                payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),0.0])
+                payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),float(obj["angle"])])
                 draw_detection(
                     annotated_frame,
                     self.type_yolo,

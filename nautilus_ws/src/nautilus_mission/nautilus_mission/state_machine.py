@@ -138,6 +138,8 @@ class StateMachine:
 
         if self.current_objective.target_auv_depth_m is not None:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
+        if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
+            self.current_objective.action.fired = False
 
     def on_enter_CENTER_TARGET(self, event):
         self.target_missing_count = 0
@@ -169,9 +171,13 @@ class StateMachine:
 
     def run_current_action(self):
         if self.state != 'EXECUTE_ACTION' or self.current_objective is None:
-            return   
-        if self.current_objective.action_type == ActionType.FIRE_TORPEDO:
-            self.node.fire_torpedo()   
+            return  
+
+        if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
+            if not self.current_objective.action.fired:
+                self.node.fire_torpedo()
+                self.current_objective.action.fired = True
+
         if self.current_objective.action.type == ActionType.FORWARD:
             self.node.publish_forward_cmd(self.current_objective.action.forward_pwm)
 
@@ -210,7 +216,7 @@ class StateMachine:
                 and self.state_lifespan >= self.current_objective.action.min_lifespan_s
             )
         if action == ActionType.FIRE_TORPEDO:
-            return self.state_lifespan >= self.current_objective.min_action_lifespan
+            return self.state_lifespan >= self.current_objective.action.min_lifespan_s
         return False
 
     def is_target_present(self) -> bool:
@@ -254,8 +260,10 @@ class StateMachine:
         if target is None:
             return False
 
-        angle = target[DetectionIndex.ANGLE_DEG]
-        return abs(angle) < self.current_objective.center.angle_tolerance_deg
+        alignement_error = target[DetectionIndex.ANGLE_DEG]
+        return abs(alignement_error) < self.current_objective.center.alignement_tolerance
+    
+
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()

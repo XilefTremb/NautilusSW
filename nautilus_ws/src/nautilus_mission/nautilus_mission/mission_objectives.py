@@ -21,6 +21,7 @@ class CenterConfig:
     full_centering: bool = True
     center_tolerance_fov: float = 0.05 # fraction of the fov. 1 being the full width of the camera 
     angle_tolerance_deg: float = 15.0
+    alignement_tolerance: float = 50.0 #mm for torpedo and degrees for gate or slalom
 
 @dataclass
 class ApproachConfig:
@@ -43,7 +44,14 @@ class CircleMarkerAction:
     camera_mean_depth_target_mm: int = 20000
     min_lifespan_s: float = 8.0
 
-ActionConfig = Union[NoAction, ForwardAction, CircleMarkerAction]
+@dataclass
+class FireTorpedoAction:
+    type: ActionType = ActionType.FIRE_TORPEDO
+    camera_mean_depth_target_mm: int = 20000
+    min_lifespan_s: float = 1.0
+    fired: bool = False
+
+ActionConfig = Union[NoAction, ForwardAction, CircleMarkerAction,FireTorpedoAction]
 
 @dataclass
 class Objective:
@@ -59,38 +67,85 @@ class Objective:
 
 
 mission_list = [
+    # Objective(
+    #     name='gate',
+    #     target_ids=[ObjectID.GATE_MID_RIGHT],
+    #     target_auv_depth_m = 1.0,
+    #     search=SearchConfig(spin_pwm=1460),
+    #     center=CenterConfig(
+    #         center_tolerance_fov=0.05,
+    #         alignement_tolerance=5.0,
+    #     ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=1500.0,
+    #     ),
+    #     action=ForwardAction(
+    #         forward_pwm=1550,
+    #         forward_distance_m=2.0,
+    #     ),
+    # ),
+
+    # Objective(
+    #     name='slalom2',
+    #     target_ids=[ObjectID.SLALOM_LEFT_MID],
+    #     search=SearchConfig(spin_pwm=1460),
+    #     center=CenterConfig(
+    #         full_centering=False,
+    #         center_tolerance_fov=0.05,
+    #     ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=1000.0
+    #     ),
+    #     action=ForwardAction(
+    #         forward_pwm=1515,
+    #         forward_distance_m=1.0,
+    #     ),
+    #     ),
     Objective(
-        name='gate',
-        target_ids=[ObjectID.GATE_MID_RIGHT],
-        target_auv_depth_m = 1.0,
+        name='coarse approach torpedo',
+        target_ids=[ObjectID.TORPEDO],
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
+            full_centering=False,
+            center_tolerance_fov=0.2,
+        ),
+        approach=ApproachConfig(
+            approach_distance_mm=6000.0,
+        ),
+    ),
+    Objective(
+        name='torpedo depth change',
+        target_ids=None,
+        target_auv_depth_m=1.5,
+        action=NoAction()
+    ),
+
+    Objective(
+        name='fine approach torpedo',
+        target_ids=[ObjectID.TORPEDO],
+        center=CenterConfig(
+            full_centering=True,
+            center_tolerance_fov=0.1,
+            alignement_tolerance=150.0,
+        ),
+        approach=ApproachConfig(
+            approach_distance_mm=4500.0,
+        ),
+    ),
+    Objective(
+        name='Torpedo firing positioning',
+        target_ids=[ObjectID.TORPEDO],
+        center=CenterConfig(
+            full_centering=True,
             center_tolerance_fov=0.05,
-            angle_tolerance_deg=5.0,
+            alignement_tolerance=50.0,
         ),
         approach=ApproachConfig(
             approach_distance_mm=1500.0,
         ),
-        action=ForwardAction(
-            forward_pwm=1550,
-            forward_distance_m=2.0,
+        action=FireTorpedoAction(
+            min_lifespan_s=1.0,
         ),
     ),
 
-    Objective(
-        name='slalom2',
-        target_ids=[ObjectID.SLALOM_LEFT_MID],
-        search=SearchConfig(spin_pwm=1460),
-        center=CenterConfig(
-            full_centering=False,
-            center_tolerance_fov=0.05,
-        ),
-        approach=ApproachConfig(
-            approach_distance_mm=1000.0
-        ),
-        action=ForwardAction(
-            forward_pwm=1515,
-            forward_distance_m=1.0,
-        ),
-    ),
 ]

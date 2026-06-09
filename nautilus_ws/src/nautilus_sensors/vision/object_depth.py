@@ -167,3 +167,43 @@ def params_cams(mode):
         return cx, fx, fy, cy
 
     return None
+
+def find_depth_side_difference(depth_frame, x1, y1, x2, y2):
+        h, w = depth_frame.shape
+
+        x1, x2 = int(np.clip(x1, 0, w - 1)), int(np.clip(x2, 0, w - 1))
+        y1, y2 = int(np.clip(y1, 0, h - 1)), int(np.clip(y2, 0, h - 1))
+
+        box_w = x2 - x1
+        box_h = y2 - y1
+
+        if box_w < 20 or box_h < 20:
+            return None
+
+        # Use inner box to avoid noisy edges
+        y_top = y1 + int(0.15 * box_h)
+        y_bot = y2 - int(0.45 * box_h)
+
+        left_x1 = x1 + int(0.05 * box_w)
+        left_x2 = x1 + int(0.35 * box_w)
+
+        right_x1 = x1 + int(0.65 * box_w)
+        right_x2 = x1 + int(0.95 * box_w)
+
+        left_region = depth_frame[y_top:y_bot, left_x1:left_x2]
+        right_region = depth_frame[y_top:y_bot, right_x1:right_x2]
+
+        left_valid = left_region[np.isfinite(left_region)]
+        right_valid = right_region[np.isfinite(right_region)]
+
+        left_valid = left_valid[left_valid > 0]
+        right_valid = right_valid[right_valid > 0]
+
+        if len(left_valid) < 20 or len(right_valid) < 20:
+            return None
+
+        left_depth = float(np.median(left_valid))
+        right_depth = float(np.median(right_valid))
+
+        # Positive means left side is farther than right side
+        return left_depth - right_depth
