@@ -6,6 +6,7 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch.conditions import IfCondition, UnlessCondition 
  
  
 def generate_launch_description():
@@ -19,6 +20,31 @@ def generate_launch_description():
     Returns:
         LaunchDescription: A complete launch description for the EKF node
     """
+    
+    declare_fake_dvl_cmd = DeclareLaunchArgument(
+    	name='fake_dvl',
+    	default_value='false',
+    	description='Use fake DVL data'
+    )
+    
+    fake_dvl = LaunchConfiguration('fake_dvl')
+    
+    start_fake_dvl_node_cmd = Node(
+		package = 'nautilus_sensors',
+		executable = 'fake_dvl',
+		name = 'fake_dvl',
+		output = 'screen',
+		condition = IfCondition(fake_dvl)
+    )
+   
+    start_dvl_node_cmd = Node(
+		package = 'nautilus_sensors',
+		executable = 'dvl_sensor_node',
+		name = 'dvl',
+		output = 'screen',
+		condition = UnlessCondition(fake_dvl)
+	)
+    
     # Constants for paths to different files and folders
     package_name = 'nautilus_robot_localization'
  
@@ -66,8 +92,11 @@ def generate_launch_description():
     # Add the declarations
     ld.add_action(declare_ekf_config_file_cmd)
     ld.add_action(declare_use_sim_time_cmd)
+    ld.add_action(declare_fake_dvl_cmd)
  
     # Add the actions
     ld.add_action(start_ekf_node_cmd)
+    ld.add_action(start_dvl_node_cmd)
+    ld.add_action(start_fake_dvl_node_cmd)
  
     return ld
