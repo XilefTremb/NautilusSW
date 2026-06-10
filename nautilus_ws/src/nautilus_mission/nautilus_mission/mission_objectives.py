@@ -58,21 +58,39 @@ class Objective:
 
 
 mission_list = [
+    # Objective(
+    #     name='gate',
+    #     target_ids=[ObjectID.GATE_MID_RIGHT],
+    #     target_auv_depth_m = 0.8,
+    #     search=SearchConfig(spin_pwm=1460),
+    #     center=CenterConfig(
+    #         center_tolerance_fov=0.05,
+    #         angle_tolerance_deg=5.0,
+    #     ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=2000.0,
+    #     ),
+    #     action=ForwardAction(
+    #         forward_pwm=1520,
+    #         forward_distance_m=3.0,
+    #     ),
+    # ),
+
     Objective(
-        name='gate',
-        target_ids=[ObjectID.GATE_MID_RIGHT],
-        target_auv_depth_m = 1.0,
+        name='slalom1',
+        target_ids=[ObjectID.SLALOM_LEFT_MID],
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
+            full_centering=True,
             center_tolerance_fov=0.05,
             angle_tolerance_deg=5.0,
         ),
         approach=ApproachConfig(
-            approach_distance_mm=1500.0,
+            approach_distance_mm=2000.0
         ),
         action=ForwardAction(
-            forward_pwm=1550,
-            forward_distance_m=2.0,
+            forward_pwm=1505,
+            forward_distance_m=1.3,
         ),
     ),
 
@@ -82,13 +100,30 @@ mission_list = [
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
             full_centering=False,
-            center_tolerance_fov=0.05,
+            center_tolerance_fov=0.1,
         ),
         approach=ApproachConfig(
-            approach_distance_mm=1000.0
+            approach_distance_mm=1500.0
         ),
         action=ForwardAction(
-            forward_pwm=1515,
+            forward_pwm=1505,
+            forward_distance_m=1.0,
+        ),
+    ),
+
+    Objective(
+        name='slalom3',
+        target_ids=[ObjectID.SLALOM_LEFT_MID],
+        search=SearchConfig(spin_pwm=1540),
+        center=CenterConfig(
+            full_centering=False,
+            center_tolerance_fov=0.1,
+        ),
+        approach=ApproachConfig(
+            approach_distance_mm=1500.0
+        ),
+        action=ForwardAction(
+            forward_pwm=1505,
             forward_distance_m=1.0,
         ),
     ),
