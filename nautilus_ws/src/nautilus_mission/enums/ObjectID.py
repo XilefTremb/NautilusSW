@@ -33,10 +33,10 @@ class ObjectID(IntEnum):
      SLALOM_SIDE = 5
      REQUIN = 6
      POISSON = 7
-     SLALOM_LEFT = 8
-     SLALOM_RIGHT = 9
      GATE_LEFT_MID = 20
      GATE_MID_RIGHT = 21
      SLALOM_LEFT_MID = 22
      SLALOM_MID_RIGHT = 23
+     SLALOM_LEFT = 30
+     SLALOM_RIGHT = 31
     

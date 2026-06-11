@@ -28,7 +28,7 @@ def build_payload(GATE_ID, left_obj, right_obj, results_angle, mode):
     cx, _, _, _= params_cams(mode)
     dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
     mean_distance = (right_obj["depth"] + left_obj["depth"]) / 2
-    if angle_calc is not None and dist_center_gate is not None:
+    if angle_calc is not None and abs(angle_calc) < 50 and dist_center_gate is not None:
         results_angle.extend([float(GATE_ID), float(dist_center_gate), float(mean_distance), float(angle_calc)])
     
 def find_gate_angle(objects, mode):
