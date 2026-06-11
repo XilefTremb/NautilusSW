@@ -10,6 +10,9 @@ class ActionType(Enum):
     NONE = auto()
     FORWARD = auto()
     CIRCLE_MARKER = auto()
+    SAVE_ROLE = auto()
+    CHOOSE_GATE_SIDE = auto()
+    LAUNCH_DROPPER = auto()
 
 @dataclass
 class SearchConfig:
@@ -42,12 +45,25 @@ class CircleMarkerAction:
     camera_mean_depth_target_mm: int = 20000
     min_lifespan_s: float = 8.0
 
-ActionConfig = Union[NoAction, ForwardAction, CircleMarkerAction]
+@dataclass
+class LaunchDropperAction:
+    type: ActionType = ActionType.LAUNCH_DROPPER
+    duration_s: float = 0.0
+
+@dataclass
+class SaveRoleAction:
+    type: ActionType = ActionType.SAVE_ROLE
+
+@dataclass
+class ChooseGateSideAction:
+    type: ActionType = ActionType.CHOOSE_GATE_SIDE
+
+ActionConfig = Union[NoAction, ForwardAction, CircleMarkerAction, LaunchDropperAction, ChooseGateSideAction, SaveRoleAction]
 
 @dataclass
 class Objective:
     name: str
-    target_ids: Optional[list[ObjectID]]
+    target_ids: Optional[list[ObjectID]] = None
     detections_depth_filter_mm: Optional[int] = None
     target_auv_depth_m: Optional[float] = None #positive down
 
@@ -59,8 +75,8 @@ class Objective:
 
 mission_list = [
     Objective(
-        name='gate',
-        target_ids=[ObjectID.GATE_MID_RIGHT],
+        name='approachGate',
+        target_ids=[ObjectID.GATE_LEG_CENTER],
         target_auv_depth_m = 1.0,
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
@@ -69,6 +85,32 @@ mission_list = [
         ),
         approach=ApproachConfig(
             approach_distance_mm=1500.0,
+        ),
+        action=SaveRoleAction(
+        ),
+    ),
+
+    Objective(
+        name='chooseGateSide',
+        target_auv_depth_m = 1.0,
+        search=SearchConfig(spin_pwm=1460),
+        approach=ApproachConfig(
+            approach_distance_mm=1500.0,
+        ),
+        action=ChooseGateSideAction(
+        ),
+    ),
+
+    Objective(
+        name='traverseGate',
+        target_auv_depth_m = 1.0,
+        search=SearchConfig(spin_pwm=1460),
+        center=CenterConfig(
+            center_tolerance_fov=0.05,
+            angle_tolerance_deg=5.0,
+        ),
+        approach=ApproachConfig(
+            approach_distance_mm=1000.0,
         ),
         action=ForwardAction(
             forward_pwm=1550,
@@ -92,4 +134,35 @@ mission_list = [
             forward_distance_m=1.0,
         ),
     ),
+
+    Objective(
+        name='approachDropperObjective',
+        target_ids=[ObjectID.DROPPER],
+        search=SearchConfig(spin_pwm=1460),
+        center=CenterConfig(
+            full_centering=False,
+        ),
+        target_auv_depth_m = 1.0,
+        approach=ApproachConfig(
+            approach_distance_mm=1000.0
+        ),
+        action=ForwardAction(
+            forward_pwm=1550,
+            forward_distance_mm=1000.0,
+        ),
+    ),
+
+    Objective(
+        name='LaunchDropperObjective',
+        search=SearchConfig(spin_pwm=1460),
+        center=CenterConfig(
+            full_centering=False,
+        ),
+        approach=ApproachConfig(
+            approach_distance_mm=1000.0
+        ),
+        action=LaunchDropperAction(
+            duration_s=5.0,
+        ),
+    )
 ]

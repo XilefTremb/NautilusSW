@@ -24,6 +24,7 @@ class StateMachine:
         self.detection_store = detection_store
 
         self.objectives : list[Objective] = mission_list
+        self.roleChoice = ObjectID.REQUIN
 
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
@@ -123,7 +124,26 @@ class StateMachine:
 
     def load_current_objective(self, event):
         self.current_objective = self.objectives[self.objective_index]
-        self.target_ids = self.current_objective.target_ids
+
+        if self.current_objective.action.type == ActionType.CHOOSE_GATE_SIDE:
+            positions = self.detection_store.get_role_choice()
+
+            if positions is None:
+                self.node.get_logger().warn('Role choice unavailable')
+                self.target_ids = None
+            else:
+                gate = (
+                    if positions[0] == self.roleChoice
+                        ObjectID.GATE_LEFT_MID
+                    else 
+                        ObjectID.GATE_MID_RIGHT
+                )
+                self.target_ids = [gate]
+
+        elif self.current_objective.action.type == ActionType.DropperLaunch:
+            self.target_ids = [self.roleChoice]
+        else:
+            self.target_ids = self.current_objective.target_ids
 
         self.node.get_logger().info('\n')
         self.node.get_logger().info(f'Loaded objective {self.objective_index + 1}/{len(self.objectives)}: 'f'{self.current_objective.name}')
@@ -173,6 +193,17 @@ class StateMachine:
 
         if self.current_objective.action.type == ActionType.FORWARD:
             self.node.publish_forward_cmd(self.current_objective.action.forward_pwm)
+
+        if self.current_objective.action.type == ActionType.SAVE_ROLE:
+            self.node.get_logger().info('Saving role choice for current objective.')
+            self.detection_store.save_role = False 
+
+        if self.current_objective.action.type == ActionType.LAUNCH_DROPPER:
+            self.node.get_logger().info('Launching dropper no 1!')
+            # Implement dropper launch logic here
+            self.node.get_logger().info('Dropper launched :) !')
+        
+
 
     def spin_search(self):
         cmd = self.current_objective.search.spin_pwm
