@@ -24,7 +24,7 @@ class StateMachine:
         self.detection_store = detection_store
 
         self.objectives : list[Objective] = mission_list
-        self.roleChoice = ObjectID.REQUIN
+        self.role_choice = ObjectID.REQUIN
 
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
@@ -133,7 +133,7 @@ class StateMachine:
                 self.target_ids = None
             else:
                 gate = (
-                    if positions[0] == self.roleChoice
+                    if positions[0] == self.role_choice
                         ObjectID.GATE_LEFT_MID
                     else 
                         ObjectID.GATE_MID_RIGHT
@@ -141,7 +141,7 @@ class StateMachine:
                 self.target_ids = [gate]
 
         elif self.current_objective.action.type == ActionType.DropperLaunch:
-            self.target_ids = [self.roleChoice]
+            self.target_ids = [self.role_choice]
         else:
             self.target_ids = self.current_objective.target_ids
 

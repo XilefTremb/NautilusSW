@@ -81,10 +81,9 @@ mission_list = [
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
             center_tolerance_fov=0.05,
-            angle_tolerance_deg=5.0,
         ),
         approach=ApproachConfig(
-            approach_distance_mm=1500.0,
+            approach_distance_mm=3000.0,
         ),
         action=SaveRoleAction(
         ),
@@ -96,6 +95,9 @@ mission_list = [
         search=SearchConfig(spin_pwm=1460),
         approach=ApproachConfig(
             approach_distance_mm=1500.0,
+        ),
+        center=CenterConfig(
+            full_centering=True,
         ),
         action=ChooseGateSideAction(
         ),
