@@ -58,10 +58,10 @@ class DetectionStore:
             return None
 
         if middle_post is not None:
-            post_x = middle_post[DetectionIndex.CENTER_PX]
+            post_x = middle_post[DetectionIndex.CENTER_FOV_RATIO]
 
-            requin_left = requin[DetectionIndex.CENTER_PX] < post_x
-            poisson_left = poisson[DetectionIndex.CENTER_PX] < post_x
+            requin_left = requin[DetectionIndex.CENTER_FOV_RATIO] < post_x
+            poisson_left = poisson[DetectionIndex.CENTER_FOV_RATIO] < post_x
 
             if requin_left and not poisson_left:
                 return [ObjectID.REQUIN, ObjectID.POISSON]
@@ -70,7 +70,7 @@ class DetectionStore:
                 return [ObjectID.POISSON, ObjectID.REQUIN]
 
         
-        if requin[DetectionIndex.CENTER_PX] < poisson[DetectionIndex.CENTER_PX]:
+        if requin[DetectionIndex.CENTER_FOV_RATIO] < poisson[DetectionIndex.CENTER_FOV_RATIO]:
             return [ObjectID.REQUIN, ObjectID.POISSON]
 
         return [ObjectID.POISSON, ObjectID.REQUIN]
