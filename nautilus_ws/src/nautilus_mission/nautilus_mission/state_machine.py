@@ -32,6 +32,7 @@ class StateMachine:
         self.mean_depth_forward_cam: Optional[int] = None
         self.forward_position = 0.0
         self.lateral_position = 0.0
+        self.ekf_resetted = False
 
         self.target_missing_count = 0
         self.target_missing_limit = 50
@@ -55,7 +56,7 @@ class StateMachine:
             {'trigger': 'target_found', 'source': 'SEARCH_TARGET', 'dest': 'CENTER_TARGET'},
             {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
             {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
-            {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION'},
+            {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION', 'conditions': 'ekf_reset_done'},
             {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
             {'trigger': 'finish_mission', 'source': '*', 'dest': 'MISSION_COMPLETE'},
@@ -144,6 +145,10 @@ class StateMachine:
 
     def on_enter_APPROACH_TARGET(self, event):
         self.target_missing_count = 0
+        self.ekf_resetted = False
+        
+    def on_exit_APPROACH_TARGET(self, event):
+        self.ekf_resetted = reset_ekf_pose(self.node)
 
     def on_enter_EXECUTE_ACTION(self, event):
         if self.current_objective is None:
@@ -151,7 +156,6 @@ class StateMachine:
             return
     
         self.execute_action_start_time = time.monotonic()
-        reset_ekf_pose(self.node)
 
         self.node.get_logger().info(
             f'Executing action {self.current_objective.action.type.name} '
@@ -172,7 +176,8 @@ class StateMachine:
             return
 
         if self.current_objective.action.type == ActionType.FORWARD:
-            self.node.publish_forward_cmd(self.current_objective.action.forward_pwm)
+            error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
+            self.node.publish_forward_ekf_error(error_ekf_fwd_position)
 
     def spin_search(self):
         cmd = self.current_objective.search.spin_pwm
@@ -254,6 +259,15 @@ class StateMachine:
 
         angle = target[DetectionIndex.ANGLE_DEG]
         return abs(angle) < self.current_objective.center.angle_tolerance_deg
+    
+    def ekf_reset_done(self, event):
+        if self.ekf_resetted:
+            return True
+
+        self.node.get_logger().info("Resetting EKF before leaving APPROACH_TARGET")
+        self.ekf_resetted = reset_ekf_pose(self.node)
+
+        return self.ekf_resetted
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()
