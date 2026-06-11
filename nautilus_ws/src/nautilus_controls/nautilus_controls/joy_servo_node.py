@@ -15,7 +15,7 @@ class JoyServoNode(Node):
         self.servo_pwm_left = 1100
         self.servo_pwm_right = 1900
 
-        self.dpad_lr_axis = 6
+        self.dpad_lr_axis = 7
         self.last_dpad_lr = 0.0
 
         self.servo_pub = self.create_publisher(
