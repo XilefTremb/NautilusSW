@@ -90,7 +90,7 @@ mission_list = [
         ),
         action=ForwardAction(
             forward_pwm=1505,
-            forward_distance_m=1.3,
+            forward_distance_m=1.8,
         ),
     ),
 
@@ -100,14 +100,14 @@ mission_list = [
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
             full_centering=False,
-            center_tolerance_fov=0.1,
+            center_tolerance_fov=0.05,
         ),
         approach=ApproachConfig(
             approach_distance_mm=1500.0
         ),
         action=ForwardAction(
             forward_pwm=1505,
-            forward_distance_m=1.0,
+            forward_distance_m=1.2,
         ),
     ),
 
@@ -117,14 +117,14 @@ mission_list = [
         search=SearchConfig(spin_pwm=1540),
         center=CenterConfig(
             full_centering=False,
-            center_tolerance_fov=0.1,
+            center_tolerance_fov=0.05,
         ),
         approach=ApproachConfig(
             approach_distance_mm=1500.0
         ),
         action=ForwardAction(
             forward_pwm=1505,
-            forward_distance_m=1.0,
+            forward_distance_m=3.0,
         ),
     ),
 ]

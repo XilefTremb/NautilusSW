@@ -334,7 +334,7 @@ class YoloNode(Node):
                             bbox_cx=box_cx,
                             mode=self.mode)
 
-                if depth_value is None:
+                if depth_value is None or not (800.0 < depth_value < self.depth_threshold):
                     continue
 
                 # ----------- DIST / ANGLE -----------
@@ -406,25 +406,24 @@ class YoloNode(Node):
                         points=points
                     )
 
-        for object_id, obj in objects.items():
-            if obj["depth"] < self.depth_threshold:
-                payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),0.0])
-                draw_detection(
-                    annotated_frame,
-                    self.type_yolo,
-                    object_id,
-                    obj["confidence"],
-                    obj["depth"],
-                    obj["dist_center"],
-                    obj["box_cx"],
-                    obj["box_cy"],
-                    obj["x1"],
-                    obj["y1"],
-                    obj["x2"],
-                    obj["y2"],
-                    color=(0, 255, 0),
-                    points=obj["points"]
-                )
+        for object_id, obj in objects.items(): 
+            payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),0.0])
+            draw_detection(
+                annotated_frame,
+                self.type_yolo,
+                object_id,
+                obj["confidence"],
+                obj["depth"],
+                obj["dist_center"],
+                obj["box_cx"],
+                obj["box_cy"],
+                obj["x1"],
+                obj["y1"],
+                obj["x2"],
+                obj["y2"],
+                color=(0, 255, 0),
+                points=obj["points"]
+            )
 
         # -------- SLALOM LOGIC --------
         objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)

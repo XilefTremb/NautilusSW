@@ -176,7 +176,8 @@ class StateMachine:
             return
 
         if self.current_objective.action.type == ActionType.FORWARD:
-            self.node.publish_forward_cmd(self.current_objective.action.forward_pwm)
+            error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
+            self.node.publish_forward_ekf_error(error_ekf_fwd_position)
 
     def spin_search(self):
         cmd = self.current_objective.search.spin_pwm

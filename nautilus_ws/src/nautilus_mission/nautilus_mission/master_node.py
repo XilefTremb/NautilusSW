@@ -37,6 +37,7 @@ class MasterNode(Node):
         self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
+        self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
         self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
         self.yaw_cmd_pub = self.create_publisher(Int16, '/control/cmd/yaw', 10)
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
@@ -91,6 +92,11 @@ class MasterNode(Node):
         msg = Float32()
         msg.data = float(error)
         self.forward_error_pub.publish(msg)
+
+    def publish_forward_ekf_error(self, error: float):
+        msg = Float32()
+        msg.data = float(error)
+        self.forward_ekf_error_pub.publish(msg)
 
     def publish_lateral_error(self, error: float):
         msg = Float32()
