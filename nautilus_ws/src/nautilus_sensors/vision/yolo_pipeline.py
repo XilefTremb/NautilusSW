@@ -444,10 +444,13 @@ class YoloNode(Node):
         # -------- FIND ANGLE BETWEEN TWO OBJECTS --------
         payload_angle = find_gate_angle(objects, self.mode)
 
-        if MOVING_MEAN_ACTIVATED and object_id != ObjectID.SLALOM_CENTER:
+        if MOVING_MEAN_ACTIVATED:
             for i in range(0, len(payload_angle), 4):
                 group_id = int(payload_angle[i])
                 angle_index = i + 3
+
+                if group_id == int(ObjectID.SLALOM_CENTER):
+                    continue
 
                 payload_angle[angle_index] = self.temporal_filter.moving_median_filter(
                     key=f"angle_{group_id}",
@@ -485,7 +488,8 @@ class YoloNode(Node):
                 closest_side = min(valid_slaloms, key=lambda s: s["depth"])
             else:
                 closest_side = min(slalom_tab, key=lambda s: s["depth"])
-                selected_ids[id(closest_side)] = ObjectID.SLALOM_SIDE
+            
+            selected_ids[id(closest_side)] = ObjectID.SLALOM_SIDE
 
             payload.extend([
                 float(ObjectID.SLALOM_SIDE),
