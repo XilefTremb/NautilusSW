@@ -495,7 +495,6 @@ class DualOakNode(Node):
             min_depth = np.percentile(valid_depth, 3)
             max_depth = np.percentile(valid_depth, 95)
 
-            # Évite log(0) ou log de valeurs invalides
             if min_depth <= 0 or max_depth <= 0 or min_depth >= max_depth:
                 return np.zeros(
                     (depth_frame.shape[0], depth_frame.shape[1], 3),
@@ -521,17 +520,9 @@ class DualOakNode(Node):
                 neginf=log_min_depth
             )
 
-            log_depth = np.clip(
-                log_depth,
-                log_min_depth,
-                log_max_depth
-            )
+            log_depth = np.clip(log_depth,log_min_depth,log_max_depth)
 
-            depth_norm = np.interp(
-                log_depth,
-                (log_min_depth, log_max_depth),
-                (0, 255)
-            )
+            depth_norm = np.interp(log_depth,(log_min_depth, log_max_depth),(0, 255))
 
             depth_norm = np.nan_to_num(depth_norm)
             depth_norm = depth_norm.astype(np.uint8)
