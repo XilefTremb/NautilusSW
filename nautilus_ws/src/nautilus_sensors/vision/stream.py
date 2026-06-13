@@ -162,51 +162,9 @@ class DualOakNode(Node):
 
         return latest
 
-    def push_udp_frame(self, frame_bgr):
-        if frame_bgr is None:
-            return
-
-        now = time.time()
-        if now - self.last_udp_time < 1.0 / FPS:
-            return
-        self.last_udp_time = now
-
-        frame = cv2.resize(frame_bgr, (1280, 720))
-        frame = np.ascontiguousarray(frame)
-
-        buf = Gst.Buffer.new_wrapped(frame.tobytes())
-        self.appsrc.emit("push-buffer", buf)
-
     # =====================================================
     # PIPELINES
     # =====================================================
-    """
-    def create_oak1_pipeline(self, pipeline):
-        camRgb = pipeline.create(dai.node.Camera).build(
-            dai.CameraBoardSocket.CAM_A
-        )
-
-        video = camRgb.requestOutput(
-            size=(1280, 704),
-            fps=FPS,
-            type=dai.ImgFrame.Type.NV12
-        )
-
-        enc = pipeline.create(dai.node.VideoEncoder)
-        enc.setDefaultProfilePreset(
-            FPS,
-            dai.VideoEncoderProperties.Profile.H264_BASELINE
-        )
-        enc.setBitrate(3_000_000)
-
-        video.link(enc.input)
-
-        h264_queue = enc.bitstream.createOutputQueue(maxSize=16, blocking=False)
-        rgb_queue = video.createOutputQueue(maxSize=1, blocking=False)
-
-        return rgb_queue, h264_queue
-    """
-
     def create_oakd_pipeline(self, pipeline):
         RGB_SOCKET = dai.CameraBoardSocket.CAM_A
         LEFT_SOCKET = dai.CameraBoardSocket.CAM_B
@@ -459,26 +417,6 @@ class DualOakNode(Node):
 
                         self.rpy_pub.publish(rpy_msg)
 
-
-            # =================================================
-            # OAK-1
-            # =================================================
-            """
-            elif dev["type"] == "oak1":
-                rgb_pkt = self.get_latest(dev["rgb"])
-
-                if rgb_pkt is not None:
-                    frame = rgb_pkt.getCvFrame()
-                    frame = cv2.rotate(frame, cv2.ROTATE_180)
-
-                    self.rgb_oak1_latest = frame
-
-                    self.rgb1_pub.publish(
-                        self.bridge.cv2_to_imgmsg(frame, "bgr8")
-                    )
-
-            """
-            # =================================================
             # Camera downward
             # =================================================
             elif dev["type"] == "downward_usb":
