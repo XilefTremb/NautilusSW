@@ -141,7 +141,7 @@ mission_list = [
             alignement_tolerance=50.0,
         ),
         approach=ApproachConfig(
-            approach_distance_mm=1500.0,
+            approach_distance_mm=2000.0
         ),
         action=FireTorpedoAction(
             min_lifespan_s=1.0,
