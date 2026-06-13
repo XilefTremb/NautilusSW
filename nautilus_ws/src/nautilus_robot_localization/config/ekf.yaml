@@ -68,12 +68,12 @@ ekf_filter_node:
         #         x_accel , y_accel  , z_accel]
  
  
-        # imu0: imu/data
-        # imu0_config: [false, false, false,
-        #               false, false, false,
-        #               false, false, false,
-        #               false, false, true,
-        #               true, true, false]
+        imu0: /imu/data
+        imu0_config: [false, false, false,
+                      false, false, false,
+                      false, false, false,
+                      false, false, true,
+                      true, true, false]
 
         twist0: /dvl/twist
         twist0_config: [false, false, false,
