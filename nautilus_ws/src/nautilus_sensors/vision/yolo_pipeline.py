@@ -310,7 +310,8 @@ class YoloNode(Node):
                         y1=y1,
                         x2=x2,
                         y2=y2,
-                        annotated_frame = annotated_frame
+                        annotated_frame = annotated_frame,
+                        id = object_id
                     )
 
                     if filled_mask is not None:
@@ -341,7 +342,7 @@ class YoloNode(Node):
                 dist_center = find_dist_from_center(box_cx, self.mode)
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
-                if int(object_id) == int(ObjectID.SLALOM_SIDE):
+                if object_id == ObjectID.SLALOM_SIDE:
                     slalom_tab.append({
                         "depth": depth_value,
                         "dist_center": dist_center,
