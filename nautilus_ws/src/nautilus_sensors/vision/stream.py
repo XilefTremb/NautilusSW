@@ -33,7 +33,7 @@ from gi.repository import Gst
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 10
-SAVE_INTERVAL = 10.0
+SAVE_INTERVAL = 3.0
 START_BLUE_FILTER = False
 START_DEPTH_COLOR = True
 START_OVERLAY = True
@@ -59,6 +59,7 @@ class DualOakNode(Node):
 
         self.declare_parameter("save_images", False)
         self.save_images = self.get_parameter("save_images").value
+        self.get_logger().info(f"save_images: {self.save_images}")
         # self.save_images = False
         # Active stream (switchable)
         self.active_stream = "oakd"
@@ -459,13 +460,19 @@ class DualOakNode(Node):
         # =====================================================
         # SAVE
         # =====================================================
-        if self.save_images and (now - self.last_save_time >= SAVE_INTERVAL):
-            if self.rgb_oakd_latest is not None and self.rgb_oak1_latest is not None and self.depth_latest is not None:
-                timestamp = time.strftime("%Y%m%d_%H%M%S")
+        if bool(self.save_images) and (now - self.last_save_time >= SAVE_INTERVAL):
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            
+            if self.rgb_oakd_latest is not None and self.depth_latest is not None:
 
                 cv2.imwrite(os.path.join(RGB_OAKD_DIR, f"{timestamp}.jpg"), self.rgb_oakd_latest)
-                cv2.imwrite(os.path.join(RGB_OAK1_DIR, f"{timestamp}.jpg"), self.rgb_oak1_latest)
                 cv2.imwrite(os.path.join(DEPTH_DIR, f"{timestamp}.png"), self.depth_latest)
+
+                self.get_logger().info(f"Saved synchronized frame set: {timestamp}")
+
+            if self.rgb_oak1_latest is not None and self.depth_latest is not None:
+
+                cv2.imwrite(os.path.join(RGB_OAK1_DIR, f"{timestamp}.jpg"), self.rgb_oak1_latest)
 
                 self.get_logger().info(f"Saved synchronized frame set: {timestamp}")
 
