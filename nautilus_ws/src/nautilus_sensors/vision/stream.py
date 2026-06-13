@@ -38,6 +38,13 @@ START_BLUE_FILTER = False
 START_DEPTH_COLOR = True
 START_OVERLAY = True
 
+#DOWNWARD CAM SPECS
+DOWNWARD_CAMERA_INDEX = 0
+DOWNWARD_CAMERA_WIDTH = 1280
+DOWNWARD_CAMERA_HEIGHT = 720
+DOWNWARD_CAMERA_FPS = 8
+DOWNWARD_ROTATE_180 = True
+
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
 RGB_OAK1_DIR = os.path.join(SAVE_DIR, "rgb_oak1")
@@ -82,11 +89,13 @@ class DualOakNode(Node):
 
         # Latest frames
         self.rgb_oakd_latest = None
-        self.rgb_oak1_latest = None
+        self.rgb_downward_cam_latest = None
         self.depth_latest = None
         self.overlay_latest = None
 
         self.last_save_time = time.time()
+        self.last_udp_time = 0.0
+        self.last_downward_warn_time = 0.0
 
         # Devices
         self.stack = contextlib.ExitStack()
@@ -109,13 +118,9 @@ class DualOakNode(Node):
             if select.select([sys.stdin], [], [], 0.1)[0]:
                 key = sys.stdin.read(1)
 
-                if key == 's':
-                    if self.active_stream == "oakd":
-                        self.active_stream = "oak1"
-                    else:
-                        self.active_stream = "oakd"
-
-                    self.get_logger().info(f"Switched stream to: {self.active_stream}")
+                if key == "s":
+                    self.active_stream = "oak1" if self.active_stream == "oakd" else "oakd"
+                    self.get_logger().info(f"Switched UDP stream to: {self.active_stream}")
 
     # =====================================================
     # GSTREAMER
@@ -157,9 +162,25 @@ class DualOakNode(Node):
 
         return latest
 
+    def push_udp_frame(self, frame_bgr):
+        if frame_bgr is None:
+            return
+
+        now = time.time()
+        if now - self.last_udp_time < 1.0 / FPS:
+            return
+        self.last_udp_time = now
+
+        frame = cv2.resize(frame_bgr, (1280, 720))
+        frame = np.ascontiguousarray(frame)
+
+        buf = Gst.Buffer.new_wrapped(frame.tobytes())
+        self.appsrc.emit("push-buffer", buf)
+
     # =====================================================
     # PIPELINES
     # =====================================================
+    """
     def create_oak1_pipeline(self, pipeline):
         camRgb = pipeline.create(dai.node.Camera).build(
             dai.CameraBoardSocket.CAM_A
@@ -184,6 +205,7 @@ class DualOakNode(Node):
         rgb_queue = video.createOutputQueue(maxSize=1, blocking=False)
 
         return rgb_queue, h264_queue
+    """
 
     def create_oakd_pipeline(self, pipeline):
         RGB_SOCKET = dai.CameraBoardSocket.CAM_A
@@ -279,6 +301,26 @@ class DualOakNode(Node):
     # DEVICE SETUP
     # =====================================================
     def setup_devices(self):
+
+        # Downward USB camera
+        self.usb_cap = cv2.VideoCapture(DOWNWARD_CAMERA_INDEX, cv2.CAP_V4L2)
+
+        if self.usb_cap.isOpened():
+            self.usb_cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+            self.usb_cap.set(cv2.CAP_PROP_FRAME_WIDTH, DOWNWARD_CAMERA_WIDTH)
+            self.usb_cap.set(cv2.CAP_PROP_FRAME_HEIGHT, DOWNWARD_CAMERA_HEIGHT)
+            self.usb_cap.set(cv2.CAP_PROP_FPS, DOWNWARD_CAMERA_FPS)
+
+            self.devices_data.append({
+                "type": "downward_usb",
+                "cap": self.usb_cap
+            })
+
+            self.get_logger().info("Downward USB camera opened")
+        else:
+            self.get_logger().error(f"Impossible d'ouvrir /dev/video{DOWNWARD_CAMERA_INDEX}")
+
+        #OAK CAM
         deviceInfos = dai.Device.getAllAvailableDevices()
         self.get_logger().info(f"Found devices: {len(deviceInfos)}")
 
@@ -297,15 +339,6 @@ class DualOakNode(Node):
                     "raw_depth": depth_q,
                     "h264": h264_q,
                     "imu": imu_q,
-                })
-            else:
-                rgb_q, h264_q = self.create_oak1_pipeline(pipeline)
-                pipeline.start()
-
-                self.devices_data.append({
-                    "type": "oak1",
-                    "rgb": rgb_q,
-                    "h264": h264_q
                 })
 
 
@@ -430,6 +463,7 @@ class DualOakNode(Node):
             # =================================================
             # OAK-1
             # =================================================
+            """
             elif dev["type"] == "oak1":
                 rgb_pkt = self.get_latest(dev["rgb"])
 
@@ -442,6 +476,23 @@ class DualOakNode(Node):
                     self.rgb1_pub.publish(
                         self.bridge.cv2_to_imgmsg(frame, "bgr8")
                     )
+
+            """
+            # =================================================
+            # Camera downward
+            # =================================================
+            elif dev["type"] == "downward_usb":
+                ret, frame = self.usb_cap.read()
+
+                if ret:
+                    if DOWNWARD_ROTATE_180:
+                        frame = cv2.rotate(frame, cv2.ROTATE_180)
+
+                    self.rgb_oak1_latest = frame
+                    self.rgb1_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
+                elif now - self.last_downward_warn_time > 2.0:
+                    self.get_logger().warn("USB downward camera: frame non reçue")
+                    self.last_downward_warn_time = now
 
             # =================================================
             # H264 UDP stream switchable
@@ -477,6 +528,10 @@ class DualOakNode(Node):
     def destroy_node(self):
         self.get_logger().info("Shutting down Dual OAK Node...")
         self.gst_pipeline.set_state(Gst.State.NULL)
+
+        if hasattr(self, "usb_cap") and self.usb_cap is not None:
+            self.usb_cap.release()
+
         self.stack.close()
         super().destroy_node()
 
