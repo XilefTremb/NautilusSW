@@ -7,8 +7,12 @@ import numpy as np
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import TwistWithCovarianceStamped
 import time
-from pymavlink import mavutil
 import os
+
+os.environ["MAVLINK20"] = "1"
+os.environ["MAVLINK_DIALECT"] = "ardupilotmega"
+
+from pymavlink import mavutil
 from nautilus_controls.auv_pymavlink import AuvPymavlink
 
 def euleur_from_quat(x,y,z,w):
@@ -20,9 +24,6 @@ def euleur_from_quat(x,y,z,w):
 class FakeDVL(Node):
     def __init__(self):
         super().__init__('Fake_DVL')
-
-        os.environ["MAVLINK20"] = "1"
-        os.environ["MAVLINK_DIALECT"] = "ardupilotmega"
 
         self.last_pose_enu = None
         self.msg = None
