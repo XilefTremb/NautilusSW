@@ -32,7 +32,9 @@ class DVLSensor(Node):
         self.get_logger().info(f"UDP SO_RCVBUF actual value: {actual_buf}")
         self.sock.settimeout(2)
 
+        self.get_logger().info("starting auvPymavlink")
         self.dvl = AuvPymavlink(self)
+        self.get_logger().info("exited auvPymavlink")
         self.dvl.connect("udpin:localhost:14552",False)
         self.get_logger().info('Real DVL started')
 

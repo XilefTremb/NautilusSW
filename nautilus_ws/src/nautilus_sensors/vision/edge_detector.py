@@ -4,8 +4,8 @@ import numpy as np
 # =====================================================
 # LIGHT OBJECT DETECTOR
 # =====================================================
-LIGHT_BRIGHT_PERCENTILE = 85
-LIGHT_MIN_BRIGHTNESS = 200
+LIGHT_BRIGHT_PERCENTILE = 60
+LIGHT_MIN_BRIGHTNESS = 100
 
 LIGHT_CLOSE_KERNEL_SIZE = (7, 7)
 LIGHT_OPEN_KERNEL_SIZE = (3, 3)
@@ -13,7 +13,7 @@ LIGHT_OPEN_KERNEL_SIZE = (3, 3)
 # =====================================================
 # DARK OBJECT DETECTOR
 # =====================================================
-DARK_THRESHOLD = 150
+DARK_THRESHOLD = 200
 DARK_CLOSE_KERNEL_SIZE = (5, 15)
 DARK_OPEN_KERNEL_SIZE = (3, 3)
 

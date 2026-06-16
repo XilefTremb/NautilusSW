@@ -121,7 +121,7 @@ class YoloNode(Node):
     # -------- CALLBACKS --------
     def forward_callback(self, rgb_msg, depth_msg):
         # CALLBACK FOR FORWARD CAM (OAKD)
-        self.get_logger().info("SYNC")
+        # self.get_logger().info("SYNC")
         self.forward_queue.append((rgb_msg, depth_msg))
 
     def downward_callback(self, rgb_msg):
@@ -136,8 +136,8 @@ class YoloNode(Node):
     def inference_loop(self):
         now = time.time()
 
-        if hasattr(self, "_last_timer"):
-            self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
+        # if hasattr(self, "_last_timer"):
+            # self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
 
         self._last_timer = now
 
@@ -162,7 +162,7 @@ class YoloNode(Node):
             annotated_frame, edge_debug = self.process_forward(results, annotated, depth)
             t2 = time.time()
 
-            self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
+            # self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
 
             # ----------- PUBLISH IMAGE ANNOTATED OAKD -----------
             out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
