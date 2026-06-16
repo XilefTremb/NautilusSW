@@ -9,7 +9,7 @@ import os
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int32MultiArray
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
@@ -79,13 +79,22 @@ class YoloNode(Node):
         self.reset_after_sec = 2.0
         self.last_filter_time = {}
 
+        self.edge_params = {
+            "dark_threshold": 150,
+            "light_min_brightness": 200,
+            "light_bright_percentile": 85,
+            "min_pixel_count": 30,}
+
         # -------- FRAME QUEUE (LOW LATENCY CORE) --------
         self.forward_queue = deque(maxlen=1)
         self.downward_queue = deque(maxlen=1)
 
+
+
         # -------- SUBSCRIBERS --------
         self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
+        self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,1)
         self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback, 1)
         self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback, 1)
 
@@ -132,6 +141,15 @@ class YoloNode(Node):
         # CALLBACK FOR DEPTH THRESHOLD
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
+
+    def edge_params_callback(self, msg):
+        if len(msg.data) < 4:
+            return
+
+        self.edge_params["dark_threshold"] = msg.data[0]
+        self.edge_params["light_min_brightness"] = msg.data[1]
+        self.edge_params["light_bright_percentile"] = msg.data[2]
+        self.edge_params["min_pixel_count"] = msg.data[3]
 
     def inference_loop(self):
         now = time.time()
@@ -311,8 +329,8 @@ class YoloNode(Node):
                         x2=x2,
                         y2=y2,
                         annotated_frame = annotated_frame,
-                        id = object_id
-                    )
+                        id = object_id,
+                        edge_params = self.edge_params)
 
                     if filled_mask is not None:
                         annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] #for debug
