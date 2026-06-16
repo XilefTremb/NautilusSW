@@ -200,7 +200,7 @@ class StateMachine:
 
         if self.current_objective.action.type == ActionType.LAUNCH_DROPPER:
             self.node.get_logger().info('Launching dropper no 1!')
-            # Implement dropper launch logic here
+            self.node.publish_servo_cmd(11, 1900)  
             self.node.get_logger().info('Dropper launched :) !')
         
 
