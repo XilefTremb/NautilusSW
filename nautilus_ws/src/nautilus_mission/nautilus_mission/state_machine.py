@@ -132,13 +132,11 @@ class StateMachine:
                 self.node.get_logger().warn('Role choice unavailable')
                 self.target_ids = None
             else:
-                gate = (
-                    if positions[0] == self.role_choice
-                        ObjectID.GATE_LEFT_MID
-                    else 
-                        ObjectID.GATE_MID_RIGHT
-                )
-                self.target_ids = [gate]
+                
+                if positions[0] == self.role_choice :
+                    self.target_ids = [ObjectID.GATE_LEFT_MID]
+                else :
+                    self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
         elif self.current_objective.action.type == ActionType.DropperLaunch:
             self.target_ids = [self.role_choice]
@@ -261,7 +259,7 @@ class StateMachine:
         if target is None:
             return False
 
-        px = target[DetectionIndex.CENTER_FOV_RATIO]
+        px = target[DetectionIndex.CENTER_FOV_X_RATIO]
         return abs(px) < self.current_objective.center.center_tolerance_fov
 
     def is_target_approached(self) -> bool:
