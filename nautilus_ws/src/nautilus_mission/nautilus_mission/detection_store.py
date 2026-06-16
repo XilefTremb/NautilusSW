@@ -52,25 +52,40 @@ class DetectionStore:
     def save_role_choice(self):
         requin = self.get_detection(ObjectID.REQUIN)
         poisson = self.get_detection(ObjectID.POISSON)
-        middle_post = self.get_detection(ObjectID.POTEAU_MILIEU)
+        middle_post = self.get_detection(ObjectID.GATE_LEG_CENTER)
 
-        if requin is None or poisson is None:
+        # Aucun objet détecté
+        if requin is None and poisson is None:
             return None
 
+        # Les deux objets sont détectés
+        if requin is not None and poisson is not None:
+            if requin[DetectionIndex.CENTER_FOV_RATIO] < poisson[DetectionIndex.CENTER_FOV_RATIO]:
+                return [ObjectID.REQUIN, ObjectID.POISSON]
+
+            return [ObjectID.POISSON, ObjectID.REQUIN]
+
+        # Un seul objet est détecté
+        if requin is not None:
+            seen_id = ObjectID.REQUIN
+            missing_id = ObjectID.POISSON
+            seen_x = requin[DetectionIndex.CENTER_FOV_RATIO]
+        else:
+            seen_id = ObjectID.POISSON
+            missing_id = ObjectID.REQUIN
+            seen_x = poisson[DetectionIndex.CENTER_FOV_RATIO]
+
+        # Poteau central détecté 
         if middle_post is not None:
             post_x = middle_post[DetectionIndex.CENTER_FOV_RATIO]
 
-            requin_left = requin[DetectionIndex.CENTER_FOV_RATIO] < post_x
-            poisson_left = poisson[DetectionIndex.CENTER_FOV_RATIO] < post_x
+            if seen_x < post_x:
+                return [seen_id, missing_id]
 
-            if requin_left and not poisson_left:
-                return [ObjectID.REQUIN, ObjectID.POISSON]
+            return [missing_id, seen_id]
 
-            if poisson_left and not requin_left:
-                return [ObjectID.POISSON, ObjectID.REQUIN]
+        # Fallback est centre de l'image
+        if seen_x < 0.0:
+            return [seen_id, missing_id]
 
-        
-        if requin[DetectionIndex.CENTER_FOV_RATIO] < poisson[DetectionIndex.CENTER_FOV_RATIO]:
-            return [ObjectID.REQUIN, ObjectID.POISSON]
-
-        return [ObjectID.POISSON, ObjectID.REQUIN]
+        return [missing_id, seen_id]
