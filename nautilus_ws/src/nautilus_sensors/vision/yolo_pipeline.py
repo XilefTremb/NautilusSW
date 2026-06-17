@@ -30,6 +30,9 @@ MOVING_MEAN_ACTIVATED = False
 FORWARD_CAM_RATE_HZ = 10
 DOWNWARD_CAM_RATE_HZ = 10
 
+COLOR_IN_DETECTION = (0, 255, 0)
+COLOR_NOT_IN_DETECTION = (255, 0, 0)
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -289,19 +292,40 @@ class YoloNode(Node):
 
                 #----------- BOX INSIDE FRAME - ----------
                 h, w = depth.shape
-                x1, x2 = np.clip([x1, x2], 0, w - 1)
-                y1, y2 = np.clip([y1, y2], 0, h - 1)
+                x1 = int(np.clip(x1, 0, w - 1))
+                x2 = int(np.clip(x2, 0, w - 1))
+                y1 = int(np.clip(y1, 0, w - 1))
+                y2 = int(np.clip(y2, 0, w - 1))
 
                 # ----------- CLASS / CONF -----------
                 object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
 
                 # ----------- DEPTH -----------
-                if (self.mode == "real" and
-                        (object_id == ObjectID.GATE_LEG_L or
+
+                # if (self.mode == "real" and
+                #         (object_id == ObjectID.GATE_LEG_L or
+                #          object_id == ObjectID.GATE_LEG_CENTER or
+                #          object_id == ObjectID.GATE_LEG_R or
+                #          object_id == ObjectID.SLALOM_SIDE or
+                #          object_id == ObjectID.SLALOM_CENTER or
+                #          object_id == ObjectID.TORPEDO)):
+
+                #     depth_value, filled_mask = find_depth_from_edge_detector(
+                #         depth_frame=depth,
+                #         x1=x1,
+                #         y1=y1,
+                #         x2=x2,
+                #         y2=y2,
+                #         annotated_frame = annotated_frame,
+                #         mode=self.mode
+                #     )
+                # Modfified to see boxes in sim, doesnt need to be merged into dev, this is for testing 
+                if ((object_id == ObjectID.GATE_LEG_L or
                          object_id == ObjectID.GATE_LEG_CENTER or
                          object_id == ObjectID.GATE_LEG_R or
                          object_id == ObjectID.SLALOM_SIDE or
+                         object_id == ObjectID.TORPEDO or
                          object_id == ObjectID.SLALOM_CENTER)):
 
                     depth_value, filled_mask = find_depth_from_edge_detector(
@@ -310,7 +334,8 @@ class YoloNode(Node):
                         y1=y1,
                         x2=x2,
                         y2=y2,
-                        annotated_frame = annotated_frame
+                        annotated_frame = annotated_frame,
+                        mode=self.mode
                     )
 
                     if filled_mask is not None:
@@ -335,6 +360,22 @@ class YoloNode(Node):
                             mode=self.mode)
 
                 if depth_value is None or not (800.0 < depth_value < self.depth_threshold):
+                    draw_detection(
+                            annotated_frame,
+                            self.type_yolo,
+                            object_id,
+                            confidence,
+                            -99999,
+                            -9999,
+                            box_cx,
+                            box_cy,
+                            x1,
+                            y1,
+                            x2,
+                            y2,
+                            color= COLOR_NOT_IN_DETECTION,
+                            points=None
+                        )
                     continue
 
                 # ----------- DIST / ANGLE -----------
@@ -382,7 +423,7 @@ class YoloNode(Node):
                             objects[object_id]["y1"],
                             objects[object_id]["x2"],
                             objects[object_id]["y2"],
-                            color=(0, 0, 255),
+                            color= COLOR_NOT_IN_DETECTION,
                             points=objects[object_id]["points"]
                         )
 
@@ -414,7 +455,7 @@ class YoloNode(Node):
                         dist_center,
                         box_cx, box_cy,
                         x1, y1, x2, y2,
-                        color=(0, 0, 255),
+                        color=COLOR_NOT_IN_DETECTION,
                         points=points
                     )
 
@@ -434,7 +475,7 @@ class YoloNode(Node):
                     obj["y1"],
                     obj["x2"],
                     obj["y2"],
-                    color=(0, 255, 0),
+                    color= COLOR_IN_DETECTION,
                     points=obj["points"]
                 )
 
@@ -529,7 +570,7 @@ class YoloNode(Node):
 
         for slalom in slalom_tab:
             display_id  = selected_ids.get(id(slalom), ObjectID.SLALOM_SIDE)
-            color = (0, 255, 0) if id(slalom) in selected_ids else (0, 0, 255)
+            color = COLOR_IN_DETECTION if id(slalom) in selected_ids else COLOR_NOT_IN_DETECTION
 
             draw_detection(
                 annotated_frame,
