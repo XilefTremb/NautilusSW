@@ -10,6 +10,33 @@ from pathlib import Path
 
 CONFIG_FILE = Path(__file__).parent / "edge_params.json"
 
+def load_params():
+    default_params = {
+        "dark_threshold": 150,
+        "light_min_brightness": 200,
+        "light_bright_percentile": 85,
+        "min_pixel_count": 30,
+    }
+
+    if not CONFIG_FILE.exists():
+        save_params(default_params)
+        return default_params
+
+    try:
+        with open(CONFIG_FILE, "r") as f:
+            saved = json.load(f)
+
+        default_params.update(saved)
+        return default_params
+
+    except Exception:
+        save_params(default_params)
+        return default_params
+
+def save_params(params):
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(params, f, indent=4)
+
 
 class EdgeSliderNode(Node):
     def __init__(self):
@@ -21,32 +48,7 @@ class EdgeSliderNode(Node):
         msg.data = values
         self.pub.publish(msg)
 
-    def load_params():
-        default_params = {
-            "dark_threshold": 150,
-            "light_min_brightness": 200,
-            "light_bright_percentile": 85,
-            "min_pixel_count": 30,
-        }
 
-        if not CONFIG_FILE.exists():
-            save_params(default_params)
-            return default_params
-
-        try:
-            with open(CONFIG_FILE, "r") as f:
-                saved = json.load(f)
-
-            default_params.update(saved)
-            return default_params
-
-        except Exception:
-            save_params(default_params)
-            return default_params
-
-    def save_params(params):
-        with open(CONFIG_FILE, "w") as f:
-            json.dump(params, f, indent=4)
 
 
 def main():

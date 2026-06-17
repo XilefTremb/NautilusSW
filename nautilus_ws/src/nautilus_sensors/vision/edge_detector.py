@@ -100,5 +100,11 @@ def get_edge_params(edge_params):
     MIN_PIXEL_COUNT = edge_params["min_pixel_count"]
     DARK_THRESHOLD = edge_params["dark_threshold"]
 
+    print("LIGHT_MIN_BRIGHTNESS", LIGHT_MIN_BRIGHTNESS)
+    print("LIGHT_BRIGHT_PERCENTILE", LIGHT_BRIGHT_PERCENTILE)
+    print("MIN_PIXEL_COUNT", MIN_PIXEL_COUNT)
+    print("DARK_THRESHOLD", DARK_THRESHOLD)
+
+
     return LIGHT_MIN_BRIGHTNESS, LIGHT_BRIGHT_PERCENTILE, MIN_PIXEL_COUNT, DARK_THRESHOLD
 
