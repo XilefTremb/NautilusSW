@@ -143,6 +143,15 @@ mission_list = [
         approach=ApproachConfig(
             approach_distance_mm=2000.0
         ),
+    ),
+    Objective(
+        name='Torpedo firing positioning',
+        target_ids=[ObjectID.TORPEDO],
+        center=CenterConfig(
+            full_centering=True,
+            center_tolerance_fov=0.02,
+            alignement_tolerance=20.0,
+        ),
         action=FireTorpedoAction(
             min_lifespan_s=1.0,
         ),
