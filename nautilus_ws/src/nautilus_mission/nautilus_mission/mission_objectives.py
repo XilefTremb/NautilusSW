@@ -89,8 +89,8 @@ mission_list = [
             approach_distance_mm=2000.0
         ),
         action=ForwardAction(
-            forward_pwm=1505,
-            forward_distance_m=1.8,
+            forward_pwm=1540,
+            forward_distance_m=2.0,
         ),
     ),
 
@@ -106,8 +106,8 @@ mission_list = [
             approach_distance_mm=1500.0
         ),
         action=ForwardAction(
-            forward_pwm=1505,
-            forward_distance_m=1.2,
+            forward_pwm=1540,
+            forward_distance_m=1.8,
         ),
     ),
 
@@ -123,7 +123,7 @@ mission_list = [
             approach_distance_mm=1500.0
         ),
         action=ForwardAction(
-            forward_pwm=1505,
+            forward_pwm=1540,
             forward_distance_m=3.0,
         ),
     ),

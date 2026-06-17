@@ -4,8 +4,8 @@ import numpy as np
 # =====================================================
 # LIGHT OBJECT DETECTOR
 # =====================================================
-LIGHT_BRIGHT_PERCENTILE = 85
-LIGHT_MIN_BRIGHTNESS = 200
+#LIGHT_BRIGHT_PERCENTILE = 85
+#LIGHT_MIN_BRIGHTNESS = 200
 
 LIGHT_CLOSE_KERNEL_SIZE = (7, 7)
 LIGHT_OPEN_KERNEL_SIZE = (3, 3)
@@ -13,14 +13,17 @@ LIGHT_OPEN_KERNEL_SIZE = (3, 3)
 # =====================================================
 # DARK OBJECT DETECTOR
 # =====================================================
-DARK_THRESHOLD = 150
+#DARK_THRESHOLD = 150
 DARK_CLOSE_KERNEL_SIZE = (5, 15)
 DARK_OPEN_KERNEL_SIZE = (3, 3)
 
 
-MIN_PIXEL_COUNT = 30
+#MIN_PIXEL_COUNT = 30
 
-def detect_light_object_in_roi(roi):
+def detect_light_object_in_roi(roi, edge_params):
+
+    LIGHT_MIN_BRIGHTNESS, LIGHT_BRIGHT_PERCENTILE, MIN_PIXEL_COUNT, _ = get_edge_params(edge_params)
+
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
     h, s, v = cv2.split(hsv)
 
@@ -48,7 +51,10 @@ def detect_light_object_in_roi(roi):
 
     return filled
 
-def detect_dark_object_in_roi(roi):
+def detect_dark_object_in_roi(roi, edge_params):
+
+    _,_,MIN_PIXEL_COUNT, DARK_THRESHOLD = get_edge_params(edge_params)
+
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
     lower_dark = np.array([0, 0, 0])
@@ -87,3 +93,18 @@ def detect_dark_object_in_roi(roi):
     )
 
     return filled
+
+def get_edge_params(edge_params):
+    LIGHT_MIN_BRIGHTNESS = edge_params["light_min_brightness"]
+    LIGHT_BRIGHT_PERCENTILE = edge_params["light_bright_percentile"]
+    MIN_PIXEL_COUNT = edge_params["min_pixel_count"]
+    DARK_THRESHOLD = edge_params["dark_threshold"]
+
+    print("LIGHT_MIN_BRIGHTNESS", LIGHT_MIN_BRIGHTNESS)
+    print("LIGHT_BRIGHT_PERCENTILE", LIGHT_BRIGHT_PERCENTILE)
+    print("MIN_PIXEL_COUNT", MIN_PIXEL_COUNT)
+    print("DARK_THRESHOLD", DARK_THRESHOLD)
+
+
+    return LIGHT_MIN_BRIGHTNESS, LIGHT_BRIGHT_PERCENTILE, MIN_PIXEL_COUNT, DARK_THRESHOLD
+
