@@ -153,14 +153,14 @@ class YoloNode(Node):
 
             self.last_forward_time = now
 
-            t0 = time.time()
+            # t0 = time.time()
             results = self.model(frame, conf=0.4, verbose=False)
-            t1 = time.time()
+            # t1 = time.time()
 
             annotated = frame.copy()
 
             annotated_frame, edge_debug = self.process_forward(results, annotated, depth)
-            t2 = time.time()
+            # t2 = time.time()
 
             # self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
 
