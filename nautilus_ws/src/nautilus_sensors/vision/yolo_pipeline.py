@@ -6,7 +6,6 @@ import torch
 import time
 import numpy as np
 import os
-import json
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -15,12 +14,12 @@ from ultralytics import YOLO
 from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
-from pathlib import Path 
 
 from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
+from vision.slider_edge_detector import load_params_edge_detector_json
 
 from enums.ObjectID import ObjectID
 
@@ -31,8 +30,6 @@ from enums.ObjectID import ObjectID
 MOVING_MEAN_ACTIVATED = False
 FORWARD_CAM_RATE_HZ = 10
 DOWNWARD_CAM_RATE_HZ = 10
-
-EDGE_CONFIG_FILE = Path(__file__).parent / "edge_params.json"
 
 
 def parse_args():
@@ -83,11 +80,7 @@ class YoloNode(Node):
         self.reset_after_sec = 2.0
         self.last_filter_time = {}
 
-        self.edge_params = {
-            "dark_threshold": 150,
-            "light_min_brightness": 200,
-            "light_bright_percentile": 85,
-            "min_pixel_count": 30,}
+        self.edge_params = load_params_edge_detector_json()
 
         # -------- FRAME QUEUE (LOW LATENCY CORE) --------
         self.forward_queue = deque(maxlen=1)

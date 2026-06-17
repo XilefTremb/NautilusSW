@@ -10,7 +10,7 @@ from pathlib import Path
 
 CONFIG_FILE = Path(__file__).parent / "edge_params.json"
 
-def load_params():
+def load_params_edge_detector_json():
     default_params = {
         "dark_threshold": 150,
         "light_min_brightness": 200,
@@ -48,9 +48,6 @@ class EdgeSliderNode(Node):
         msg.data = values
         self.pub.publish(msg)
 
-
-
-
 def main():
     rclpy.init()
     node = EdgeSliderNode()
@@ -60,7 +57,7 @@ def main():
 
     sliders = {}
 
-    saved_params = load_params()
+    saved_params = load_params_edge_detector_json()
 
     params = {
         "dark_threshold": (0, 255, saved_params["dark_threshold"]),
