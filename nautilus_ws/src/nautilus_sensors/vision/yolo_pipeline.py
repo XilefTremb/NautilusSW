@@ -6,6 +6,7 @@ import torch
 import time
 import numpy as np
 import os
+import json
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -14,6 +15,7 @@ from ultralytics import YOLO
 from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
+from pathlib import Path 
 
 from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector
 from vision.gate_angle import find_gate_angle
@@ -29,6 +31,8 @@ from enums.ObjectID import ObjectID
 MOVING_MEAN_ACTIVATED = False
 FORWARD_CAM_RATE_HZ = 10
 DOWNWARD_CAM_RATE_HZ = 10
+
+EDGE_CONFIG_FILE = Path(__file__).parent / "edge_params.json"
 
 
 def parse_args():
@@ -94,7 +98,7 @@ class YoloNode(Node):
         # -------- SUBSCRIBERS --------
         self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
-        self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,1)
+        self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,10)
         self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback, 1)
         self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback, 1)
 
@@ -150,6 +154,9 @@ class YoloNode(Node):
         self.edge_params["light_min_brightness"] = msg.data[1]
         self.edge_params["light_bright_percentile"] = msg.data[2]
         self.edge_params["min_pixel_count"] = msg.data[3]
+
+        self.get_logger().info(f'EDGE PARAMS UPDATED: {self.edge_params}')
+        #print("EDGE PARAMS UPDATED", self.edge_params)
 
     def inference_loop(self):
         now = time.time()
