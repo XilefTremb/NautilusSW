@@ -9,7 +9,7 @@ import os
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int32MultiArray
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
@@ -19,6 +19,7 @@ from vision.object_depth import find_depth, find_dist_from_center, global_median
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
+from vision.slider_edge_detector import load_params_edge_detector_json
 
 from enums.ObjectID import ObjectID
 
@@ -79,13 +80,18 @@ class YoloNode(Node):
         self.reset_after_sec = 2.0
         self.last_filter_time = {}
 
+        self.edge_params = load_params_edge_detector_json()
+
         # -------- FRAME QUEUE (LOW LATENCY CORE) --------
         self.forward_queue = deque(maxlen=1)
         self.downward_queue = deque(maxlen=1)
 
+
+
         # -------- SUBSCRIBERS --------
         self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
+        self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,10)
         self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback, 1)
         self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback, 1)
 
@@ -132,6 +138,18 @@ class YoloNode(Node):
         # CALLBACK FOR DEPTH THRESHOLD
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
+
+    def edge_params_callback(self, msg):
+        if len(msg.data) < 4:
+            return
+
+        self.edge_params["dark_threshold"] = msg.data[0]
+        self.edge_params["light_min_brightness"] = msg.data[1]
+        self.edge_params["light_bright_percentile"] = msg.data[2]
+        self.edge_params["min_pixel_count"] = msg.data[3]
+
+        self.get_logger().info(f'EDGE PARAMS UPDATED: {self.edge_params}')
+        #print("EDGE PARAMS UPDATED", self.edge_params)
 
     def inference_loop(self):
         now = time.time()
@@ -311,8 +329,8 @@ class YoloNode(Node):
                         x2=x2,
                         y2=y2,
                         annotated_frame = annotated_frame,
-                        id = object_id
-                    )
+                        id = object_id,
+                        edge_params = self.edge_params)
 
                     if filled_mask is not None:
                         annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] #for debug
