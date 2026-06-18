@@ -5,7 +5,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 from robot_localization.srv import SetPose
 
-from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16
+from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray
 from nav_msgs.msg import Odometry
 
 from nautilus_mission.detection_store import DetectionStore
@@ -43,7 +43,8 @@ class MasterNode(Node):
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
         self.detections_depth_filter_mm_pub = self.create_publisher(Int16, '/yolo/detections_depth_filter_mm', 10)
-
+        self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
+   
         # Services
         self.depth_client = self.create_client(SetTargetDepth,'/mission/set_target_depth')
 
@@ -117,6 +118,11 @@ class MasterNode(Node):
         msg = Int16()
         msg.data = int(pwm)
         self.yaw_cmd_pub.publish(msg)
+
+    def publish_servo_cmd(self, servo: int, pwm: int):
+        msg = Int16MultiArray()
+        msg.data = [servo, pwm]
+        self.servo_cmd_pub.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)

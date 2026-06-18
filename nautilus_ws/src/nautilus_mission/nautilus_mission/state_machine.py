@@ -179,7 +179,9 @@ class StateMachine:
 
         if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
             if not self.current_objective.action.fired:
-                self.node.fire_torpedo()
+                #self.node.fire_torpedo()
+                self.node.get_logger().info('Launching torpedo no 1!')
+                self.node.publish_servo_cmd(11, 1900)  
                 self.current_objective.action.fired = True
 
         if self.current_objective.action.type == ActionType.FORWARD:

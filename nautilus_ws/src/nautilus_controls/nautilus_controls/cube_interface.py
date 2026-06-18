@@ -7,6 +7,7 @@ from rclpy.node import Node
 from std_msgs.msg import Int16, Int8
 from nautilus_controls.auv_pymavlink import AuvPymavlink
 from nautilus_interfaces.srv import SetTargetDepth
+from std_msgs.msg import Int16MultiArray
 import time
 
 
@@ -46,6 +47,9 @@ class CubeInterface(Node):
         self.startup(args)
 
         self.subs = {
+            'servo_cmd': self.create_subscription(
+                Int16MultiArray, '/control/cmd/servo', self.servo_cmd_callback, 10
+            ),
             'yaw_cmd': self.create_subscription(
                 Int16, '/control/cmd/yaw', self.yaw_cmd_callback, 10
             ),
@@ -80,6 +84,16 @@ class CubeInterface(Node):
         # time.sleep(2)
         self.auv.change_mode("ALT_HOLD")
         # self.auv.go_to_depth(-0.67)
+
+    def servo_cmd_callback(self, msg):
+        if len(msg.data) < 2:
+            return
+        
+        servo = int(msg.data[0])
+        pwm = int(msg.data[1])
+
+        self.auv.set_servo(servo, pwm)
+        self.get_logger().info(f'Set servo {servo} to {pwm}')
 
     def yaw_cmd_callback(self, msg):
         self.last_yaw_cmd = msg.data
