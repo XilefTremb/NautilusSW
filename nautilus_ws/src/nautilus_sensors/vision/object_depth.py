@@ -92,16 +92,16 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
 
     return center_depth
 
-def find_dist_from_center_in_x(x_center, mode):
-    cx, fx, fy, cy = params_cams(mode)
+def find_dist_from_center_in_x(x_center, mode, cam):
+    cx, fx, fy, cy = params_cams(mode, cam)
     return float((x_center - cx)/cx)
 
-def find_dist_from_center_in_y(y_center, mode):
-    cx, fx, fy, cy = params_cams(mode)
+def find_dist_from_center_in_y(y_center, mode, cam):
+    cx, fx, fy, cy = params_cams(mode, cam)
     return float((y_center - cy)/cy)
 
-def global_median_forward_cam(depth_frame, mode):
-    cx, fx, fy, cy = params_cams(mode)
+def global_median_forward_cam(depth_frame, mode, cam):
+    cx, fx, fy, cy = params_cams(mode, cam)
 
     h, w = depth_frame.shape
 
@@ -156,7 +156,7 @@ def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, 
 
     return float(np.median(valid_pixels)), filled_mask
 
-def params_cams(mode):
+def params_cams(mode, cam):
 
     if mode == "sim":
         # SIMULATION
@@ -168,12 +168,25 @@ def params_cams(mode):
         return cx, fx, fy, cy
 
     if mode == "real":
-        # OAK-D S1
-        cx = 640
-        fx = 728
-        fy = 726
-        cy = 370
+        if cam == "forward":
+            # OAK-D S1
+            cx = 640
+            fx = 728
+            fy = 726
+            cy = 480
 
-        return cx, fx, fy, cy
+            return cx, fx, fy, cy
+
+        if cam == "downard":
+            # OAK-D S1
+            cx = 640
+            fx = 728
+            fy = 726
+            cy = 360
+
+            return cx, fx, fy, cy
+
 
     return None
+#1280X720 DOWN
+#1280X960 FORWARD

@@ -193,7 +193,7 @@ class YoloNode(Node):
             self.edge_mask_pub.publish(edge_msg)
 
             # ----------- GLOBAL DEPTH -----------
-            depth_global_mean = global_median_forward_cam(depth, self.mode)
+            depth_global_mean = global_median_forward_cam(depth, self.mode, "forward")
             if depth_global_mean is not None:
                 msg_depth = Int32()
                 msg_depth.data = int(depth_global_mean)
@@ -247,8 +247,8 @@ class YoloNode(Node):
                 object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
 
-                dist_center_x = find_dist_from_center_in_x(box_cx, self.mode)
-                dist_center_y = find_dist_from_center_in_y(box_cy, self.mode)
+                dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "downward")
+                dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "downward")
 
                 payload.extend([float(object_id), float(dist_center_x), -1.0, 0.0, float(dist_center_y)])
 
@@ -358,8 +358,8 @@ class YoloNode(Node):
                     continue
 
                 # ----------- DIST / ANGLE -----------
-                dist_center_x = find_dist_from_center_in_x(box_cx, self.mode)
-                dist_center_y = find_dist_from_center_in_y(box_cy, self.mode)
+                dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "forward")
+                dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "forward")
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id == ObjectID.SLALOM_SIDE:

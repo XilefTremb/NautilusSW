@@ -28,7 +28,7 @@ def find_dist_center_gate_in_y(cy, left_y, right_y):
 
 def build_payload(GATE_ID, left_obj, right_obj, results_angle, mode):
     angle_calc = find_angle_plane(right_obj["depth"],left_obj["depth"],1524, right_obj["box_cx"],left_obj["box_cx"])
-    cx, _, _, cy= params_cams(mode)
+    cx, _, _, cy= params_cams(mode, "forward")
     dist_center_gate_in_x = find_dist_center_gate_in_x(cx, left_obj["box_cx"], right_obj["box_cx"])
     dist_center_gate_in_y = find_dist_center_gate_in_y(cy, left_obj["box_cy"], right_obj["box_cy"])
     mean_distance = (right_obj["depth"] + left_obj["depth"]) / 2
