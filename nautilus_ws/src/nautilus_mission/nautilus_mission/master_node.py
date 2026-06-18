@@ -12,6 +12,7 @@ from nautilus_mission.detection_store import DetectionStore
 from nautilus_mission.state_machine import StateMachine
 from nautilus_mission.vision_controller import VisionController
 from nautilus_interfaces.srv import SetTargetDepth
+from nautilus_mission.rosbag_recorder import RosbagRecorder
 
 
 class MasterNode(Node):
@@ -120,10 +121,24 @@ class MasterNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
+
+    recorder = RosbagRecorder()
+    recorder.start()
+
     node = MasterNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+
+    try:
+        rclpy.spin(node)
+
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        recorder.stop()
+        recorder.ask_keep_or_delete()
+
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
