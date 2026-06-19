@@ -57,69 +57,69 @@ class Objective:
 
 
 mission_list = [
-    # Objective(
-    #     name='gate',
-    #     target_ids=[ObjectID.GATE_MID_RIGHT],
-    #     target_auv_depth_m = 2.3,
-    #     search=SearchConfig(spin_pwm=1460),
-    #     center=CenterConfig(
-    #         center_tolerance_fov=0.05,
-    #         angle_tolerance_deg=5.0,
-    #     ),
-    #     approach=ApproachConfig(
-    #         approach_distance_mm=3000.0,
-    #     ),
-    #     action=ForwardAction(
-    #         forward_distance_m=3.0,
-    #     ),
-    # ),
-
     Objective(
-        name='slalom1',
-        target_ids=[ObjectID.SLALOM_LEFT_MID],
+        name='gate',
+        target_ids=[ObjectID.GATE_MID_RIGHT],
+        target_auv_depth_m = None,
         search=SearchConfig(spin_pwm=1460),
         center=CenterConfig(
-            full_centering=True,
             center_tolerance_fov=0.05,
             angle_tolerance_deg=5.0,
         ),
         approach=ApproachConfig(
-            approach_distance_mm=2000.0
-        ),
-        action=ForwardAction(
-            forward_distance_m=2.0,
-        ),
-    ),
-
-    Objective(
-        name='slalom2',
-        target_ids=[ObjectID.SLALOM_LEFT_MID],
-        search=SearchConfig(spin_pwm=1540),
-        center=CenterConfig(
-            full_centering=False,
-            center_tolerance_fov=0.05,
-        ),
-        approach=ApproachConfig(
-            approach_distance_mm=1500.0
-        ),
-        action=ForwardAction(
-            forward_distance_m=1.3,
-        ),
-    ),
-
-    Objective(
-        name='slalom3',
-        target_ids=[ObjectID.SLALOM_LEFT_MID],
-        search=SearchConfig(spin_pwm=1460),
-        center=CenterConfig(
-            full_centering=False,
-            center_tolerance_fov=0.05,
-        ),
-        approach=ApproachConfig(
-            approach_distance_mm=1500.0
+            approach_distance_mm=3000.0,
         ),
         action=ForwardAction(
             forward_distance_m=3.0,
         ),
     ),
+
+    # Objective(
+    #     name='slalom1',
+    #     target_ids=[ObjectID.SLALOM_LEFT_MID],
+    #     search=SearchConfig(spin_pwm=1460),
+    #     center=CenterConfig(
+    #         full_centering=True,
+    #         center_tolerance_fov=0.05,
+    #         angle_tolerance_deg=5.0,
+    #     ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=2000.0
+    #     ),
+    #     action=ForwardAction(
+    #         forward_distance_m=2.0,
+    #     ),
+    # ),
+
+    # Objective(
+    #     name='slalom2',
+    #     target_ids=[ObjectID.SLALOM_LEFT_MID],
+    #     search=SearchConfig(spin_pwm=1540),
+    #     center=CenterConfig(
+    #         full_centering=False,
+    #         center_tolerance_fov=0.05,
+    #     ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=1500.0
+    #     ),
+    #     action=ForwardAction(
+    #         forward_distance_m=1.3,
+    #     ),
+    # ),
+
+    # Objective(
+    #     name='slalom3',
+    #     target_ids=[ObjectID.SLALOM_LEFT_MID],
+    #     search=SearchConfig(spin_pwm=1460),
+    #     center=CenterConfig(
+    #         full_centering=False,
+    #         center_tolerance_fov=0.05,
+    #     ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=1500.0
+    #     ),
+    #     action=ForwardAction(
+    #         forward_distance_m=3.0,
+    #     ),
+    # ),
 ]
