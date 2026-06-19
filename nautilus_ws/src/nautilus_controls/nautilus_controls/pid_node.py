@@ -31,8 +31,8 @@ class VisionPidNode(Node):
 
         # Command limits
         self.cmd_center = 1500.0
-        self.cmd_min = 1300.0
-        self.cmd_max = 1700.0
+        self.cmd_min = 1400.0
+        self.cmd_max = 1600.0
 
         # PID state
         self.integral = 0.0
