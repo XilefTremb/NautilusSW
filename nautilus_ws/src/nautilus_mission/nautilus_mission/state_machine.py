@@ -36,7 +36,7 @@ class StateMachine:
         self.pid_integrator_resetted = False
 
         self.target_missing_count = 0
-        self.target_missing_limit = 50
+        self.target_missing_limit = 500
         self.state_start_time = time.monotonic()
         self.execute_action_start_time = None
 
@@ -208,7 +208,7 @@ class StateMachine:
 
         if action == ActionType.FORWARD:
             #done = self.state_lifespan >= self.current_objective.action_duration
-            return self.forward_position >= self.current_objective.action.forward_distance_m
+            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.4)
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
