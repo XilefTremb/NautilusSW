@@ -25,7 +25,7 @@ def generate_launch_description():
                 'input_topic': '/control/vision_errors/forward',
                 'output_topic': '/control/cmd/forward',
                 'kp': 1.9,
-                'ki': 0.0,
+                'ki': 0.01,
                 'kd': 0.5,
                 'flip_output': True
             }]
@@ -39,7 +39,7 @@ def generate_launch_description():
                 'input_topic': '/control/vision_errors/lateral',
                 'output_topic': '/control/cmd/lateral',
                 'kp': 1.9,
-                'ki': 0.0,
+                'ki': 0.01,
                 'kd': 0.5,
                 'flip_output': True
             }]
@@ -53,7 +53,7 @@ def generate_launch_description():
                 'input_topic': '/control/vision_errors/forward_ekf',
                 'output_topic': '/control/cmd/forward',
                 'kp': 15.0,
-                'ki': 0.0,
+                'ki': 0.1,
                 'kd': 0.5,
                 'flip_output': False
             }]
