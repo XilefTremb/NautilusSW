@@ -9,6 +9,7 @@ from transitions import Machine
 from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
+from enums.ServoIndex import ServoIndex
 
 from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
@@ -181,7 +182,7 @@ class StateMachine:
             if not self.current_objective.action.fired:
                 #self.node.fire_torpedo()
                 self.node.get_logger().info('Launching torpedo no 1!')
-                self.node.publish_servo_cmd(11, 1900)  
+                self.node.publish_servo_cmd(ServoIndex.TORPEDO_ID, ServoIndex.TORPEDO_1)  
                 self.current_objective.action.fired = True
 
         if self.current_objective.action.type == ActionType.FORWARD:
