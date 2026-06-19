@@ -13,7 +13,7 @@ from enums.DetectionIndex import DetectionIndex
 from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
 from .ekf_reset import reset_ekf_pose
-from nautilus_services import request_depth_change
+from nautilus_services import request_depth_change, reset_pids
 
 
 class StateMachine:
@@ -141,9 +141,11 @@ class StateMachine:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
 
     def on_enter_CENTER_TARGET(self, event):
+        reset_pids(self.node)
         self.target_missing_count = 0
 
     def on_enter_APPROACH_TARGET(self, event):
+        reset_pids(self.node)
         self.target_missing_count = 0
         self.ekf_resetted = False
         
@@ -151,6 +153,8 @@ class StateMachine:
         self.ekf_resetted = reset_ekf_pose(self.node)
 
     def on_enter_EXECUTE_ACTION(self, event):
+        reset_pids(self.node)
+
         if self.current_objective is None:
             self.finish_mission()
             return

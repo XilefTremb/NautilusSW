@@ -34,7 +34,6 @@ class ForwardAction:
     type: ActionType = ActionType.FORWARD
     duration_s: float = 0.0
     forward_distance_m: float = 0.0
-    forward_pwm: int = 1500
 
 @dataclass
 class CircleMarkerAction:
@@ -71,7 +70,6 @@ mission_list = [
     #         approach_distance_mm=3000.0,
     #     ),
     #     action=ForwardAction(
-    #         forward_pwm=1590,
     #         forward_distance_m=3.0,
     #     ),
     # ),
@@ -89,7 +87,6 @@ mission_list = [
             approach_distance_mm=2000.0
         ),
         action=ForwardAction(
-            forward_pwm=1580,
             forward_distance_m=2.0,
         ),
     ),
@@ -106,8 +103,7 @@ mission_list = [
             approach_distance_mm=1500.0
         ),
         action=ForwardAction(
-            forward_pwm=1580,
-            forward_distance_m=1.8,
+            forward_distance_m=1.3,
         ),
     ),
 
@@ -123,7 +119,6 @@ mission_list = [
             approach_distance_mm=1500.0
         ),
         action=ForwardAction(
-            forward_pwm=1580,
             forward_distance_m=3.0,
         ),
     ),
