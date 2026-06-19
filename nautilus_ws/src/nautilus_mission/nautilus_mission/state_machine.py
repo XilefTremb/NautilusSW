@@ -33,7 +33,6 @@ class StateMachine:
         self.forward_position = 0.0
         self.lateral_position = 0.0
         self.ekf_resetted = False
-        self.pid_integrator_resetted = False
 
         self.target_missing_count = 0
         self.target_missing_limit = 500
