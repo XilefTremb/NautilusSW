@@ -8,7 +8,7 @@ import cv2
 import os
 import time
 
-SAVE_DIR = os.path.expanduser("~/Documents/captured_images/oakd_640x480")
+SAVE_DIR = os.path.expanduser("~/Documents/captured_images/oakd_640x480_torpedo")
 TARGET_HZ = 2.0
 MAX_IMAGES = 300
 

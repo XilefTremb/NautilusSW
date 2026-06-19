@@ -4,7 +4,7 @@ import depthai as dai
 import time
 from pathlib import Path
 
-BACKUP_PATH = "calibration_backup.json"
+BACKUP_PATH = "json_config/calibration_backup.json"
 NEW_CALIB_PATH = "calibration_dynamic_new.json"
 
 CHECK_INTERVAL = 3.0
@@ -38,16 +38,10 @@ def find_oakd_device():
         except Exception as e:
             print(f"Could not check device: {e}")
 
+    print("No OAK-D found. Make sure the OAK-D is connected.")
     return None
 
-
-oakd_device_info = find_oakd_device()
-
-if oakd_device_info is None:
-    raise RuntimeError("No OAK-D found. Make sure the OAK-D is connected.")
-
-
-with dai.Device(oakd_device_info) as device:
+with dai.Device(find_oakd_device()) as device:
     with dai.Pipeline(device) as pipeline:
         print(f"\nUsing OAK-D device: {device.getDeviceId()}")
         print(f"Connected cameras: {device.getConnectedCameras()}")

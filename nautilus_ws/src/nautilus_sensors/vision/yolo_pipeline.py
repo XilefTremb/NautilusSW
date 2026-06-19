@@ -9,7 +9,7 @@ import os
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int32MultiArray
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
@@ -19,6 +19,7 @@ from vision.object_depth import find_depth, find_dist_from_center, global_median
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
+from vision.slider_edge_detector import load_params_edge_detector_json
 
 from enums.ObjectID import ObjectID
 
@@ -26,9 +27,9 @@ from enums.ObjectID import ObjectID
 # =========================================================
 # CONFIG
 # =========================================================
-MOVING_MEAN_ACTIVATED = True
-FORWARD_CAM_RATE_HZ = 20
-DOWNWARD_CAM_RATE_HZ = 20
+MOVING_MEAN_ACTIVATED = False
+FORWARD_CAM_RATE_HZ = 10
+DOWNWARD_CAM_RATE_HZ = 10
 
 
 def parse_args():
@@ -53,10 +54,10 @@ class YoloNode(Node):
         # -------- MODE --------
         if args.sim:
             self.mode = 'sim'
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_24_mai.pt')
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_16_juin.pt')
         else:
             self.mode = 'real'
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_competition_23_mai.pt')
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_competition_12_juin.pt')
 
         # -------- MODEL TYPE --------
         self.type_yolo = 'obb' if args.obb else 'bbox'
@@ -79,29 +80,34 @@ class YoloNode(Node):
         self.reset_after_sec = 2.0
         self.last_filter_time = {}
 
+        self.edge_params = load_params_edge_detector_json()
+
         # -------- FRAME QUEUE (LOW LATENCY CORE) --------
         self.forward_queue = deque(maxlen=1)
         self.downward_queue = deque(maxlen=1)
 
+
+
         # -------- SUBSCRIBERS --------
         self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
-        self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback,10)
-        self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback,10)
+        self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,10)
+        self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback, 1)
+        self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback, 1)
 
         # ----------- PUBLISHER -----------
-        self.detection_forward_pub = self.create_publisher(Float32MultiArray, '/yolo/detections_forward', 10)
-        self.detection_downward_pub = self.create_publisher(Float32MultiArray, '/yolo/detections_downward', 10)
-        self.down_image_pub = self.create_publisher(Image, '/yolo/image_annotated_dwd_cam', 10)
-        self.fwd_image_pub = self.create_publisher(Image, '/yolo/image_annotated_fwd_cam', 10)
-        self.mean_depth_forward_cam = self.create_publisher(Int32, '/yolo/mean_depth_forward_cam', 10)
-        self.edge_mask_pub = self.create_publisher(Image, '/yolo/edge_mask', 10)
+        self.detection_forward_pub = self.create_publisher(Float32MultiArray, '/yolo/detections_forward', 1)
+        self.detection_downward_pub = self.create_publisher(Float32MultiArray, '/yolo/detections_downward', 1)
+        self.down_image_pub = self.create_publisher(Image, '/yolo/image_annotated_dwd_cam', 1)
+        self.fwd_image_pub = self.create_publisher(Image, '/yolo/image_annotated_fwd_cam', 1)
+        self.mean_depth_forward_cam = self.create_publisher(Int32, '/yolo/mean_depth_forward_cam', 1)
+        self.edge_mask_pub = self.create_publisher(Image, '/yolo/edge_mask', 1)
 
         # ----------- SYNCHRONIZER DEPTH AND RGB -----------
         self.ts = ApproximateTimeSynchronizer(
             [self.fwd_rgb_sub, self.depth_sub],
-            queue_size=10,
-            slop=0.1,
+            queue_size= 2,
+            slop= 0.1,
             allow_headerless=True
         )
 
@@ -121,34 +127,60 @@ class YoloNode(Node):
     # -------- CALLBACKS --------
     def forward_callback(self, rgb_msg, depth_msg):
         # CALLBACK FOR FORWARD CAM (OAKD)
-        frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
-        depth = self.bridge.imgmsg_to_cv2(depth_msg, '32FC1')
-        self.forward_queue.append((frame, depth, rgb_msg.header))
+        # self.get_logger().info("SYNC")
+        self.forward_queue.append((rgb_msg, depth_msg))
 
     def downward_callback(self, rgb_msg):
         # CALLBACK FOR FORWARD CAM (OAK1)
-        frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
-        self.downward_queue.append((frame, rgb_msg.header))
+        self.downward_queue.append(rgb_msg)
 
     def depth_threshold_callback(self, msg):
         # CALLBACK FOR DEPTH THRESHOLD
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
 
+    def edge_params_callback(self, msg):
+        if len(msg.data) < 4:
+            return
+
+        self.edge_params["dark_threshold"] = msg.data[0]
+        self.edge_params["light_min_brightness"] = msg.data[1]
+        self.edge_params["light_bright_percentile"] = msg.data[2]
+        self.edge_params["min_pixel_count"] = msg.data[3]
+
+        self.get_logger().info(f'EDGE PARAMS UPDATED: {self.edge_params}')
+        #print("EDGE PARAMS UPDATED", self.edge_params)
+
     def inference_loop(self):
         now = time.time()
+
+        # if hasattr(self, "_last_timer"):
+            # self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
+
+        self._last_timer = now
 
         #PRIORITY1: FORWARD CAMERA
         if self.forward_queue and (now - self.last_forward_time > self.forward_interval):
 
-            frame, depth, header = self.forward_queue.pop()
+            rgb_msg, depth_msg = self.forward_queue.pop()
             self.forward_queue.clear()
+
+            frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
+            depth = self.bridge.imgmsg_to_cv2(depth_msg, '32FC1')
+            header = rgb_msg.header
+
             self.last_forward_time = now
 
+            # t0 = time.time()
             results = self.model(frame, conf=0.4, verbose=False)
+            # t1 = time.time()
+
             annotated = frame.copy()
 
             annotated_frame, edge_debug = self.process_forward(results, annotated, depth)
+            # t2 = time.time()
+
+            # self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
 
             # ----------- PUBLISH IMAGE ANNOTATED OAKD -----------
             out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
@@ -172,8 +204,12 @@ class YoloNode(Node):
         #PRIORITY2: DOWNWARD CAMERA
         if self.downward_queue and (now - self.last_downward_time > self.downward_interval):
 
-            frame, header = self.downward_queue.pop()
+            rgb_msg = self.downward_queue.pop()
             self.downward_queue.clear()
+
+            frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
+            header = rgb_msg.header
+
             self.last_downward_time = now
 
             results = self.model(frame, conf=0.4, verbose=False)
@@ -292,8 +328,9 @@ class YoloNode(Node):
                         y1=y1,
                         x2=x2,
                         y2=y2,
-                        annotated_frame = annotated_frame
-                    )
+                        annotated_frame = annotated_frame,
+                        id = object_id,
+                        edge_params = self.edge_params)
 
                     if filled_mask is not None:
                         annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] #for debug
@@ -316,14 +353,14 @@ class YoloNode(Node):
                             bbox_cx=box_cx,
                             mode=self.mode)
 
-                if depth_value is None:
+                if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
                     continue
 
                 # ----------- DIST / ANGLE -----------
                 dist_center = find_dist_from_center(box_cx, self.mode)
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
-                if int(object_id) == int(ObjectID.SLALOM_SIDE):
+                if object_id == ObjectID.SLALOM_SIDE:
                     slalom_tab.append({
                         "depth": depth_value,
                         "dist_center": dist_center,
@@ -388,25 +425,24 @@ class YoloNode(Node):
                         points=points
                     )
 
-        for object_id, obj in objects.items():
-            if obj["depth"] < self.depth_threshold:
-                payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),0.0])
-                draw_detection(
-                    annotated_frame,
-                    self.type_yolo,
-                    object_id,
-                    obj["confidence"],
-                    obj["depth"],
-                    obj["dist_center"],
-                    obj["box_cx"],
-                    obj["box_cy"],
-                    obj["x1"],
-                    obj["y1"],
-                    obj["x2"],
-                    obj["y2"],
-                    color=(0, 255, 0),
-                    points=obj["points"]
-                )
+        for object_id, obj in objects.items(): 
+            payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),0.0])
+            draw_detection(
+                annotated_frame,
+                self.type_yolo,
+                object_id,
+                obj["confidence"],
+                obj["depth"],
+                obj["dist_center"],
+                obj["box_cx"],
+                obj["box_cy"],
+                obj["x1"],
+                obj["y1"],
+                obj["x2"],
+                obj["y2"],
+                color=(0, 255, 0),
+                points=obj["points"]
+            )
 
         # -------- SLALOM LOGIC --------
         objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
@@ -418,6 +454,9 @@ class YoloNode(Node):
             for i in range(0, len(payload_angle), 4):
                 group_id = int(payload_angle[i])
                 angle_index = i + 3
+
+                if group_id == int(ObjectID.SLALOM_CENTER):
+                    continue
 
                 payload_angle[angle_index] = self.temporal_filter.moving_median_filter(
                     key=f"angle_{group_id}",
@@ -444,7 +483,7 @@ class YoloNode(Node):
         if len(slalom_tab) == 0:
             return objects, payload
 
-        self.get_logger().info(f"{objects}")
+        # self.get_logger().info(f"{objects}")
         
         selected_ids = {}
 
@@ -455,14 +494,15 @@ class YoloNode(Node):
                 closest_side = min(valid_slaloms, key=lambda s: s["depth"])
             else:
                 closest_side = min(slalom_tab, key=lambda s: s["depth"])
-                selected_ids[id(closest_side)] = ObjectID.SLALOM_SIDE
+            
+            selected_ids[id(closest_side)] = ObjectID.SLALOM_SIDE
 
-                payload.extend([
-                    float(ObjectID.SLALOM_SIDE),
-                    float(closest_side["dist_center"]),
-                    float(closest_side["depth"]),
-                    0.0
-                ])
+            payload.extend([
+                float(ObjectID.SLALOM_SIDE),
+                float(closest_side["dist_center"]),
+                float(closest_side["depth"]),
+                0.0
+            ])
 
         else:
             slalom_middle_cx = objects[ObjectID.SLALOM_CENTER]["box_cx"]

@@ -5,6 +5,9 @@ import os
 import threading
 import time
 
+os.environ["MAVLINK20"] = "1"
+os.environ["MAVLINK_DIALECT"] = "ardupilotmega"
+
 from pymavlink import mavutil
 
 
@@ -41,9 +44,6 @@ class AuvPymavlink:
 
         self.the_connection = None
         self.last_t = time.time()
-
-        os.environ["MAVLINK20"] = "1"
-        os.environ["MAVLINK_DIALECT"] = "ardupilotmega"
 
         self._send_lock = threading.Lock()
 
@@ -502,18 +502,11 @@ class AuvPymavlink:
             f"has {method}: {hasattr(self.the_connection.mav, method)}"
         )
 
-    def send_rc_override(
-        self,
-        forward=None,
-        lateral=None,
-        throttle=None,
-        yaw=None,
-        pitch=None,
-        roll=None,
-    ):
+    def send_rc_override(self, forward=None, lateral=None, throttle=None, yaw=None, pitch=None, roll=None):
+
         uint16_max = 65535
 
-        def encode_ch_1_to_8(value):
+        def encode(value):
             if value is None:
                 return uint16_max
 
@@ -525,40 +518,55 @@ class AuvPymavlink:
 
             return value
 
-        ch1_pitch = encode_ch_1_to_8(pitch)
-        ch2_roll = encode_ch_1_to_8(roll)
-        ch3_throttle = encode_ch_1_to_8(throttle)
-        ch4_yaw = encode_ch_1_to_8(yaw)
-        ch5_forward = encode_ch_1_to_8(forward)
-        ch6_lateral = encode_ch_1_to_8(lateral)
+        channels = [
+        encode(pitch),     # ch1
+        encode(roll),      # ch2
+        encode(throttle),  # ch3
+        encode(yaw),       # ch4
+        encode(forward),   # ch5
+        encode(lateral),   # ch6
+        uint16_max,        # ch7
+        uint16_max,        # ch8
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-        ch7 = ch8 = uint16_max
-        ch9 = ch10 = ch11 = ch12 = ch13 = ch14 = ch15 = ch16 = ch17 = ch18 = 0
+        last_error = None
 
-        with self._send_lock:
+        retries = 2
+
+        for attempt in range(retries):
+            try:
+                with self._send_lock:
+                    self._rc_override_send_compat(channels)
+                return True
+
+            except Exception as e:
+                last_error = e
+                self.node.get_logger().warn(
+                    f"RC override send failed ({attempt + 1}/{retries}): {e}"
+                )
+                time.sleep(0.02)
+
+        self.node.get_logger().error(f"RC override failed after {retries} retries: {last_error}")
+        return False
+        
+
+    def _rc_override_send_compat(self, channels):
+        try:
             self.the_connection.mav.rc_channels_override_send(
                 self.the_connection.target_system,
                 self.the_connection.target_component,
-                ch1_pitch,
-                ch2_roll,
-                ch3_throttle,
-                ch4_yaw,
-                ch5_forward,
-                ch6_lateral,
-                ch7,
-                ch8,
-                ch9,
-                ch10,
-                ch11,
-                ch12,
-                ch13,
-                ch14,
-                ch15,
-                ch16,
-                ch17,
-                ch18,
+                *channels[:18],
             )
+        except TypeError as e:
+            if "arguments" not in str(e):
+                raise
 
+            # Older pymavlink / MAVLink1 dialect: only channels 1-8 supported
+            self.the_connection.mav.rc_channels_override_send(
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                *channels[:8],
+            )
 
     def set_target_depth(self, depth):
         self.the_connection.mav.set_position_target_global_int_send(

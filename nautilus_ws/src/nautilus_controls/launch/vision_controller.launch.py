@@ -11,7 +11,7 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/yaw',
                 'output_topic': '/control/cmd/yaw',
-                'kp': 200.0,
+                'kp': 150.0,
                 'ki': 0.0,
                 'kd': 32.0,
             }]
@@ -24,7 +24,7 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/forward',
                 'output_topic': '/control/cmd/forward',
-                'kp': 1.9,
+                'kp': 5.0,
                 'ki': 0.0,
                 'kd': 0.5,
                 'flip_output': True
@@ -38,10 +38,24 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/lateral',
                 'output_topic': '/control/cmd/lateral',
-                'kp': 1.9,
+                'kp': 5.0,
                 'ki': 0.0,
                 'kd': 0.5,
                 'flip_output': True
+            }]
+        ),
+
+        Node(
+            package='nautilus_controls',
+            executable='pid_node',
+            name='pid_forward_ekf',
+            parameters=[{
+                'input_topic': '/control/vision_errors/forward_ekf',
+                'output_topic': '/control/cmd/forward',
+                'kp': 60.0,
+                'ki': 0.0,
+                'kd': 0.5,
+                'flip_output': False
             }]
         ),
     ])

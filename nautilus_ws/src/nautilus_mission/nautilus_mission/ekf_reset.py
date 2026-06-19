@@ -38,6 +38,10 @@ def reset_ekf_pose(node):
 
     future = node.set_pose_client.call_async(req)
 
-    future.add_done_callback(
-        lambda _: node.get_logger().info('EKF reset complete')
-    )
+    try:
+        future.add_done_callback(
+            lambda _: node.get_logger().info('EKF reset complete')
+        )
+        return True
+    except: 
+        return False
