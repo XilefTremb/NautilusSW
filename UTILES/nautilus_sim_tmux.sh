@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+source ~/.bashrc
+shopt -s expand_aliases
+
+build || exit 1
+
 SESSION="AUV"
 if tmux has-session -t "$SESSION" 2>/dev/null; then
     echo "Session already exists"
@@ -30,7 +35,7 @@ tmux split-window -v -t "$SESSION:mission.0"
 tmux split-window -v -t "$SESSION:mission.1"
 
 # Run commands in each pane
-tmux send-keys -t "$SESSION:mission.0" "ros2 launch nautilus_controls vision_controller.launch.py" C-m
+tmux send-keys -t "$SESSION:mission.0" "ros2 launch nautilus_controls vision_controller_sim.launch.py" C-m
 tmux send-keys -t "$SESSION:mission.1" "ros2 run nautilus_controls cube_interface --sitl" C-m
 tmux send-keys -t "$SESSION:mission.2" "ros2 run nautilus_mission master_node"
 
