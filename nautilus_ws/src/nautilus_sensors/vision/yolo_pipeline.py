@@ -54,7 +54,7 @@ class YoloNode(Node):
         # -------- MODE --------
         if args.sim:
             self.mode = 'sim'
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_11_juin.pt')
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_16_juin.pt')
         else:
             self.mode = 'real'
             model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_competition_12_juin.pt')
