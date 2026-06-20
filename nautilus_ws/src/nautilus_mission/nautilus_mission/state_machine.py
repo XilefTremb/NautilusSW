@@ -13,7 +13,7 @@ from enums.DetectionIndex import DetectionIndex
 from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
 from .ekf_reset import reset_ekf_pose
-from nautilus_services import request_depth_change
+from nautilus_services import request_depth_change, reset_pids
 
 
 class StateMachine:
@@ -35,7 +35,7 @@ class StateMachine:
         self.ekf_resetted = False
 
         self.target_missing_count = 0
-        self.target_missing_limit = 50
+        self.target_missing_limit = 500
         self.state_start_time = time.monotonic()
         self.execute_action_start_time = None
 
@@ -141,9 +141,11 @@ class StateMachine:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
 
     def on_enter_CENTER_TARGET(self, event):
+        reset_pids(self.node)
         self.target_missing_count = 0
 
     def on_enter_APPROACH_TARGET(self, event):
+        reset_pids(self.node)
         self.target_missing_count = 0
         self.ekf_resetted = False
         
@@ -151,6 +153,8 @@ class StateMachine:
         self.ekf_resetted = reset_ekf_pose(self.node)
 
     def on_enter_EXECUTE_ACTION(self, event):
+        reset_pids(self.node)
+
         if self.current_objective is None:
             self.finish_mission()
             return
@@ -203,7 +207,7 @@ class StateMachine:
 
         if action == ActionType.FORWARD:
             #done = self.state_lifespan >= self.current_objective.action_duration
-            return self.forward_position >= self.current_objective.action.forward_distance_m
+            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.4)
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:

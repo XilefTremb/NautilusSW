@@ -33,8 +33,8 @@ from gi.repository import Gst
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 10
-SAVE_INTERVAL = 5.0
-START_BLUE_FILTER = False
+SAVE_INTERVAL = 2.0
+START_BLUE_FILTER = True
 START_DEPTH_COLOR = True
 START_OVERLAY = True
 
@@ -480,7 +480,7 @@ class DualOakNode(Node):
         self.stack.close()
         super().destroy_node()
 
-    def depth_to_colormap(self, depth_frame, max_depth_mm=10000):
+    def depth_to_colormap(self, depth_frame, max_depth_mm=100000):
         invalid_mask = depth_frame == 0
 
         try:
