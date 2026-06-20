@@ -13,7 +13,7 @@ from enums.DetectionIndex import DetectionIndex
 from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
 from .ekf_reset import reset_ekf_pose
-from nautilus_services import request_depth_change
+from nautilus_services import request_depth_change, reset_pids
 
 
 class StateMachine:
@@ -33,9 +33,10 @@ class StateMachine:
         self.mean_depth_forward_cam: Optional[int] = None
         self.forward_position = 0.0
         self.lateral_position = 0.0
+        self.ekf_resetted = False
 
         self.target_missing_count = 0
-        self.target_missing_limit = 50
+        self.target_missing_limit = 500
         self.state_start_time = time.monotonic()
         self.execute_action_start_time = None
 
@@ -56,7 +57,7 @@ class StateMachine:
             {'trigger': 'target_found', 'source': 'SEARCH_TARGET', 'dest': 'CENTER_TARGET'},
             {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
             {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
-            {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION'},
+            {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION', 'conditions': 'ekf_reset_done'},
             {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
             {'trigger': 'finish_mission', 'source': '*', 'dest': 'MISSION_COMPLETE'},
@@ -158,18 +159,25 @@ class StateMachine:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
 
     def on_enter_CENTER_TARGET(self, event):
+        reset_pids(self.node)
         self.target_missing_count = 0
 
     def on_enter_APPROACH_TARGET(self, event):
+        reset_pids(self.node)
         self.target_missing_count = 0
+        self.ekf_resetted = False
+        
+    def on_exit_APPROACH_TARGET(self, event):
+        self.ekf_resetted = reset_ekf_pose(self.node)
 
     def on_enter_EXECUTE_ACTION(self, event):
+        reset_pids(self.node)
+
         if self.current_objective is None:
             self.finish_mission()
             return
     
         self.execute_action_start_time = time.monotonic()
-        reset_ekf_pose(self.node)
 
         self.node.get_logger().info(
             f'Executing action {self.current_objective.action.type.name} '
@@ -190,7 +198,8 @@ class StateMachine:
             return
 
         if self.current_objective.action.type == ActionType.FORWARD:
-            self.node.publish_forward_cmd(self.current_objective.action.forward_pwm)
+            error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
+            self.node.publish_forward_ekf_error(error_ekf_fwd_position)
 
         if self.current_objective.action.type == ActionType.SAVE_ROLE:
             self.node.get_logger().info('Saving role choice for current objective.')
@@ -227,7 +236,7 @@ class StateMachine:
 
         if action == ActionType.FORWARD:
             #done = self.state_lifespan >= self.current_objective.action_duration
-            return self.forward_position >= self.current_objective.action.forward_distance_m
+            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.4)
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
@@ -283,6 +292,15 @@ class StateMachine:
 
         angle = target[DetectionIndex.ANGLE_DEG]
         return abs(angle) < self.current_objective.center.angle_tolerance_deg
+    
+    def ekf_reset_done(self, event):
+        if self.ekf_resetted:
+            return True
+
+        self.node.get_logger().info("Resetting EKF before leaving APPROACH_TARGET")
+        self.ekf_resetted = reset_ekf_pose(self.node)
+
+        return self.ekf_resetted
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()

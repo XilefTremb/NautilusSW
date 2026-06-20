@@ -3,7 +3,6 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
-from robot_localization.srv import SetPose
 
 from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray
 from nav_msgs.msg import Odometry
@@ -12,6 +11,8 @@ from nautilus_mission.detection_store import DetectionStore
 from nautilus_mission.state_machine import StateMachine
 from nautilus_mission.vision_controller import VisionController
 from nautilus_interfaces.srv import SetTargetDepth
+from robot_localization.srv import SetPose
+from std_srvs.srv import Trigger
 
 
 class MasterNode(Node):
@@ -37,6 +38,7 @@ class MasterNode(Node):
         self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
+        self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
         self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
         self.yaw_cmd_pub = self.create_publisher(Int16, '/control/cmd/yaw', 10)
         self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
@@ -46,9 +48,11 @@ class MasterNode(Node):
 
         # Services
         self.depth_client = self.create_client(SetTargetDepth,'/mission/set_target_depth')
-
-        # Service client
         self.set_pose_client = self.create_client(SetPose,'/set_pose')
+        self.yaw_reset_client = self.create_client(Trigger, '/pid_yaw/reset_pid')
+        self.forward_reset_client = self.create_client(Trigger, '/pid_forward/reset_pid')
+        self.lateral_reset_client = self.create_client(Trigger, '/pid_lateral/reset_pid')
+        self.forward_ekf_reset_client = self.create_client(Trigger, '/pid_forward_ekf/reset_pid')
 
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
@@ -92,6 +96,11 @@ class MasterNode(Node):
         msg = Float32()
         msg.data = float(error)
         self.forward_error_pub.publish(msg)
+
+    def publish_forward_ekf_error(self, error: float):
+        msg = Float32()
+        msg.data = float(error)
+        self.forward_ekf_error_pub.publish(msg)
 
     def publish_lateral_error(self, error: float):
         msg = Float32()

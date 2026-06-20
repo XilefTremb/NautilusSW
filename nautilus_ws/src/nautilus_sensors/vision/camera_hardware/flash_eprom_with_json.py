@@ -1,47 +1,44 @@
 #!/usr/bin/env python3
 
-import depthai as dai
 from pathlib import Path
+import depthai as dai
+from camera_hardware.dynamic_calibration import find_oakd_device
 
-CALIB_JSON = Path("calibration_restore_clean.json")
 
+CALIBRATION_FILE = "C:/Users/Xavier Lefebvre/Documents/GitHub/NautilusVision/scripts/Annotate_And_Save/calibration.json"
 
+# Backup automatique
+BACKUP_FILE = str((Path(__file__).parent / "json_config" / "depthai_calib_backup.json").resolve())
 
-print(f"Calibration à flasher : {CALIB_JSON}")
+try:
+    device = dai.Device(find_oakd_device())
 
-if not CALIB_JSON.exists():
-    raise FileNotFoundError(f"Fichier introuvable : {CALIB_JSON}")
+    print("\n====================================")
+    print("Connected Device")
+    print("====================================")
 
-answer = input(
-    "\nATTENTION: Ceci va écraser la calibration actuellement dans l'EEPROM.\n"
-    "Voulez-vous continuer ? [y/N]: "
-).strip().lower()
+    current_calib = device.readCalibration()
+    current_calib.eepromToJsonFile(BACKUP_FILE)
 
-if answer not in ["y", "yes"]:
-    print("Opération annulée.")
-    exit(0)
-
-print("\nChargement du fichier de calibration...")
-
-calib = dai.CalibrationHandler(str(CALIB_JSON))
-
-with dai.Device() as device:
-    print("Caméra détectée.")
+    print("Current calibration backed up to:")
+    print(BACKUP_FILE)
+    print()
 
     answer = input(
-        "\nDernière confirmation.\n"
-        "Flasher cette calibration dans l'EEPROM ? [y/N]: "
+        f"Flash calibration file:\n{CALIBRATION_FILE}\n\n"
+        "Continue? (y/n): "
     ).strip().lower()
 
-    if answer not in ["y", "yes"]:
-        print("Flash annulé.")
+    if answer != "y":
+        print("Operation cancelled.")
         exit(0)
 
-    try:
-        success = device.flashCalibration(calib, flashProtected=False)
+    calib_data = dai.CalibrationHandler(CALIBRATION_FILE)
+    print("\nFlashing calibration...")
+    device.flashCalibration(calib_data)
 
-        print(f"\nRésultat du flash : {success}")
-        print("Calibration flashée dans l'EEPROM avec succès.")
+    print("\nSuccessfully flashed calibration!")
 
-    except Exception as e:
-        print(f"\nErreur durant le flash : {e}")
+except Exception as e:
+    print("\nFailed flashing calibration:")
+    print(e)
