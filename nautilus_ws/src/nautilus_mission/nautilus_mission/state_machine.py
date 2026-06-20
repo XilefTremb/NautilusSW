@@ -9,7 +9,7 @@ from transitions import Machine
 from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
-from enums.ServoIndex import ServoIndex
+from enums.ServoEnum import ServoEnum
 
 from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
@@ -184,10 +184,10 @@ class StateMachine:
 
         if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
             if not self.current_objective.action.fired:
-                #self.node.fire_torpedo()
+                # self.node.fire_torpedo()
                 self.node.get_logger().info('Launching torpedo no 1!')
-                self.node.publish_servo_cmd(ServoIndex.TORPEDO_ID, ServoIndex.TORPEDO_1)  
-                self.current_objective.action.fired = True
+                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_L_PWM)  
+                # self.current_objective.action.fired = True
 
         if self.current_objective.action.type == ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
@@ -228,7 +228,7 @@ class StateMachine:
                 and self.state_lifespan >= self.current_objective.action.min_lifespan_s
             )
         if action == ActionType.FIRE_TORPEDO:
-            return self.state_lifespan >= self.current_objective.action.min_lifespan_s
+            return self.current_objective.state_lifespan > self.current_objective.action.min_lifespan_s
         return False
 
     def is_target_present(self) -> bool:
