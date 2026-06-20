@@ -9,7 +9,7 @@ import os
 
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int32MultiArray
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
@@ -19,6 +19,7 @@ from vision.object_depth import find_depth, find_dist_from_center, global_median
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
+from vision.slider_edge_detector import load_params_edge_detector_json
 
 from enums.ObjectID import ObjectID
 
@@ -56,7 +57,7 @@ class YoloNode(Node):
         # -------- MODE --------
         if args.sim:
             self.mode = 'sim'
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_11_juin.pt')
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_16_juin.pt')
         else:
             self.mode = 'real'
             model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_competition_12_juin.pt')
@@ -82,13 +83,18 @@ class YoloNode(Node):
         self.reset_after_sec = 2.0
         self.last_filter_time = {}
 
+        self.edge_params = load_params_edge_detector_json()
+
         # -------- FRAME QUEUE (LOW LATENCY CORE) --------
         self.forward_queue = deque(maxlen=1)
         self.downward_queue = deque(maxlen=1)
 
+
+
         # -------- SUBSCRIBERS --------
         self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
+        self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,10)
         self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback, 1)
         self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback, 1)
 
@@ -124,7 +130,7 @@ class YoloNode(Node):
     # -------- CALLBACKS --------
     def forward_callback(self, rgb_msg, depth_msg):
         # CALLBACK FOR FORWARD CAM (OAKD)
-        self.get_logger().info("SYNC")
+        # self.get_logger().info("SYNC")
         self.forward_queue.append((rgb_msg, depth_msg))
 
     def downward_callback(self, rgb_msg):
@@ -136,11 +142,23 @@ class YoloNode(Node):
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
 
+    def edge_params_callback(self, msg):
+        if len(msg.data) < 4:
+            return
+
+        self.edge_params["dark_threshold"] = msg.data[0]
+        self.edge_params["light_min_brightness"] = msg.data[1]
+        self.edge_params["light_bright_percentile"] = msg.data[2]
+        self.edge_params["min_pixel_count"] = msg.data[3]
+
+        self.get_logger().info(f'EDGE PARAMS UPDATED: {self.edge_params}')
+        #print("EDGE PARAMS UPDATED", self.edge_params)
+
     def inference_loop(self):
         now = time.time()
 
-        if hasattr(self, "_last_timer"):
-            self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
+        # if hasattr(self, "_last_timer"):
+            # self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
 
         self._last_timer = now
 
@@ -156,16 +174,16 @@ class YoloNode(Node):
 
             self.last_forward_time = now
 
-            t0 = time.time()
+            # t0 = time.time()
             results = self.model(frame, conf=0.4, verbose=False)
-            t1 = time.time()
+            # t1 = time.time()
 
             annotated = frame.copy()
 
             annotated_frame, edge_debug = self.process_forward(results, annotated, depth)
-            t2 = time.time()
+            # t2 = time.time()
 
-            self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
+            # self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
 
             # ----------- PUBLISH IMAGE ANNOTATED OAKD -----------
             out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
@@ -335,8 +353,8 @@ class YoloNode(Node):
                         x2=x2,
                         y2=y2,
                         annotated_frame = annotated_frame,
-                        mode=self.mode
-                    )
+                        id = object_id,
+                        edge_params = self.edge_params)
 
                     if filled_mask is not None:
                         annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] #for debug
@@ -359,23 +377,7 @@ class YoloNode(Node):
                             bbox_cx=box_cx,
                             mode=self.mode)
 
-                if depth_value is None or not (800.0 < depth_value < self.depth_threshold):
-                    draw_detection(
-                            annotated_frame,
-                            self.type_yolo,
-                            object_id,
-                            confidence,
-                            -99999,
-                            -9999,
-                            box_cx,
-                            box_cy,
-                            x1,
-                            y1,
-                            x2,
-                            y2,
-                            color= COLOR_NOT_IN_DETECTION,
-                            points=None
-                        )
+                if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
                     continue
 
                 # ----------- DIST / ANGLE -----------
@@ -393,7 +395,7 @@ class YoloNode(Node):
                         )
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
-                if int(object_id) == int(ObjectID.SLALOM_SIDE):
+                if object_id == ObjectID.SLALOM_SIDE:
                     slalom_tab.append({
                         "depth": depth_value,
                         "dist_center": dist_center,

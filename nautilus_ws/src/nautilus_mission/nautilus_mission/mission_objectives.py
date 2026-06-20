@@ -36,7 +36,6 @@ class ForwardAction:
     type: ActionType = ActionType.FORWARD
     duration_s: float = 0.0
     forward_distance_m: float = 0.0
-    forward_pwm: int = 1500
 
 @dataclass
 class CircleMarkerAction:

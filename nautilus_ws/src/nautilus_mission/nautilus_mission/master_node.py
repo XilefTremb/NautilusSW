@@ -3,7 +3,6 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
-from robot_localization.srv import SetPose
 
 from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray
 from nav_msgs.msg import Odometry
@@ -12,6 +11,9 @@ from nautilus_mission.detection_store import DetectionStore
 from nautilus_mission.state_machine import StateMachine
 from nautilus_mission.vision_controller import VisionController
 from nautilus_interfaces.srv import SetTargetDepth
+from nautilus_mission.rosbag_recorder import RosbagRecorder
+from robot_localization.srv import SetPose
+from std_srvs.srv import Trigger
 
 
 class MasterNode(Node):
@@ -34,7 +36,6 @@ class MasterNode(Node):
         self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
 
         # Publishers
-        self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
         self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
@@ -47,9 +48,11 @@ class MasterNode(Node):
    
         # Services
         self.depth_client = self.create_client(SetTargetDepth,'/mission/set_target_depth')
-
-        # Service client
         self.set_pose_client = self.create_client(SetPose,'/set_pose')
+        self.yaw_reset_client = self.create_client(Trigger, '/pid_yaw/reset_pid')
+        self.forward_reset_client = self.create_client(Trigger, '/pid_forward/reset_pid')
+        self.lateral_reset_client = self.create_client(Trigger, '/pid_lateral/reset_pid')
+        self.forward_ekf_reset_client = self.create_client(Trigger, '/pid_forward_ekf/reset_pid')
 
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
@@ -126,10 +129,24 @@ class MasterNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
+
     node = MasterNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+
+    recorder = RosbagRecorder(node)
+    recorder.start()
+
+    try:
+        rclpy.spin(node)
+
+    except KeyboardInterrupt:
+        pass
+
+    finally:
+        recorder.stop()
+        recorder.ask_keep_or_delete()
+
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
