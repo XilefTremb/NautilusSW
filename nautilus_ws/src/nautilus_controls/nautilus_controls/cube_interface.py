@@ -82,8 +82,17 @@ class CubeInterface(Node):
         self.auv.start_receiver()
 
         # time.sleep(2)
-        self.auv.change_mode("ALT_HOLD")
+        # self.auv.change_mode("ALT_HOLD")
         # self.auv.go_to_depth(-0.67)
+        self.auv.set_servo(11, 800)
+        time.sleep(2.0)
+        self.auv.set_servo(11, 1250)
+        time.sleep(2.0)
+        self.auv.set_servo(11, 1800)
+
+
+
+
 
     def servo_cmd_callback(self, msg):
         if len(msg.data) < 2:
