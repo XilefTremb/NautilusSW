@@ -2,7 +2,12 @@ import subprocess
 import signal
 import shutil
 import time
+import cv2
+
 from pathlib import Path
+from collections import deque
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 
 
 # =====================================================
@@ -11,36 +16,38 @@ from pathlib import Path
 SAVE_TARGET = "usb"  # "usb" or "computer"
 
 USB_DEVICE = "/dev/sda1"
-USB_MOUNT_POINT = "/media/usb"
+USB_MOUNT_POINT = "/media/nautilus/95B9-46D3"
+USB_OUTPUT_DIR = "/media/nautilus/95B9-46D3/rosbags"
 
 COMPUTER_OUTPUT_DIR = "/home/rosbags"
-USB_OUTPUT_DIR = "/media/usb/rosbags"
+
 
 
 class RosbagRecorder:
-    def __init__(self):
+    def __init__(self, node=None):
+        self.node = node
         self.process = None
         self.bag_path = None
 
-        if SAVE_TARGET == "usb":
-            self.output_dir = Path(USB_OUTPUT_DIR)
-        else:
-            self.output_dir = Path(COMPUTER_OUTPUT_DIR)
+        self.bridge = CvBridge()
+        self.annotated_frames = deque(maxlen=100)
+
+        if self.node is not None:
+            self.annotated_sub = self.node.create_subscription(Image, "/yolo/image_annotated_fwd_cam", self.annotated_callback, 10)
+
+        self.output_dir = Path(USB_OUTPUT_DIR) if SAVE_TARGET == "usb" else Path(COMPUTER_OUTPUT_DIR)
 
         self.topics = [
-            "/oakd/camera/image_raw",
-            "/oakd/camera/depth/image_raw",
-            "/oak1/camera/image_raw",
             "/yolo/detections_forward",
             "/yolo/detections_downward",
-            "/yolo/mean_depth_forward_cam",
-            "/mission/state",
             "/control/vision_errors/yaw",
             "/control/vision_errors/forward",
             "/control/vision_errors/lateral",
+            "/control/vision_errors/forward_ekf",
             "/control/cmd/yaw",
             "/control/cmd/forward",
             "/control/cmd/lateral",
+            "/dvl/twist",
         ]
 
     def mount_usb(self):
@@ -104,24 +111,29 @@ class RosbagRecorder:
         if self.process is None:
             return
 
-        try:
-            print("[ROSBAG] Stopping recording...")
-            self.process.send_signal(signal.SIGINT)
-            self.process.wait(timeout=10)
+        print("[ROSBAG] Stopping recording...")
+        self.process.send_signal(signal.SIGINT)
 
-        except Exception as e:
-            print(f"[ROSBAG] Error stopping rosbag: {e}")
+        try:
+            self.process.wait(timeout=360)
+        except subprocess.TimeoutExpired:
+            print("[ROSBAG] Timeout while stopping. Killing rosbag...")
+            self.process.kill()
+            self.process.wait()
 
         self.process = None
+        self.save_annotated_frames()
         print("[ROSBAG] Recording stopped.")
-
+        
     def ask_keep_or_delete(self):
         if self.bag_path is None:
             return
 
-        answer = input(
-            f"\nDo you want to keep this rosbag? {self.bag_path} [y/N]: "
-        ).strip().lower()
+        try:
+            answer = input(f"\nDo you want to keep this rosbag? {self.bag_path} [y/N]: ").strip().lower()
+        except EOFError:
+            print("[ROSBAG] No stdin available. Keeping rosbag by default.")
+            return
 
         if answer not in ["y", "yes", "o", "oui"]:
             print("[ROSBAG] Deleting rosbag...")
@@ -129,3 +141,29 @@ class RosbagRecorder:
             print("[ROSBAG] Deleted.")
         else:
             print(f"[ROSBAG] Saved: {self.bag_path}")
+
+    def annotated_callback(self, msg):
+        self.annotated_frames.append(msg)
+
+
+    def save_annotated_frames(self):
+        if self.bag_path is None:
+            return
+
+        output_dir = self.bag_path / "last_annotated_frames"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        if not self.annotated_frames:
+            print("[ROSBAG] No annotated frames to save.")
+            return
+
+        print(f"[ROSBAG] Saving {len(self.annotated_frames)} annotated frames...")
+
+        for i, msg in enumerate(self.annotated_frames):
+            try:
+                cv_img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+                cv2.imwrite(str(output_dir / f"annotated_{i:03d}.jpg"), cv_img)
+            except Exception as e:
+                print(f"[ROSBAG] Failed to save annotated frame {i}: {e}")
+
+

@@ -35,7 +35,6 @@ class MasterNode(Node):
         self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
 
         # Publishers
-        self.state_pub = self.create_publisher(Int8, '/mission/state', 10)
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
         self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
@@ -122,10 +121,10 @@ class MasterNode(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    recorder = RosbagRecorder()
-    recorder.start()
-
     node = MasterNode()
+
+    recorder = RosbagRecorder(node)
+    recorder.start()
 
     try:
         rclpy.spin(node)
