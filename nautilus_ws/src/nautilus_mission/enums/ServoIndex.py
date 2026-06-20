@@ -7,5 +7,5 @@ class ServoIndex(IntEnum):
     DROPPER_1 = 1100
     DROPPER_2 = 1900
     TORPEDO_INIT = 1500
-    TORPEDO_1 = 1100
-    TORPEDO_2 = 1900
+    TORPEDO_1 = 950
+    TORPEDO_2 = 2050
