@@ -14,13 +14,13 @@ class DetectionStore:
     def update_from_msg(self, msg: Float32MultiArray) -> bool:
         data = msg.data
 
-        if len(data) % 4 != 0:
+        if len(data) % 5 != 0:
             self.logger.warn(
-                f'Received malformed detection array of length {len(data)}. Expected multiple of 4.'
+                f'Received malformed detection array of length {len(data)}. Expected multiple of 5.'
             )
             return False
 
-        self.detections = [data[i:i + 4] for i in range(0, len(data), 4)]
+        self.detections = [data[i:i + 5] for i in range(0, len(data), 5)]
         return True
 
     def get_detection(self, ids):

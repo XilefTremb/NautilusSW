@@ -239,7 +239,7 @@ class StateMachine:
         if target is None:
             return False
 
-        px = target[DetectionIndex.CENTER_FOV_RATIO]
+        px = target[DetectionIndex.CENTER_FOV_RATIO_X]
         return abs(px) < self.current_objective.center.center_tolerance_fov
 
     def is_target_approached(self) -> bool:
