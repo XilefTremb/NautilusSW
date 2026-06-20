@@ -3,7 +3,6 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
-from robot_localization.srv import SetPose
 
 from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16
 from nav_msgs.msg import Odometry
@@ -12,6 +11,8 @@ from nautilus_mission.detection_store import DetectionStore
 from nautilus_mission.state_machine import StateMachine
 from nautilus_mission.vision_controller import VisionController
 from nautilus_interfaces.srv import SetTargetDepth
+from robot_localization.srv import SetPose
+from std_srvs.srv import Trigger
 
 
 class MasterNode(Node):
@@ -46,9 +47,11 @@ class MasterNode(Node):
 
         # Services
         self.depth_client = self.create_client(SetTargetDepth,'/mission/set_target_depth')
-
-        # Service client
         self.set_pose_client = self.create_client(SetPose,'/set_pose')
+        self.yaw_reset_client = self.create_client(Trigger, '/pid_yaw/reset_pid')
+        self.forward_reset_client = self.create_client(Trigger, '/pid_forward/reset_pid')
+        self.lateral_reset_client = self.create_client(Trigger, '/pid_lateral/reset_pid')
+        self.forward_ekf_reset_client = self.create_client(Trigger, '/pid_forward_ekf/reset_pid')
 
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)

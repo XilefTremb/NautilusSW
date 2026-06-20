@@ -354,7 +354,7 @@ class YoloNode(Node):
                             bbox_cx=box_cx,
                             mode=self.mode)
 
-                if depth_value is None or not (800.0 < depth_value < self.depth_threshold):
+                if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
                     continue
 
                 # ----------- DIST / ANGLE -----------
