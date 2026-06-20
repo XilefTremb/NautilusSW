@@ -3,7 +3,7 @@
 from std_msgs.msg import Float32MultiArray
 from enums.DetectionIndex import DetectionIndex
 from enums.ObjectID import ObjectID
-from typing import Optional
+
 
 class DetectionStore:
     """Owns YOLO detection parsing and target lookup."""
@@ -11,7 +11,7 @@ class DetectionStore:
     def __init__(self, logger):
         self.logger = logger
         self.detections: list[list[float]] = []
-        self.role_positions: Optional[list[ObjectID]] = None
+        self.role_positions: list[ObjectID] = None
         self.save_role = True
 
     def update_from_msg(self, msg: Float32MultiArray) -> bool:
@@ -25,6 +25,7 @@ class DetectionStore:
 
         if self.save_role:
             self.role_positions = self.save_role_positions()
+            self.logger.info(f'Received roles : {self.role_positions}')
                 
         self.detections = [data[i:i + 5] for i in range(0, len(data), 5)]
         return True
@@ -48,9 +49,12 @@ class DetectionStore:
 
     def save_role_positions(self):
 
-        fire = self.get_detection(ObjectID.FIRE)
-        blood = self.get_detection(ObjectID.BLOOD)
+        fire = self.get_detection(ObjectID.COMPASS_HAMMER)
+        self.logger.info(f'ok c {fire}')
+        blood = self.get_detection(ObjectID.SOS_SAFETY)
+        self.logger.info(f'je suis un {blood}')
         middle_post = self.get_detection(ObjectID.GATE_LEG_CENTER)
+        self.logger.info(f'Middle post : {middle_post}')
 
         # No object detected
         if fire is None and blood is None:
@@ -59,9 +63,9 @@ class DetectionStore:
         # Both objects detected
         if fire is not None and blood is not None:
             if fire[DetectionIndex.CENTER_FOV_RATIO_X] < blood[DetectionIndex.CENTER_FOV_RATIO_X]:
-                return [ObjectID.FIRE, ObjectID.BLOOD]
+                return [ObjectID.COMPASS_HAMMER, ObjectID.SOS_SAFETY]
 
-            return [ObjectID.BLOOD, ObjectID.FIRE]
+            return [ObjectID.SOS_SAFETY, ObjectID.COMPASS_HAMMER]
         
         seen_id = None
         missing_id = None
@@ -69,12 +73,12 @@ class DetectionStore:
 
         # Only one object detected
         if fire is not None:
-            seen_id = ObjectID.FIRE
-            missing_id = ObjectID.BLOOD
+            seen_id = ObjectID.COMPASS_HAMMER
+            missing_id = ObjectID.SOS_SAFETY
             seen_x = fire[DetectionIndex.CENTER_FOV_RATIO_X]
         else:
-            seen_id = ObjectID.BLOOD
-            missing_id = ObjectID.FIRE
+            seen_id = ObjectID.SOS_SAFETY
+            missing_id = ObjectID.COMPASS_HAMMER
             seen_x = blood[DetectionIndex.CENTER_FOV_RATIO_X]
 
         # Central post in gate is detected 

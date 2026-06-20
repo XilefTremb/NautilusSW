@@ -20,7 +20,7 @@ class SearchConfig:
 
 @dataclass
 class CenterConfig:
-    full_centering: bool = True
+    full_centering: bool = False
     center_tolerance_fov: float = 0.05 # fraction of the fov. 1 being the full width of the camera 
     angle_tolerance_deg: float = 15.0
 
@@ -79,6 +79,7 @@ gate = Objective(
     target_auv_depth_m = 1.3,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
+        full_centering=True,
         center_tolerance_fov=0.05,
         angle_tolerance_deg=5.0,
     ),
@@ -112,7 +113,6 @@ slalom2 = Objective(
     target_ids=[ObjectID.SLALOM_LEFT_MID],
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
-        full_centering=False,
         center_tolerance_fov=0.05,
     ),
     approach=ApproachConfig(
@@ -128,7 +128,6 @@ slalom3 = Objective(
     target_ids=[ObjectID.SLALOM_LEFT_MID],
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
-        full_centering=False,
         center_tolerance_fov=0.05,
     ),
     approach=ApproachConfig(
@@ -146,10 +145,9 @@ approach_gate = Objective(
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         center_tolerance_fov=0.05,
-        angle_tolerance_deg=5.0,
     ),
     approach=ApproachConfig(
-        approach_distance_mm=3000.0,
+        approach_distance_mm=4000.0,
     ),
     action=SaveRoleAction(
     ),
@@ -159,9 +157,10 @@ choose_gate_side = Objective(
     name='chooseGateSide',
     search=SearchConfig(spin_pwm=1460),
     approach=ApproachConfig(
-        approach_distance_mm=2000.0,
+        approach_distance_mm=3000.0,
     ),
     center=CenterConfig(
+        full_centering=True,
         center_tolerance_fov=0.05,
         angle_tolerance_deg=5.0,
     ),
@@ -173,6 +172,7 @@ traverse_gate = Objective(
     name='traverseGate',
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
+        full_centering=True,
         center_tolerance_fov=0.05,
         angle_tolerance_deg=5.0,
     ),
@@ -180,8 +180,7 @@ traverse_gate = Objective(
         approach_distance_mm=2000.0,
     ),
     action=ForwardAction(
-        forward_pwm=1550,
-        forward_distance_m=2.0,
+        forward_distance_m=4.0,
     ),
 )
 
@@ -196,8 +195,7 @@ approach_dropper = Objective(
         approach_distance_mm=1000.0
     ),
     action=ForwardAction(
-        forward_pwm=1550,
-        forward_distance_mm=1000.0,
+        forward_distance_m=1.0,
     ),
 )
 

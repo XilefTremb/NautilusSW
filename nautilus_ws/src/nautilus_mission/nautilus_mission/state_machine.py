@@ -24,7 +24,7 @@ class StateMachine:
         self.detection_store = detection_store
 
         self.objectives : list[Objective] = mission_list
-        self.role_choice = ObjectID.FIRE
+        self.role_choice = ObjectID.SOS_SAFETY
 
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
@@ -139,7 +139,7 @@ class StateMachine:
                 else :
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
-        elif self.current_objective.action.type == ActionType.DropperLaunch:
+        elif self.current_objective.action.type == ActionType.LAUNCH_DROPPER:
             self.target_ids = [self.role_choice]
         else:
             self.target_ids = self.current_objective.target_ids
@@ -210,8 +210,6 @@ class StateMachine:
             self.node.publish_servo_cmd(11, 1900)  
             self.node.get_logger().info('Dropper launched :) !')
         
-
-
     def spin_search(self):
         cmd = self.current_objective.search.spin_pwm
         self.node.publish_yaw_cmd(cmd)
@@ -231,7 +229,7 @@ class StateMachine:
 
         action = self.current_objective.action.type
 
-        if action == ActionType.NONE:
+        if action == ActionType.NONE or action == ActionType.CHOOSE_GATE_SIDE:
             return True
 
         if action == ActionType.FORWARD:
@@ -246,6 +244,12 @@ class StateMachine:
                 self.mean_depth_forward_cam == self.current_objective.action.camera_mean_depth_target_mm
                 and self.state_lifespan >= self.current_objective.action.min_lifespan_s
             )
+        
+        if action == ActionType.SAVE_ROLE:
+            return self.state_lifespan > 1.0
+        
+        if action == ActionType.LAUNCH_DROPPER:
+            return self.state_lifespan > self.current_objective.action.duration_s
 
         return False
 
