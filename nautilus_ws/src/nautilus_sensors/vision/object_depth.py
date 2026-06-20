@@ -177,7 +177,7 @@ def params_cams(mode, cam):
 
             return cx, fx, fy, cy
 
-        if cam == "downard":
+        if cam == "downward":
             # OAK-D S1
             cx = 640
             fx = 728

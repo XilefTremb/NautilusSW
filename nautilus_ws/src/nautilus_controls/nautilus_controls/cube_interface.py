@@ -86,9 +86,9 @@ class CubeInterface(Node):
 
         self.get_logger().info("Testing servo 11...")
         
-        self.auv.set_servo(11, 1100)
-        time.sleep(2.0)
-        self.auv.set_servo(11, 1900)
+        # self.auv.set_servo(11, 700)
+        # time.sleep(2.0)
+        # self.auv.set_servo(11, 2300)
         # self.auv.go_to_depth(-0.67)
 
     def yaw_cmd_callback(self, msg):
