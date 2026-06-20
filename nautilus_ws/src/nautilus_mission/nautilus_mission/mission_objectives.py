@@ -141,7 +141,7 @@ slalom3 = Objective(
 approach_gate = Objective(
     name='approachGate',
     target_ids=[ObjectID.GATE_LEG_CENTER],
-    target_auv_depth_m = 1.0,
+    target_auv_depth_m = 1.45,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         center_tolerance_fov=0.2,
