@@ -101,10 +101,10 @@ slalom1 = Objective(
         angle_tolerance_deg=5.0,
     ),
     approach=ApproachConfig(
-        approach_distance_mm=2000.0
+        approach_distance_mm=2500.0
     ),
     action=ForwardAction(
-        forward_distance_m=2.0,
+        forward_distance_m=2.5,
     ),
 )
 
@@ -213,4 +213,4 @@ launch_dropper = Objective(
     ),
 )
 
-mission_list = [approach_gate, choose_gate_side, traverse_gate]
+mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
