@@ -50,12 +50,9 @@ class DetectionStore:
     def save_role_positions(self):
 
         fire = self.get_detection(ObjectID.COMPASS_HAMMER)
-        self.logger.info(f'ok c {fire}')
         blood = self.get_detection(ObjectID.SOS_SAFETY)
-        self.logger.info(f'je suis un {blood}')
         middle_post = self.get_detection(ObjectID.GATE_LEG_CENTER)
-        self.logger.info(f'Middle post : {middle_post}')
-
+     
         # No object detected
         if fire is None and blood is None:
             return None

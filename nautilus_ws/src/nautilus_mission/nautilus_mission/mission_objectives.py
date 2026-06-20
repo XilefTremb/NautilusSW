@@ -142,9 +142,9 @@ approach_gate = Objective(
     name='approachGate',
     target_ids=[ObjectID.GATE_LEG_CENTER],
     target_auv_depth_m = 1.0,
-    search=SearchConfig(spin_pwm=1460),
+    search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
-        center_tolerance_fov=0.05,
+        center_tolerance_fov=0.2,
     ),
     approach=ApproachConfig(
         approach_distance_mm=4000.0,
