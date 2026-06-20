@@ -71,82 +71,7 @@ class Objective:
     approach: ApproachConfig = field(default_factory=ApproachConfig)
     action: ActionConfig = field(default_factory=NoAction)
 
-e = Objective(
-    name='approachGate',
-    target_ids=[ObjectID.GATE_LEG_CENTER],
-    target_auv_depth_m = 1.0,
-    search=SearchConfig(spin_pwm=1460),
-    center=CenterConfig(
-        center_tolerance_fov=0.05,
-    ),
-    approach=ApproachConfig(
-        approach_distance_mm=3000.0,
-    ),
-    action=SaveRoleAction(
-    ),
-)
-
-d = Objective(
-    name='chooseGateSide',
-    target_auv_depth_m = 1.0,
-    search=SearchConfig(spin_pwm=1460),
-    approach=ApproachConfig(
-        approach_distance_mm=1500.0,
-    ),
-    center=CenterConfig(
-        full_centering=True,
-    ),
-    action=ChooseGateSideAction(
-    ),
-)
-
-c = Objective(
-    name='traverseGate',
-    target_auv_depth_m = 1.0,
-    search=SearchConfig(spin_pwm=1460),
-    center=CenterConfig(
-        center_tolerance_fov=0.05,
-        angle_tolerance_deg=5.0,
-    ),
-    approach=ApproachConfig(
-        approach_distance_mm=1000.0,
-    ),
-    action=ForwardAction(
-        forward_pwm=1550,
-        forward_distance_m=2.0,
-    ),
-)
-
-b = Objective(
-    name='approachDropperObjective',
-    target_ids=[ObjectID.DROPPER],
-    search=SearchConfig(spin_pwm=1460),
-    center=CenterConfig(
-        full_centering=False,
-    ),
-    target_auv_depth_m = 1.0,
-    approach=ApproachConfig(
-        approach_distance_mm=1000.0
-    ),
-    action=ForwardAction(
-        forward_pwm=1550,
-        forward_distance_mm=1000.0,
-    ),
-)
-
-a = Objective(
-    name='LaunchDropperObjective',
-    search=SearchConfig(spin_pwm=1460),
-    center=CenterConfig(
-        full_centering=False,
-    ),
-    approach=ApproachConfig(
-        approach_distance_mm=1000.0
-    ),
-    action=LaunchDropperAction(
-        duration_s=5.0,
-    ),
-)
+# Objectives ------------------------------------------------------------------------------------------------
 
 gate = Objective(
     name='gate',
@@ -214,4 +139,80 @@ slalom3 = Objective(
     ),
 )
 
-mission_list = [gate, slalom1, slalom2, slalom3]
+approach_gate = Objective(
+    name='approachGate',
+    target_ids=[ObjectID.GATE_LEG_CENTER],
+    target_auv_depth_m = 1.0,
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        center_tolerance_fov=0.05,
+        angle_tolerance_deg=5.0,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=3000.0,
+    ),
+    action=SaveRoleAction(
+    ),
+)
+
+choose_gate_side = Objective(
+    name='chooseGateSide',
+    search=SearchConfig(spin_pwm=1460),
+    approach=ApproachConfig(
+        approach_distance_mm=2000.0,
+    ),
+    center=CenterConfig(
+        center_tolerance_fov=0.05,
+        angle_tolerance_deg=5.0,
+    ),
+    action=ChooseGateSideAction(
+    ),
+)
+
+traverse_gate = Objective(
+    name='traverseGate',
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        center_tolerance_fov=0.05,
+        angle_tolerance_deg=5.0,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=2000.0,
+    ),
+    action=ForwardAction(
+        forward_pwm=1550,
+        forward_distance_m=2.0,
+    ),
+)
+
+approach_dropper = Objective(
+    name='approachDropperObjective',
+    target_ids=[ObjectID.DROPPER],
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        full_centering=False,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=1000.0
+    ),
+    action=ForwardAction(
+        forward_pwm=1550,
+        forward_distance_mm=1000.0,
+    ),
+)
+
+launch_dropper = Objective(
+    name='LaunchDropperObjective',
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        full_centering=False,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=1000.0
+    ),
+    action=LaunchDropperAction(
+        duration_s=5.0,
+    ),
+)
+
+mission_list = [approach_gate, choose_gate_side, traverse_gate]

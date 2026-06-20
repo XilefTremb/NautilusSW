@@ -20,16 +20,20 @@ def find_angle_plane(left_depth, right_depth, C, left_x, right_x):
     else:
         return 90 - angle
 
-def find_dist_center_gate(cx, left_x, right_x):
+def find_dist_center_gate_in_x(cx, left_x, right_x):
     return (min(left_x, right_x) + abs(int((left_x - right_x)/2)) - cx) / cx
+
+def find_dist_center_gate_in_y(cy, left_y, right_y):
+    return (min(left_y, right_y) + abs(int((left_y - right_y)/2)) - cy) / cy
 
 def build_payload(GATE_ID, left_obj, right_obj, results_angle, mode):
     angle_calc = find_angle_plane(right_obj["depth"],left_obj["depth"],1524, right_obj["box_cx"],left_obj["box_cx"])
-    cx, _, _, _= params_cams(mode)
-    dist_center_gate = find_dist_center_gate(cx, left_obj["box_cx"], right_obj["box_cx"])
+    cx, _, _, cy= params_cams(mode, "forward")
+    dist_center_gate_in_x = find_dist_center_gate_in_x(cx, left_obj["box_cx"], right_obj["box_cx"])
+    dist_center_gate_in_y = find_dist_center_gate_in_y(cy, left_obj["box_cy"], right_obj["box_cy"])
     mean_distance = (right_obj["depth"] + left_obj["depth"]) / 2
-    if angle_calc is not None and abs(angle_calc) < 50 and dist_center_gate is not None:
-        results_angle.extend([float(GATE_ID), float(dist_center_gate), float(mean_distance), float(angle_calc)])
+    if angle_calc is not None and abs(angle_calc) < 50 and dist_center_gate_in_x is not None:
+        results_angle.extend([float(GATE_ID), float(dist_center_gate_in_x), float(mean_distance), float(angle_calc), float(dist_center_gate_in_y) ])
     
 def find_gate_angle(objects, mode):
     results_angle = []

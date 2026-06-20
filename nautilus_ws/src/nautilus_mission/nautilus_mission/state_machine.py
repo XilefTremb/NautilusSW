@@ -24,7 +24,7 @@ class StateMachine:
         self.detection_store = detection_store
 
         self.objectives : list[Objective] = mission_list
-        self.role_choice = ObjectID.REQUIN
+        self.role_choice = ObjectID.FIRE
 
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
@@ -127,7 +127,7 @@ class StateMachine:
         self.current_objective = self.objectives[self.objective_index]
 
         if self.current_objective.action.type == ActionType.CHOOSE_GATE_SIDE:
-            positions = self.detection_store.get_role_choice()
+            positions = self.detection_store.role_positions
 
             if positions is None:
                 self.node.get_logger().warn('Role choice unavailable')
@@ -268,7 +268,7 @@ class StateMachine:
         if target is None:
             return False
 
-        px = target[DetectionIndex.CENTER_FOV_X_RATIO]
+        px = target[DetectionIndex.CENTER_FOV_RATIO_X]
         return abs(px) < self.current_objective.center.center_tolerance_fov
 
     def is_target_approached(self) -> bool:
