@@ -90,6 +90,8 @@ class StateMachine:
         elif self.state == 'CENTER_TARGET':
             if self.current_objective.center.full_centering:
                 self.vision_action = VisionAction.CENTER_TARGET
+            elif self.current_objective.center.center_bottom:
+                self.vision_action = VisionAction.CENTER_BOTTOM
             else:
                 self.vision_action = VisionAction.CENTER_FOV
             if self.is_target_lost_filtered():

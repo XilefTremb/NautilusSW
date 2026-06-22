@@ -25,6 +25,7 @@ class CenterConfig:
     center_tolerance_fov: float = 0.05 # fraction of the fov. 1 being the full width of the camera 
     angle_tolerance_deg: float = 15.0
     alignement_tolerance: float = 50.0 #mm for torpedo and degrees for gate or slalom
+    center_bottom: bool = False
 
 @dataclass
 class ApproachConfig:
@@ -213,6 +214,7 @@ launch_dropper = Objective(
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
+        center_bottom=True,
     ),
     approach=ApproachConfig(
         approach_distance_mm=1000.0
@@ -222,4 +224,5 @@ launch_dropper = Objective(
     ),
 )
 
-mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
+#mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
+mission_list = [approach_dropper, launch_dropper]

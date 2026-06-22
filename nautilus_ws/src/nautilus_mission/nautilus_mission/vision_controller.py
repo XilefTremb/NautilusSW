@@ -36,6 +36,8 @@ class VisionController:
             self.circle_marker(target_detection)
         elif vision_action == VisionAction.CENTER_FOV:
             self.center_fov(target_detection)
+        elif vision_action == VisionAction.CENTER_BOTTOM:
+            self.center_bottom(target_detection)
 
     def center_target(self, target_detection):
         if target_detection is None:
@@ -48,6 +50,16 @@ class VisionController:
         self.node.publish_forward_error(forward_error)
         self.node.publish_lateral_error(lateral_error)
         self.node.publish_yaw_error(float(px))
+
+    def center_bottom(self, target_detection):
+        if target_detection is None:
+            return
+
+        px_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
+        py_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y]
+
+        self.node.publish_bottom_cam_lateral_error(float(px_error))
+        self.node.publish_bottom_cam_forward_error(float(py_error))
 
     def approach_target(self, target_detection):
         if target_detection is not None:
