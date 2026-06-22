@@ -13,6 +13,7 @@ class ActionType(Enum):
     SAVE_ROLE = auto()
     CHOOSE_GATE_SIDE = auto()
     LAUNCH_DROPPER = auto()
+    FIRE_TORPEDO = auto()
 
 @dataclass
 class SearchConfig:
@@ -23,6 +24,7 @@ class CenterConfig:
     full_centering: bool = False
     center_tolerance_fov: float = 0.05 # fraction of the fov. 1 being the full width of the camera 
     angle_tolerance_deg: float = 15.0
+    alignement_tolerance: float = 50.0 #mm for torpedo and degrees for gate or slalom
 
 @dataclass
 class ApproachConfig:
@@ -57,7 +59,14 @@ class SaveRoleAction:
 class ChooseGateSideAction:
     type: ActionType = ActionType.CHOOSE_GATE_SIDE
 
-ActionConfig = Union[NoAction, ForwardAction, CircleMarkerAction, LaunchDropperAction, ChooseGateSideAction, SaveRoleAction]
+@dataclass
+class FireTorpedoAction:
+    type: ActionType = ActionType.FIRE_TORPEDO
+    camera_mean_depth_target_mm: int = 20000
+    min_lifespan_s: float = 1.0
+    fired: bool = False
+
+ActionConfig = Union[NoAction, ForwardAction, CircleMarkerAction, LaunchDropperAction, ChooseGateSideAction, SaveRoleAction,FireTorpedoAction]
 
 @dataclass
 class Objective:

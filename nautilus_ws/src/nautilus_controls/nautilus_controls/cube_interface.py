@@ -91,6 +91,16 @@ class CubeInterface(Node):
         # self.auv.set_servo(11, 2300)
         # self.auv.go_to_depth(-0.67)
 
+    def servo_cmd_callback(self, msg):
+        if len(msg.data) < 2:
+            return
+        
+        servo = int(msg.data[0])
+        pwm = int(msg.data[1])
+
+        self.auv.set_servo(servo, pwm)
+        self.get_logger().info(f'Set servo {servo} to {pwm}')
+
     def yaw_cmd_callback(self, msg):
         self.last_yaw_cmd = msg.data
         self.last_yaw_cmd_time = self.get_clock().now()
