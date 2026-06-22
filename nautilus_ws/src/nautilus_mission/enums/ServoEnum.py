@@ -8,4 +8,4 @@ class ServoEnum(IntEnum):
     DROPPER_2_PWM = 1900
     TORPEDO_INIT_PWM = 1250
     TORPEDO_L_PWM = 800 
-    TORPEDO_R_PWM = 2300 
+    TORPEDO_R_PWM = 2000

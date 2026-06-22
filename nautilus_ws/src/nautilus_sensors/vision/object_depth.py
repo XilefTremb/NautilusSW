@@ -152,8 +152,8 @@ def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, 
 
     depth_value = float(np.median(valid_pixels))
 
-    if mode == "sim":
-        depth_value *= 1000.0
+    # if mode == "sim":
+    #     depth_value *= 1000.0
 
     if not np.isfinite(depth_value) or depth_value <= 0:
         return None, filled_mask

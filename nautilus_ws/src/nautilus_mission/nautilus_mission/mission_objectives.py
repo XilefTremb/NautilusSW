@@ -46,7 +46,7 @@ class CircleMarkerAction:
 @dataclass
 class FireTorpedoAction:
     type: ActionType = ActionType.FIRE_TORPEDO
-    camera_mean_depth_target_mm: int = 20000
+    # camera_mean_depth_target_mm: int = 20000
     min_lifespan_s: float = 1.0
     fired: bool = False
 
@@ -99,53 +99,54 @@ mission_list = [
     #         forward_pwm=1515,
     #         forward_distance_m=1.0,
     #     ),
+    # #     ),
+    # Objective(
+    #     name='coarse approach torpedo',
+    #     target_ids=[ObjectID.TORPEDO],
+    #     search=SearchConfig(spin_pwm=1460),
+    #     center=CenterConfig(
+    #         full_centering=False,
+    #         center_tolerance_fov=0.2,
     #     ),
-    Objective(
-        name='coarse approach torpedo',
-        target_ids=[ObjectID.TORPEDO],
-        search=SearchConfig(spin_pwm=1460),
-        center=CenterConfig(
-            full_centering=False,
-            center_tolerance_fov=0.2,
-        ),
-        approach=ApproachConfig(
-            approach_distance_mm=6000.0,
-        ),
-    ),
-    Objective(
-        name='torpedo depth change',
-        target_ids=None,
-        target_auv_depth_m=1.5,
-        action=NoAction()
-    ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=6000.0,
+    #     ),
+    # ),
+    # Objective(
+    #     name='torpedo depth change',
+    #     target_ids=None,
+    #     target_auv_depth_m=1.5,
+    #     action=NoAction()
+    # ),
 
-    Objective(
-        name='fine approach torpedo',
-        target_ids=[ObjectID.TORPEDO],
-        center=CenterConfig(
-            full_centering=True,
-            center_tolerance_fov=0.1,
-            alignement_tolerance=150.0,
-        ),
-        approach=ApproachConfig(
-            approach_distance_mm=4500.0,
-        ),
-    ),
+    # Objective(
+    #     name='fine approach torpedo',
+    #     target_ids=[ObjectID.TORPEDO],
+    #     center=CenterConfig(
+    #         full_centering=True,
+    #         center_tolerance_fov=0.1,
+    #         alignement_tolerance=150.0,
+    #     ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=4500.0,
+    #     ),
+    # ),
+    # Objective(
+    #     name='Torpedo firing positioning',
+    #     target_ids=[ObjectID.TORPEDO],
+    #     center=CenterConfig(
+    #         full_centering=True,
+    #         center_tolerance_fov=0.05,
+    #         alignement_tolerance=50.0,
+    #     ),
+    #     approach=ApproachConfig(
+    #         approach_distance_mm=2000.0
+    #     ),
+    # ),
     Objective(
         name='Torpedo firing positioning',
-        target_ids=[ObjectID.TORPEDO],
-        center=CenterConfig(
-            full_centering=True,
-            center_tolerance_fov=0.05,
-            alignement_tolerance=50.0,
-        ),
-        approach=ApproachConfig(
-            approach_distance_mm=2000.0
-        ),
-    ),
-    Objective(
-        name='Torpedo firing positioning',
-        target_ids=[ObjectID.TORPEDO],
+        target_ids=[ObjectID.FIRE],
+        # target_ids=None,
         center=CenterConfig(
             full_centering=True,
             center_tolerance_fov=0.02,
