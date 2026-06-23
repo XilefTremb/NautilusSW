@@ -26,6 +26,8 @@ class CenterConfig:
     angle_tolerance_deg: float = 15.0
     alignement_tolerance: float = 50.0 #mm for torpedo and degrees for gate or slalom
     center_bottom: bool = False
+    target_offset_x: float = 0.0 # fraction of the fov. 1 being the full width of the camera
+    target_offset_y: float = 0.0 # fraction of the fov.
 
 @dataclass
 class ApproachConfig:
@@ -198,6 +200,7 @@ traverse_gate = Objective(
 approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
+    target_auv_depth_m=1.0,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
@@ -206,22 +209,25 @@ approach_dropper = Objective(
         approach_distance_mm=4000.0
     ),
     action=ForwardAction(
-        forward_distance_m=4.0,
+        forward_distance_m=3.5,
     ),
 )
 
 launch_dropper = Objective(
     name='LaunchDropperObjective',
+    target_auv_depth_m=0.5,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
         center_tolerance_fov=0.05,
         center_bottom=True,
+        target_offset_x=0.25,
+        target_offset_y=0.25,
     ),
     action=LaunchDropperAction(
-        duration_s=5.0,
+        duration_s=2.0,
     ),
 )
 
 #mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
-mission_list = [launch_dropper]
+mission_list = [approach_dropper,launch_dropper]

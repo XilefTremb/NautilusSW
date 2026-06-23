@@ -14,7 +14,6 @@ class VisionController:
     def __init__(self, node: Node):
         self.node = node
         self.previous_vision_action: Optional[VisionAction] = None
-        self.circle_marker_pixel_offset = 0.0
 
     def process(self, vision_action: VisionAction, target_detection):
         if self.previous_vision_action != vision_action:
@@ -55,8 +54,8 @@ class VisionController:
         if target_detection is None:
             return
 
-        px_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
-        py_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y]
+        px_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_X] - self.node.fsm.current_objective.center.target_offset_x
+        py_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y] - self.node.fsm.current_objective.center.target_offset_y
 
         self.node.publish_bottom_cam_lateral_error(float(px_error))
         self.node.publish_bottom_cam_forward_error(float(py_error))

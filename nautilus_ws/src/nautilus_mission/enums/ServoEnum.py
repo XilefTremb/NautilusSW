@@ -3,7 +3,7 @@ from enum import IntEnum
 class ServoEnum(IntEnum):
     TORPEDO_ID = 11
     DROPPER_ID = 12
-    DROPPER_INIT = 1500
+    DROPPER_INIT_PWM = 1500
     DROPPER_1_PWM = 1100
     DROPPER_2_PWM = 1900
     TORPEDO_INIT_PWM = 1250

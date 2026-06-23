@@ -286,16 +286,19 @@ class StateMachine:
         target = self.detection_store.get_detection(self.target_ids)
         if target is None:
             return False
-
+        
         px = target[DetectionIndex.CENTER_FOV_RATIO_X]
-        error_x = abs(px) < self.current_objective.center.center_tolerance_fov
 
         if self.current_objective.center.center_bottom:
             py = target[DetectionIndex.CENTER_FOV_RATIO_Y]
-            error_y = abs(py) < self.current_objective.center.center_tolerance_fov
+            
+            error_x = abs(px - self.current_objective.center.target_offset_x) < self.current_objective.center.center_tolerance_fov
+            error_y = abs(py - self.current_objective.center.target_offset_y) < self.current_objective.center.center_tolerance_fov
+            
             return (error_x and error_y)
-
-        return error_x
+        
+        else :
+            return abs(px) < self.current_objective.center.center_tolerance_fov
 
     def is_target_approached(self) -> bool:
         if self.current_objective is None:
