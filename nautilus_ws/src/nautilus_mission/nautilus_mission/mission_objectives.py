@@ -51,6 +51,7 @@ class CircleMarkerAction:
 class LaunchDropperAction:
     type: ActionType = ActionType.LAUNCH_DROPPER
     duration_s: float = 0.0
+    fired: bool = False
 
 @dataclass
 class SaveRoleAction:
@@ -202,10 +203,10 @@ approach_dropper = Objective(
         full_centering=False,
     ),
     approach=ApproachConfig(
-        approach_distance_mm=1000.0
+        approach_distance_mm=4000.0
     ),
     action=ForwardAction(
-        forward_distance_m=1.0,
+        forward_distance_m=4.0,
     ),
 )
 
@@ -214,10 +215,8 @@ launch_dropper = Objective(
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
+        center_tolerance_fov=0.05,
         center_bottom=True,
-    ),
-    approach=ApproachConfig(
-        approach_distance_mm=1000.0
     ),
     action=LaunchDropperAction(
         duration_s=5.0,
@@ -225,4 +224,4 @@ launch_dropper = Objective(
 )
 
 #mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
-mission_list = [approach_dropper, launch_dropper]
+mission_list = [launch_dropper]

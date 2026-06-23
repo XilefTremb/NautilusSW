@@ -70,7 +70,7 @@ def generate_launch_description():
                 'ki': 0.0,
                 'kd': 0.5
             }]
-        )
+        ),
 
         Node(
             package='nautilus_controls',

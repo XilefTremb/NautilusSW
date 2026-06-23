@@ -12,7 +12,7 @@ class DetectionStore:
         self.logger = logger
         self.detections: list[list[float]] = []
         self.role_positions: list[ObjectID] = None
-        self.save_role = True
+        self.save_role = False
 
     def update_from_msg(self, msg: Float32MultiArray) -> bool:
         data = msg.data

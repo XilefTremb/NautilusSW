@@ -33,6 +33,7 @@ class MasterNode(Node):
         # Subscribers
         self.odometry_filtered_sub = self.create_subscription(Odometry, '/odometry/filtered', self.odometry_filtered_callback, fast_qos)
         self.fwd_detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections_forward',self.fwd_detection_callback,fast_qos)
+        self.dwd_detection_sub = self.create_subscription(Float32MultiArray, 'yolo/detections_downward', self.bwd_detection_callback, fast_qos)
         self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
 
         # Publishers
@@ -69,6 +70,12 @@ class MasterNode(Node):
             return
 
         # Immediate callback-driven processing to reduce detection-to-error delay.
+        self.vision_tick()
+
+    def bwd_detection_callback(self, msg: Float32MultiArray):
+        if not self.detection_store.update_from_msg(msg):
+            return
+        
         self.vision_tick()
 
     def mean_depth_callback(self, msg: Int16):

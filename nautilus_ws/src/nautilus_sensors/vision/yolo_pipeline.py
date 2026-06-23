@@ -15,8 +15,7 @@ from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
 
-from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector, find_depth_side_difference
-from vision.object_depth import find_depth, find_dist_from_center_in_x, find_dist_from_center_in_y, global_median_forward_cam, find_depth_from_edge_detector
+from vision.object_depth import find_depth, find_dist_from_center_in_x, find_dist_from_center_in_y, global_median_forward_cam, find_depth_from_edge_detector, find_depth_side_difference
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
@@ -354,12 +353,10 @@ class YoloNode(Node):
                         y1=y1,
                         x2=x2,
                         y2=y2,
-                        annotated_frame = annotated_frame,
-                        mode=self.mode
-                    )
-                        annotated_frame = annotated_frame,
+                        annotated_frame = annotated_frame, 
                         id = object_id,
-                        edge_params = self.edge_params)
+                        edge_params = self.edge_params,
+                        mode=self.mode)
 
                     if filled_mask is not None:
                         annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] #for debug

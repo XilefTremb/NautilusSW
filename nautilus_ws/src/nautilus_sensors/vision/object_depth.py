@@ -128,7 +128,7 @@ def global_median_forward_cam(depth_frame, mode, cam):
 
     return global_depth
 
-def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, id, edge_params):
+def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, id, edge_params, mode):
 
     roi = annotated_frame[y1:y2, x1:x2]
 

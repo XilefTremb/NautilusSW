@@ -25,7 +25,7 @@ class StateMachine:
         self.detection_store = detection_store
 
         self.objectives : list[Objective] = mission_list
-        self.role_choice = ObjectID.COMPASS_HAMMER
+        self.role_choice = ObjectID.FIRE
 
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
@@ -142,7 +142,7 @@ class StateMachine:
                 else :
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
-        elif self.current_objective.action.type == ActionType.LAUNCH_DROPPER:
+        elif self.current_objective.action.type == (ActionType.LAUNCH_DROPPER or ActionType.FIRE_TORPEDO) :
             self.target_ids = [self.role_choice]
         else:
             self.target_ids = self.current_objective.target_ids
@@ -286,7 +286,14 @@ class StateMachine:
             return False
 
         px = target[DetectionIndex.CENTER_FOV_RATIO_X]
-        return abs(px) < self.current_objective.center.center_tolerance_fov
+        error_x = abs(px) < self.current_objective.center.center_tolerance_fov
+
+        if self.current_objective.center.center_bottom:
+            py = target[DetectionIndex.CENTER_FOV_RATIO_Y]
+            error_y = abs(py) < self.current_objective.center.center_tolerance_fov
+            return (error_x and error_y)
+
+        return error_x
 
     def is_target_approached(self) -> bool:
         if self.current_objective is None:
