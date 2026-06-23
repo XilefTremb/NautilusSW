@@ -9,8 +9,6 @@ from datetime import timedelta
 from geometry_msgs.msg import Vector3
 from scipy.spatial.transform import Rotation as R
 
-
-
 import cv2
 import depthai as dai
 import gi
@@ -332,17 +330,17 @@ class DualOakNode(Node):
                     self.rgb_oakd_latest = frame_rgb
                     self.depth_latest = frame_depth
 
-                    # Publish RGB
+                    # Publish YOLO input first; keep the blue filter on the frame the model sees.
                     self.rgb_pub.publish(
                         self.bridge.cv2_to_imgmsg(frame_rgb, "bgr8")
                     )
 
-                    # Publish aligned depth
+                    # Publish aligned depth immediately as well.
                     self.depth_pub.publish(
                         self.bridge.cv2_to_imgmsg(frame_depth, "16UC1")
                     )
 
-                    # Publish color depth
+                    # Defer expensive color/overlay work to after the raw topics are already published.
                     if START_DEPTH_COLOR:
                         depth_color = self.depth_to_colormap(
                             frame_depth,
@@ -353,7 +351,6 @@ class DualOakNode(Node):
                             self.bridge.cv2_to_imgmsg(depth_color, "bgr8")
                         )
 
-                        # Publish overlay RGB + depth
                         if START_OVERLAY:
                             if depth_color.shape[:2] != frame_rgb.shape[:2]:
                                 depth_color = cv2.resize(
