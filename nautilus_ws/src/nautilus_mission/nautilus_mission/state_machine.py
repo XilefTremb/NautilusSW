@@ -9,7 +9,7 @@ from transitions import Machine
 from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
-from enums.ServoIndex import ServoIndex
+from enums.ServoEnum import ServoEnum
 
 from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
@@ -206,8 +206,9 @@ class StateMachine:
             if not self.current_objective.action.fired:
                 #self.node.fire_torpedo()
                 self.node.get_logger().info('Launching torpedo no 1!')
-                self.node.publish_servo_cmd(ServoIndex.TORPEDO_ID, ServoIndex.TORPEDO_1)  
+                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_L_PWM)  
                 self.current_objective.action.fired = True
+                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
 
         if self.current_objective.action.type == ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
@@ -219,8 +220,9 @@ class StateMachine:
 
         if self.current_objective.action.type == ActionType.LAUNCH_DROPPER:
             self.node.get_logger().info('Launching dropper no 1!')
-            self.node.publish_servo_cmd(11, 1900)  
+            self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_1_PWM)  
             self.node.get_logger().info('Dropper launched :) !')
+            self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)  
         
     def spin_search(self):
         cmd = self.current_objective.search.spin_pwm
