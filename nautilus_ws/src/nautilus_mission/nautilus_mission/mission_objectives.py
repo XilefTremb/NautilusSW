@@ -26,8 +26,8 @@ class CenterConfig:
     angle_tolerance_deg: float = 15.0
     alignement_tolerance: float = 50.0 #mm for torpedo and degrees for gate or slalom
     center_bottom: bool = False
-    target_offset_x: float = 0.0 # fraction of the fov. 1 being the full width of the camera
-    target_offset_y: float = 0.0 # fraction of the fov.
+    target_offset_x: float = 0.2 # fraction of the fov. 1 being the full width of the camera
+    target_offset_y: float = 0.1 # fraction of the fov. 
 
 @dataclass
 class ApproachConfig:
