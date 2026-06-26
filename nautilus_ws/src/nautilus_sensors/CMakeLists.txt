@@ -50,12 +50,11 @@ install(
   DESTINATION share/${PROJECT_NAME}/vision
 )
 
-# # Install resource index + package.xml
-# install(
-#   FILES
-#     resource/${PROJECT_NAME}
-#   DESTINATION share/ament_index/resource_index/packages
-# )
+install(
+  DIRECTORY
+    launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
 
 install(
   FILES
@@ -63,4 +62,17 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(
+  DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
+
 ament_package()
+
+# # Install resource index + package.xml
+# install(
+#   FILES
+#     resource/${PROJECT_NAME}
+#   DESTINATION share/ament_index/resource_index/packages
+# )
+
