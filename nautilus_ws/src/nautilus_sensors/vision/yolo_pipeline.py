@@ -15,7 +15,7 @@ from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
 
-from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector, find_depth_side_difference
+from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector
 from vision.gate_angle import find_gate_angle, find_angle_torpedo
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
@@ -61,7 +61,7 @@ class YoloNode(Node):
             model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_16_juin.pt')
         else:
             self.mode = 'real'
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_competition_19_juin.pt')
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_26juin_competition.pt')
 
         # -------- MODEL TYPE --------
         self.type_yolo = 'obb' if args.obb else 'bbox'
@@ -452,6 +452,7 @@ class YoloNode(Node):
                 angle = 0.0
                 if object_id == ObjectID.TORPEDO:
                     angle = find_angle_torpedo(objects)
+                    self.get_logger().info(f"angle_torpedo={angle}")
                     payload.extend([float(object_id), float(obj["dist_center"]), float(obj["depth"]), angle])
                 else:
                     payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),angle])
@@ -475,9 +476,9 @@ class YoloNode(Node):
                 )
 
         # -------- SLALOM AND TARGET ORGANIZER --------
-        objects, payload = slalom_organizer(slalom_tab, objects, annotated_frame, payload)
+        objects, payload = slalom_organizer(slalom_tab, objects, annotated_frame, payload, self.type_yolo)
 
-        objects, payload = target_organizer(target_tab, objects, annotated_frame, payload)
+        objects, payload = target_organizer(target_tab, objects, annotated_frame, payload, self.type_yolo)
 
         # -------- FIND ANGLE BETWEEN TWO OBJECTS --------
         payload_angle = find_gate_angle(objects, self.mode)

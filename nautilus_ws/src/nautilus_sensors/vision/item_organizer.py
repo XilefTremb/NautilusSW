@@ -4,7 +4,7 @@ from vision.display_model_boxes import draw_detection
 COLOR_IN_DETECTION = (0, 255, 0)
 COLOR_NOT_IN_DETECTION = (255, 0, 0)
 
-def slalom_organizer(slalom_tab, objects, annotated_frame, payload):
+def slalom_organizer(slalom_tab, objects, annotated_frame, payload, type_yolo):
     if len(slalom_tab) == 0:
         return objects, payload
 
@@ -64,7 +64,7 @@ def slalom_organizer(slalom_tab, objects, annotated_frame, payload):
 
         draw_detection(
             annotated_frame,
-            self.type_yolo,
+            type_yolo,
             display_id,
             slalom["confidence"], slalom["depth"],
             slalom["dist_center"],
@@ -76,7 +76,7 @@ def slalom_organizer(slalom_tab, objects, annotated_frame, payload):
     return objects, payload
 
 
-def target_organizer(target_tab, objects, annotated_frame, payload):
+def target_organizer(target_tab, objects, annotated_frame, payload, type_yolo):
     if len(target_tab) == 0:
         return objects, payload
 
@@ -146,7 +146,7 @@ def target_organizer(target_tab, objects, annotated_frame, payload):
 
         draw_detection(
             annotated_frame,
-            self.type_yolo,
+            type_yolo,
             display_id,
             target["confidence"],
             target["depth"],

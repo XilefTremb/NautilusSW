@@ -186,9 +186,8 @@ class StateMachine:
             if not self.current_objective.action.fired:
                 # self.node.fire_torpedo()
                 self.node.get_logger().info('Launching torpedo no 1!')
-                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_L_PWM)  
-                # self.current_objective.action.fired = True
-
+                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_R_PWM)  
+                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
         if self.current_objective.action.type == ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
             self.node.publish_forward_ekf_error(error_ekf_fwd_position)

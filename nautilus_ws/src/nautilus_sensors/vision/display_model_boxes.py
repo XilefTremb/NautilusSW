@@ -55,6 +55,6 @@ def bbox_model_coordinates(box):
 
     x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-    half = 1
+    half = 6
 
     return box_cx, box_cy, x1, y1, x2, y2, half
