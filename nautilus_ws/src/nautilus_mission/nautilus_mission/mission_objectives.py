@@ -64,43 +64,130 @@ class Objective:
     approach: ApproachConfig = field(default_factory=ApproachConfig)
     action: ActionConfig = field(default_factory=NoAction)
 
+approach_gate = Objective(
+    name='approachGate',
+    target_ids=[ObjectID.GATE_LEG_CENTER],
+    target_auv_depth_m = 1.45,
+    search=SearchConfig(spin_pwm=1540),
+    center=CenterConfig(
+        center_tolerance_fov=0.2,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=4000.0,
+    ),
+    action=SaveRoleAction(
+    ),
+)
 
-mission_list = [
-    # Objective(
-    #     name='gate',
-    #     target_ids=[ObjectID.GATE_MID_RIGHT],
-    #     target_auv_depth_m = 1.0,
-    #     search=SearchConfig(spin_pwm=1460),
-    #     center=CenterConfig(
-    #         center_tolerance_fov=0.05,
-    #         alignement_tolerance=5.0,
-    #     ),
-    #     approach=ApproachConfig(
-    #         approach_distance_mm=1500.0,
-    #     ),
-    #     action=ForwardAction(
-    #         forward_pwm=1550,
-    #         forward_distance_m=2.0,
-    #     ),
-    # ),
+choose_gate_side = Objective(
+    name='chooseGateSide',
+    search=SearchConfig(spin_pwm=1460),
+    approach=ApproachConfig(
+        approach_distance_mm=3000.0,
+    ),
+    center=CenterConfig(
+        full_centering=True,
+        center_tolerance_fov=0.05,
+        angle_tolerance_deg=5.0,
+    ),
+    action=ChooseGateSideAction(
+    ),
+)
 
-    # Objective(
-    #     name='slalom2',
-    #     target_ids=[ObjectID.SLALOM_LEFT_MID],
-    #     search=SearchConfig(spin_pwm=1460),
-    #     center=CenterConfig(
-    #         full_centering=False,
-    #         center_tolerance_fov=0.05,
-    #     ),
-    #     approach=ApproachConfig(
-    #         approach_distance_mm=1000.0
-    #     ),
-    #     action=ForwardAction(
-    #         forward_pwm=1515,
-    #         forward_distance_m=1.0,
-    #     ),
-    # #     ),
-     Objective(
+traverse_gate = Objective(
+    name='traverseGate',
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        full_centering=True,
+        center_tolerance_fov=0.05,
+        angle_tolerance_deg=5.0,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=2000.0,
+    ),
+    action=ForwardAction(
+        forward_distance_m=4.0,
+    ),
+)
+
+slalom1 = Objective(
+    name='slalom1',
+    target_ids=[ObjectID.SLALOM_LEFT_MID],
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        full_centering=True,
+        center_tolerance_fov=0.05,
+        angle_tolerance_deg=5.0,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=2500.0
+    ),
+    action=ForwardAction(
+        forward_distance_m=2.5,
+    ),
+)
+
+slalom2 = Objective(
+    name='slalom2',
+    target_ids=[ObjectID.SLALOM_LEFT_MID],
+    search=SearchConfig(spin_pwm=1540),
+    center=CenterConfig(
+        center_tolerance_fov=0.05,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=1500.0
+    ),
+    action=ForwardAction(
+        forward_distance_m=1.3,
+    ),
+)
+
+slalom3 = Objective(
+    name='slalom3',
+    target_ids=[ObjectID.SLALOM_LEFT_MID],
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        center_tolerance_fov=0.05,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=1500.0
+    ),
+    action=ForwardAction(
+        forward_distance_m=3.0,
+    ),
+)
+
+approach_dropper = Objective(
+    name='approachDropperObjective',
+    target_ids=[ObjectID.DROPPER],
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        full_centering=False,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=2000.0
+    ),
+    action=ForwardAction(
+        forward_distance_m=2.5,
+    ),
+)
+
+launch_dropper = Objective(
+    name='LaunchDropperObjective',
+    search=SearchConfig(spin_pwm=1460),
+    center=CenterConfig(
+        full_centering=False,
+        center_tolerance_fov=0.05,
+        center_bottom=True,
+        target_offset_x=-0.25,
+        target_offset_y=0.25,
+    ),
+    action=LaunchDropperAction(
+        duration_s=2.0,
+    ),
+)
+
+coarse_approach_torpedo = Objective(
          name='coarse approach torpedo',
          target_ids=[ObjectID.TORPEDO],
          search=SearchConfig(spin_pwm=1460),
@@ -111,15 +198,16 @@ mission_list = [
          approach=ApproachConfig(
              approach_distance_mm=6000.0,
          ),
-     ),
-     Objective(
+     )
+     
+torpedo_depth_change = Objective(
          name='torpedo depth change',
          target_ids=None,
          target_auv_depth_m=1.5,
          action=NoAction()
-     ),
+     )
 
-     Objective(
+fine_approach_torpedo = Objective(
          name='fine approach torpedo',
          target_ids=[ObjectID.TORPEDO],
          center=CenterConfig(
@@ -130,20 +218,9 @@ mission_list = [
          approach=ApproachConfig(
              approach_distance_mm=4500.0,
          ),
-     ),
-    # Objective(
-    #     name='Torpedo firing positioning',
-    #     target_ids=[ObjectID.TORPEDO],
-    #     center=CenterConfig(
-    #         full_centering=True,
-    #         center_tolerance_fov=0.05,
-    #         alignement_tolerance=50.0,
-    #     ),
-    #     approach=ApproachConfig(
-    #         approach_distance_mm=2000.0
-    #     ),
-    # ),
-     Objective(
+     )
+    
+torpedo_firing_positioning = Objective(
         name='Torpedo firing positioning',
         target_ids=[ObjectID.TARGET_FIRE],
         # target_ids=None,
@@ -158,6 +235,7 @@ mission_list = [
         action=FireTorpedoAction(
             min_lifespan_s=1.0,
         ),
-    ),
+    )
 
-]
+#mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
+mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3, approach_dropper, launch_dropper]
