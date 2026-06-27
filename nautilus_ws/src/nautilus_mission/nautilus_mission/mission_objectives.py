@@ -200,28 +200,26 @@ traverse_gate = Objective(
 approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
-    target_auv_depth_m=1.0,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
     ),
     approach=ApproachConfig(
-        approach_distance_mm=4000.0
+        approach_distance_mm=2000.0
     ),
     action=ForwardAction(
-        forward_distance_m=3.5,
+        forward_distance_m=2.5,
     ),
 )
 
 launch_dropper = Objective(
     name='LaunchDropperObjective',
-    target_auv_depth_m=0.5,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
         center_tolerance_fov=0.05,
         center_bottom=True,
-        target_offset_x=0.25,
+        target_offset_x=-0.25,
         target_offset_y=0.25,
     ),
     action=LaunchDropperAction(
@@ -230,4 +228,4 @@ launch_dropper = Objective(
 )
 
 #mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
-mission_list = [approach_dropper,launch_dropper]
+mission_list = [approach_dropper, launch_dropper]

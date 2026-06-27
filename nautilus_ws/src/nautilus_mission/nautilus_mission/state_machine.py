@@ -25,7 +25,7 @@ class StateMachine:
         self.detection_store = detection_store
 
         self.objectives : list[Objective] = mission_list
-        self.role_choice = ObjectID.FIRE
+        self.role_choice = ObjectID.BLOOD
 
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None

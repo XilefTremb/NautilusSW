@@ -86,7 +86,7 @@ class CubeInterface(Node):
 
         self.get_logger().info("Testing servo 11...")
         
-        # self.auv.set_servo(11, 700)
+        # self.auv.set_servo(12, 2200)
         # time.sleep(2.0)
         # self.auv.set_servo(11, 2300)
         # self.auv.go_to_depth(-0.67)

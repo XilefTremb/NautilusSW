@@ -345,7 +345,8 @@ class YoloNode(Node):
                          object_id == ObjectID.GATE_LEG_R or
                          object_id == ObjectID.SLALOM_SIDE or
                          object_id == ObjectID.TORPEDO or
-                         object_id == ObjectID.SLALOM_CENTER)):
+                         object_id == ObjectID.SLALOM_CENTER or
+                         object_id == ObjectID.DROPPER)):
 
                     depth_value, filled_mask = find_depth_from_edge_detector(
                         depth_frame=depth,
