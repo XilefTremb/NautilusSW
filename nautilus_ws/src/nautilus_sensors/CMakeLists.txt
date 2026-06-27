@@ -33,6 +33,13 @@ install(
 
 install(
   PROGRAMS
+    vision/slider_edge_detector.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME slider_edge_detector
+)
+
+install(
+  PROGRAMS
     vision/yolo_pipeline.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME yolo_pipeline

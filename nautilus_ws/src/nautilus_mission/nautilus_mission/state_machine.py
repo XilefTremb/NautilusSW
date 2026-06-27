@@ -9,11 +9,12 @@ from transitions import Machine
 from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
+from enums.ServoEnum import ServoEnum
 
 from .detection_store import DetectionStore
 from .mission_objectives import mission_list, Objective, ActionType
 from .ekf_reset import reset_ekf_pose
-from nautilus_services import request_depth_change
+from nautilus_services import request_depth_change, reset_pids
 
 
 class StateMachine:
@@ -35,7 +36,7 @@ class StateMachine:
         self.ekf_resetted = False
 
         self.target_missing_count = 0
-        self.target_missing_limit = 50
+        self.target_missing_limit = 500
         self.state_start_time = time.monotonic()
         self.execute_action_start_time = None
 
@@ -100,8 +101,8 @@ class StateMachine:
 
         elif self.state == 'APPROACH_TARGET':
             self.vision_action = VisionAction.APPROACH_TARGET
-            # if self.is_target_lost_filtered():
-            #     self.target_lost()
+            if self.is_target_lost_filtered():
+                self.target_lost()
             if self.is_target_approached():
                 self.target_reached()
 
@@ -139,11 +140,15 @@ class StateMachine:
 
         if self.current_objective.target_auv_depth_m is not None:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
+        if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
+            self.current_objective.action.fired = False
 
     def on_enter_CENTER_TARGET(self, event):
+        reset_pids(self.node)
         self.target_missing_count = 0
 
     def on_enter_APPROACH_TARGET(self, event):
+        reset_pids(self.node)
         self.target_missing_count = 0
         self.ekf_resetted = False
         
@@ -151,6 +156,8 @@ class StateMachine:
         self.ekf_resetted = reset_ekf_pose(self.node)
 
     def on_enter_EXECUTE_ACTION(self, event):
+        reset_pids(self.node)
+
         if self.current_objective is None:
             self.finish_mission()
             return
@@ -173,7 +180,14 @@ class StateMachine:
 
     def run_current_action(self):
         if self.state != 'EXECUTE_ACTION' or self.current_objective is None:
-            return
+            return  
+
+        if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
+            if not self.current_objective.action.fired:
+                # self.node.fire_torpedo()
+                self.node.get_logger().info('Launching torpedo no 1!')
+                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_L_PWM)  
+                # self.current_objective.action.fired = True
 
         if self.current_objective.action.type == ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
@@ -203,7 +217,7 @@ class StateMachine:
 
         if action == ActionType.FORWARD:
             #done = self.state_lifespan >= self.current_objective.action_duration
-            return self.forward_position >= self.current_objective.action.forward_distance_m
+            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.4)
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
@@ -213,7 +227,8 @@ class StateMachine:
                 self.mean_depth_forward_cam == self.current_objective.action.camera_mean_depth_target_mm
                 and self.state_lifespan >= self.current_objective.action.min_lifespan_s
             )
-
+        if action == ActionType.FIRE_TORPEDO:
+            return self.state_lifespan > self.current_objective.action.min_lifespan_s
         return False
 
     def is_target_present(self) -> bool:
@@ -257,8 +272,8 @@ class StateMachine:
         if target is None:
             return False
 
-        angle = target[DetectionIndex.ANGLE_DEG]
-        return abs(angle) < self.current_objective.center.angle_tolerance_deg
+        alignement_error = target[DetectionIndex.ANGLE_DEG]
+        return abs(alignement_error) < self.current_objective.center.alignement_tolerance
     
     def ekf_reset_done(self, event):
         if self.ekf_resetted:

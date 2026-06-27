@@ -35,6 +35,13 @@ install(
   RENAME master_node
 )
 
+install(
+  PROGRAMS
+    nautilus_mission/rosbag_recorder.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME rosbag_recorder
+)
+
 ament_python_install_package(${PROJECT_NAME})
 ament_python_install_package(enums)
 

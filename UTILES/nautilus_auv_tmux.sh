@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+source ~/.bashrc
+shopt -s expand_aliases
+
+build || exit 1
+
 SESSION="AUV"
 if tmux has-session -t "$SESSION" 2>/dev/null; then
     echo "Session already exists"

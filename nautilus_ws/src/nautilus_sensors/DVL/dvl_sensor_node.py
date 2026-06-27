@@ -32,7 +32,9 @@ class DVLSensor(Node):
         self.get_logger().info(f"UDP SO_RCVBUF actual value: {actual_buf}")
         self.sock.settimeout(2)
 
+        self.get_logger().info("starting auvPymavlink")
         self.dvl = AuvPymavlink(self)
+        self.get_logger().info("exited auvPymavlink")
         self.dvl.connect("udpin:localhost:14552",False)
         self.get_logger().info('Real DVL started')
 
@@ -118,7 +120,7 @@ class DVLSensor(Node):
 
             t_usec = float(fields[1])
             dt_usec = float(fields[2])
-            dt_s = dt_usec / 10e6
+            dt_s = dt_usec / 1e6
             droll = float(fields[3])
             dpitch = float(fields[4])
             dyaw = float(fields[5])
@@ -144,7 +146,7 @@ class DVLSensor(Node):
 
             self.dvl_pub.publish(twist_msg)
 
-            self.SendDVLAsGps(t_usec, dt_usec, droll, dpitch, dyaw, dx, dy, dz, confidence) #TODO : verify send dvl as gps takes usecs
+            # self.SendDVLAsGps(t_usec, dt_usec, droll, dpitch, dyaw, dx, dy, dz, confidence) #TODO : verify send dvl as gps takes usecs
 
             self.get_logger().info(f"Sent DVL data t:{t_usec}, dt:{dt_usec}, dx:{dx}, dy:{dy}, dz:{dz}, confidence:{confidence}")
 
