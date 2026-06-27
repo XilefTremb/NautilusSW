@@ -38,7 +38,7 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/lateral',
                 'output_topic': '/control/cmd/lateral',
-                'kp': 5.0,
+                'kp': 20.0,
                 'ki': 0.0,
                 'kd': 0.5,
                 'flip_output': True
@@ -58,4 +58,31 @@ def generate_launch_description():
                 'flip_output': False
             }]
         ),
+
+        Node(
+            package='nautilus_controls',
+            executable='pid_node',
+            name='pid_bottom_cam_forward',
+            parameters=[{
+                'input_topic': '/control/vision_errors/bottom_cam/forward',
+                'output_topic': '/control/cmd/forward',
+                'kp': 40.0,
+                'ki': 0.0,
+                'kd': 1.0,
+                'flip_output': True
+            }]
+        ),
+
+        Node(
+            package='nautilus_controls',
+            executable='pid_node',
+            name='pid_bottom_cam_lateral',
+            parameters=[{
+                'input_topic': '/control/vision_errors/bottom_cam/lateral',
+                'output_topic': '/control/cmd/lateral',
+                'kp': 40.0,
+                'ki': 0.0,
+                'kd': 1.0,
+            }]
+        )
     ])

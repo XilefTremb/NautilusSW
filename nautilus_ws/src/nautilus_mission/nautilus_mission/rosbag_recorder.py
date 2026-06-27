@@ -13,13 +13,13 @@ from sensor_msgs.msg import Image
 # =====================================================
 # CONFIG
 # =====================================================
-SAVE_TARGET = "usb"  # "usb" or "computer"
+SAVE_TARGET = "computer"  # "usb" or "computer"
 
 USB_DEVICE = "/dev/sda1"
 USB_MOUNT_POINT = "/media/nautilus/95B9-46D3"
 USB_OUTPUT_DIR = "/media/nautilus/95B9-46D3/rosbags"
 
-COMPUTER_OUTPUT_DIR = "/home/rosbags"
+COMPUTER_OUTPUT_DIR = "~/home/nautilus/rosbags"
 
 
 

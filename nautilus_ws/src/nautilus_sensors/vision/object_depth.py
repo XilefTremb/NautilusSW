@@ -92,12 +92,16 @@ def find_depth(depth_frame, half, bbox_cy, bbox_cx, mode):
 
     return center_depth
 
-def find_dist_from_center(x_center, mode):
-    cx, fx, fy, cy = params_cams(mode)
+def find_dist_from_center_in_x(x_center, mode, cam):
+    cx, fx, fy, cy = params_cams(mode, cam)
     return float((x_center - cx)/cx)
 
-def global_median_forward_cam(depth_frame, mode):
-    cx, fx, fy, cy = params_cams(mode)
+def find_dist_from_center_in_y(y_center, mode, cam):
+    cx, fx, fy, cy = params_cams(mode, cam)
+    return float((y_center - cy)/cy)
+
+def global_median_forward_cam(depth_frame, mode, cam):
+    cx, fx, fy, cy = params_cams(mode, cam)
 
     h, w = depth_frame.shape
 
@@ -124,7 +128,7 @@ def global_median_forward_cam(depth_frame, mode):
 
     return global_depth
 
-def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, id, edge_params):
+def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, id, edge_params, mode):
 
     roi = annotated_frame[y1:y2, x1:x2]
 
@@ -150,9 +154,17 @@ def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, 
     if valid_pixels.size < 20:
         return None, None
 
-    return float(np.median(valid_pixels)), filled_mask
+    depth_value = float(np.median(valid_pixels))
 
-def params_cams(mode):
+    if mode == "sim":
+        depth_value *= 1000.0
+
+    if not np.isfinite(depth_value) or depth_value <= 0:
+        return None, filled_mask
+    
+    return depth_value, filled_mask
+
+def params_cams(mode, cam):
 
     if mode == "sim":
         # SIMULATION
@@ -164,12 +176,63 @@ def params_cams(mode):
         return cx, fx, fy, cy
 
     if mode == "real":
-        # OAK-D S1
-        cx = 640
-        fx = 728
-        fy = 726
-        cy = 370
+        if cam == "forward":
+            # OAK-D S1
+            cx = 640
+            fx = 728
+            fy = 726
+            cy = 480
 
-        return cx, fx, fy, cy
+            return cx, fx, fy, cy
+
+        if cam == "downward":
+            # OAK-D S1
+            cx = 640
+            fx = 728
+            fy = 726
+            cy = 360
+
+            return cx, fx, fy, cy
+
 
     return None
+
+def find_depth_side_difference(depth_frame, x1, y1, x2, y2):
+        h, w = depth_frame.shape
+
+        x1, x2 = int(np.clip(x1, 0, w - 1)), int(np.clip(x2, 0, w - 1))
+        y1, y2 = int(np.clip(y1, 0, h - 1)), int(np.clip(y2, 0, h - 1))
+
+        box_w = x2 - x1
+        box_h = y2 - y1
+
+        if box_w < 20 or box_h < 20:
+            return None
+
+        # Use inner box to avoid noisy edges
+        y_top = y1 + int(0.15 * box_h)
+        y_bot = y2 - int(0.45 * box_h)
+
+        left_x1 = x1 + int(0.05 * box_w)
+        left_x2 = x1 + int(0.35 * box_w)
+
+        right_x1 = x1 + int(0.65 * box_w)
+        right_x2 = x1 + int(0.95 * box_w)
+
+        left_region = depth_frame[y_top:y_bot, left_x1:left_x2]
+        right_region = depth_frame[y_top:y_bot, right_x1:right_x2]
+
+        left_valid = left_region[np.isfinite(left_region)]
+        right_valid = right_region[np.isfinite(right_region)]
+
+        left_valid = left_valid[left_valid > 0]
+        right_valid = right_valid[right_valid > 0]
+
+        if len(left_valid) < 20 or len(right_valid) < 20:
+            return None
+
+        left_depth = float(np.median(left_valid))
+        right_depth = float(np.median(right_valid))
+
+        # Positive means left side is farther than right side
+        return left_depth - right_depth

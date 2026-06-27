@@ -578,6 +578,22 @@ class AuvPymavlink:
             0, 0, 0, #vx vy vz
             0, 0, 0, #ax ay az
             0, 0) #yaw yawrate
+        
+    def set_servo(self, servo_num, pwm):
+        with self._send_lock:
+            self.the_connection.mav.command_long_send(
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
+                0,
+                servo_num,  # servo number (11 = AUX3)
+                pwm,        # PWM value (1100, 1500, 1900, ...)
+                0,
+                0,
+                0,
+                0,
+                0,
+            )
     
         
     def go_to_depth(self, depth):
@@ -588,3 +604,20 @@ class AuvPymavlink:
                 self.set_target_depth(depth)
             time.sleep(0.1)
             self.node.get_logger().info(f"{abs(z-depth)}")
+
+    def set_servo(self, servo_num, pwm):
+        with self._send_lock:
+            self.the_connection.mav.command_long_send(
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
+                0,
+                servo_num,  # servo number (11 = AUX3)
+                pwm,        # PWM value (1100, 1500, 1900, ...)
+                0,
+                0,
+                0,
+                0,
+                0,
+            )
+

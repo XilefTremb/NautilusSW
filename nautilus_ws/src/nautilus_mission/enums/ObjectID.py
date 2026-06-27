@@ -17,10 +17,12 @@ class ObjectID(IntEnum):
     HAMMER = 12
     TORPEDO = 13
     GATE = 14
-    SLALOM_LEFT = 15
-    SLALOM_RIGHT = 16
+    DROPPER = 15
+    TABLE = 16
     GATE_LEFT_MID = 20
     GATE_MID_RIGHT = 21
     SLALOM_LEFT_MID = 22
     SLALOM_MID_RIGHT = 23
+    SLALOM_LEFT = 30
+    SLALOM_RIGHT = 31
     

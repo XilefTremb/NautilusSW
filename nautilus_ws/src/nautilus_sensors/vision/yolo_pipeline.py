@@ -15,7 +15,7 @@ from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
 
-from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector
+from vision.object_depth import find_depth, find_dist_from_center_in_x, find_dist_from_center_in_y, global_median_forward_cam, find_depth_from_edge_detector, find_depth_side_difference
 from vision.gate_angle import find_gate_angle
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
@@ -30,6 +30,9 @@ from enums.ObjectID import ObjectID
 MOVING_MEAN_ACTIVATED = False
 FORWARD_CAM_RATE_HZ = 10
 DOWNWARD_CAM_RATE_HZ = 10
+
+COLOR_IN_DETECTION = (0, 255, 0)
+COLOR_NOT_IN_DETECTION = (255, 0, 0)
 
 
 def parse_args():
@@ -193,7 +196,7 @@ class YoloNode(Node):
             self.edge_mask_pub.publish(edge_msg)
 
             # ----------- GLOBAL DEPTH -----------
-            depth_global_mean = global_median_forward_cam(depth, self.mode)
+            depth_global_mean = global_median_forward_cam(depth, self.mode, "forward")
             if depth_global_mean is not None:
                 msg_depth = Int32()
                 msg_depth.data = int(depth_global_mean)
@@ -247,9 +250,10 @@ class YoloNode(Node):
                 object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
 
-                dist_center = find_dist_from_center(box_cx, self.mode)
+                dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "downward")
+                dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "downward")
 
-                payload.extend([float(object_id), float(dist_center), -1.0, 0.0])
+                payload.extend([float(object_id), float(dist_center_x), -1.0, 0.0, float(dist_center_y)])
 
                 # -------- PAYLOAD + DRAW --------
                 draw_detection(
@@ -257,7 +261,7 @@ class YoloNode(Node):
                     self.type_yolo,
                     object_id,
                     confidence,
-                    0, dist_center,
+                    0, dist_center_x,
                     box_cx, box_cy,
                     x1, y1, x2, y2,
                     None
@@ -267,11 +271,11 @@ class YoloNode(Node):
                 msg = Float32MultiArray()
                 msg.data = payload
 
-                nb_objects = len(payload) // 4
+                nb_objects = len(payload) // 5
 
                 msg.layout.dim = [
                     MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-                    MultiArrayDimension(label='fields', size=4, stride=4)
+                    MultiArrayDimension(label='fields', size=5, stride=5)
                 ]
                 msg.layout.data_offset = 0
 
@@ -307,19 +311,40 @@ class YoloNode(Node):
 
                 #----------- BOX INSIDE FRAME - ----------
                 h, w = depth.shape
-                x1, x2 = np.clip([x1, x2], 0, w - 1)
-                y1, y2 = np.clip([y1, y2], 0, h - 1)
+                x1 = int(np.clip(x1, 0, w - 1))
+                x2 = int(np.clip(x2, 0, w - 1))
+                y1 = int(np.clip(y1, 0, w - 1))
+                y2 = int(np.clip(y2, 0, w - 1))
 
                 # ----------- CLASS / CONF -----------
                 object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
 
                 # ----------- DEPTH -----------
-                if (self.mode == "real" and
-                        (object_id == ObjectID.GATE_LEG_L or
+
+                # if (self.mode == "real" and
+                #         (object_id == ObjectID.GATE_LEG_L or
+                #          object_id == ObjectID.GATE_LEG_CENTER or
+                #          object_id == ObjectID.GATE_LEG_R or
+                #          object_id == ObjectID.SLALOM_SIDE or
+                #          object_id == ObjectID.SLALOM_CENTER or
+                #          object_id == ObjectID.TORPEDO)):
+
+                #     depth_value, filled_mask = find_depth_from_edge_detector(
+                #         depth_frame=depth,
+                #         x1=x1,
+                #         y1=y1,
+                #         x2=x2,
+                #         y2=y2,
+                #         annotated_frame = annotated_frame,
+                #         mode=self.mode
+                #     )
+                # Modfified to see boxes in sim, doesnt need to be merged into dev, this is for testing 
+                if ((object_id == ObjectID.GATE_LEG_L or
                          object_id == ObjectID.GATE_LEG_CENTER or
                          object_id == ObjectID.GATE_LEG_R or
                          object_id == ObjectID.SLALOM_SIDE or
+                         object_id == ObjectID.TORPEDO or
                          object_id == ObjectID.SLALOM_CENTER)):
 
                     depth_value, filled_mask = find_depth_from_edge_detector(
@@ -328,9 +353,10 @@ class YoloNode(Node):
                         y1=y1,
                         x2=x2,
                         y2=y2,
-                        annotated_frame = annotated_frame,
+                        annotated_frame = annotated_frame, 
                         id = object_id,
-                        edge_params = self.edge_params)
+                        edge_params = self.edge_params,
+                        mode=self.mode)
 
                     if filled_mask is not None:
                         annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] #for debug
@@ -353,17 +379,47 @@ class YoloNode(Node):
                             bbox_cx=box_cx,
                             mode=self.mode)
 
+                if depth_value is None or not (800.0 < depth_value < self.depth_threshold):
+                    draw_detection(
+                            annotated_frame,
+                            self.type_yolo,
+                            object_id,
+                            confidence,
+                            -99999,
+                            -9999,
+                            box_cx,
+                            box_cy,
+                            x1,
+                            y1,
+                            x2,
+                            y2,
+                            color= COLOR_NOT_IN_DETECTION,
+                            points=None
+                        )
                 if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
                     continue
 
                 # ----------- DIST / ANGLE -----------
-                dist_center = find_dist_from_center(box_cx, self.mode)
+                dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "forward")
+                dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "forward")
+
+                # ----------- LATERAL CENTERING FOR TORPEDO -----------
+                angle = 0.0
+
+                if int(object_id) == int(ObjectID.TORPEDO):
+                    side_diff = find_depth_side_difference(depth,int(x1),int(y1),int(x2),int(y2))
+                    if side_diff is not None:
+                        angle = self.temporal_filter.moving_median_filter(
+                                key=f"torpedo_side_diff_{object_id}",
+                                new_value=side_diff
+                        )
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id == ObjectID.SLALOM_SIDE:
                     slalom_tab.append({
                         "depth": depth_value,
-                        "dist_center": dist_center,
+                        "dist_center_x": dist_center_x,
+                        "dist_center_y": dist_center_y,
                         "box_cx": box_cx,
                         "box_cy": box_cy,
                         "confidence": confidence,
@@ -383,14 +439,14 @@ class YoloNode(Node):
                             object_id,
                             objects[object_id]["confidence"],
                             objects[object_id]["depth"],
-                            objects[object_id]["dist_center"],
+                            objects[object_id]["dist_center_x"],
                             objects[object_id]["box_cx"],
                             objects[object_id]["box_cy"],
                             objects[object_id]["x1"],
                             objects[object_id]["y1"],
                             objects[object_id]["x2"],
                             objects[object_id]["y2"],
-                            color=(0, 0, 255),
+                            color= COLOR_NOT_IN_DETECTION,
                             points=objects[object_id]["points"]
                         )
 
@@ -398,12 +454,13 @@ class YoloNode(Node):
                             depth_value = self.temporal_filter.moving_median_filter(
                                 key=f"depth_{object_id}",
                                 new_value=depth_value)
-
+                            
                     objects[object_id] = {
                         "depth": depth_value,
                         "box_cx": box_cx,
                         "box_cy": box_cy,
-                        "dist_center": dist_center,
+                        "dist_center_x": dist_center_x,
+                        "dist_center_y": dist_center_y,
                         "confidence": confidence,
                         "x1": x1,
                         "y1": y1,
@@ -418,22 +475,22 @@ class YoloNode(Node):
                         object_id,
                         confidence,
                         depth_value,
-                        dist_center,
+                        dist_center_x,
                         box_cx, box_cy,
                         x1, y1, x2, y2,
-                        color=(0, 0, 255),
+                        color=COLOR_NOT_IN_DETECTION,
                         points=points
                     )
 
         for object_id, obj in objects.items(): 
-            payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),0.0])
+            payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),0.0, float(obj["dist_center_y"])])
             draw_detection(
                 annotated_frame,
                 self.type_yolo,
                 object_id,
                 obj["confidence"],
                 obj["depth"],
-                obj["dist_center"],
+                obj["dist_center_x"],
                 obj["box_cx"],
                 obj["box_cy"],
                 obj["x1"],
@@ -451,7 +508,7 @@ class YoloNode(Node):
         payload_angle = find_gate_angle(objects, self.mode)
 
         if MOVING_MEAN_ACTIVATED:
-            for i in range(0, len(payload_angle), 4):
+            for i in range(0, len(payload_angle), 5):
                 group_id = int(payload_angle[i])
                 angle_index = i + 3
 
@@ -467,11 +524,11 @@ class YoloNode(Node):
         # -------- PUBLISH DETECTION --------
         msg = Float32MultiArray()
         msg.data = payload
-        nb_objects = len(payload) // 4
+        nb_objects = len(payload) // 5
 
         msg.layout.dim = [
             MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-            MultiArrayDimension(label='fields', size=4, stride=4)]
+            MultiArrayDimension(label='fields', size=5, stride=5)]
         msg.layout.data_offset = 0
 
         self.detection_forward_pub.publish(msg)
@@ -499,9 +556,10 @@ class YoloNode(Node):
 
             payload.extend([
                 float(ObjectID.SLALOM_SIDE),
-                float(closest_side["dist_center"]),
+                float(closest_side["dist_center_x"]),
                 float(closest_side["depth"]),
-                0.0
+                0.0,
+                float(closest_side["dist_center_y"])
             ])
 
         else:
@@ -525,24 +583,24 @@ class YoloNode(Node):
                 objects[ObjectID.SLALOM_LEFT] = slalom_left
                 selected_ids[id(slalom_left)] = ObjectID.SLALOM_LEFT
 
-                payload.extend([float(ObjectID.SLALOM_LEFT), float(slalom_left["dist_center"]), float(slalom_left["depth"]), 0.0])
+                payload.extend([float(ObjectID.SLALOM_LEFT), float(slalom_left["dist_center_x"]), float(slalom_left["depth"]), 0.0, float(slalom_left["dist_center_y"])])
 
             if slalom_right is not None:
                 objects[ObjectID.SLALOM_RIGHT] = slalom_right
                 selected_ids[id(slalom_right)] = ObjectID.SLALOM_RIGHT
 
-                payload.extend([float(ObjectID.SLALOM_RIGHT), float(slalom_right["dist_center"]), float(slalom_right["depth"]), 0.0])
+                payload.extend([float(ObjectID.SLALOM_RIGHT), float(slalom_right["dist_center_x"]), float(slalom_right["depth"]), 0.0, float(slalom_right["dist_center_y"])])
 
         for slalom in slalom_tab:
             display_id  = selected_ids.get(id(slalom), ObjectID.SLALOM_SIDE)
-            color = (0, 255, 0) if id(slalom) in selected_ids else (0, 0, 255)
+            color = COLOR_IN_DETECTION if id(slalom) in selected_ids else COLOR_NOT_IN_DETECTION
 
             draw_detection(
                 annotated_frame,
                 self.type_yolo,
                 display_id,
                 slalom["confidence"], slalom["depth"],
-                slalom["dist_center"],
+                slalom["dist_center_x"],
                 slalom["box_cx"], slalom["box_cy"],
                 slalom["x1"], slalom["y1"],
                 slalom["x2"], slalom["y2"],

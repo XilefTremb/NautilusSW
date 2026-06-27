@@ -14,7 +14,6 @@ class VisionController:
     def __init__(self, node: Node):
         self.node = node
         self.previous_vision_action: Optional[VisionAction] = None
-        self.circle_marker_pixel_offset = 0.0
 
     def process(self, vision_action: VisionAction, target_detection):
         if self.previous_vision_action != vision_action:
@@ -36,12 +35,14 @@ class VisionController:
             self.circle_marker(target_detection)
         elif vision_action == VisionAction.CENTER_FOV:
             self.center_fov(target_detection)
+        elif vision_action == VisionAction.CENTER_BOTTOM:
+            self.center_bottom(target_detection)
 
     def center_target(self, target_detection):
         if target_detection is None:
             return
 
-        px = target_detection[DetectionIndex.CENTER_FOV_RATIO]
+        px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
         angle = target_detection[DetectionIndex.ANGLE_DEG]
 
         forward_error, lateral_error = self.split_angle(angle)
@@ -49,9 +50,19 @@ class VisionController:
         self.node.publish_lateral_error(lateral_error)
         self.node.publish_yaw_error(float(px))
 
+    def center_bottom(self, target_detection):
+        if target_detection is None:
+            return
+
+        px_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_X] - self.node.fsm.current_objective.center.target_offset_x
+        py_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y] - self.node.fsm.current_objective.center.target_offset_y
+
+        self.node.publish_bottom_cam_lateral_error(float(px_error))
+        self.node.publish_bottom_cam_forward_error(float(py_error))
+
     def approach_target(self, target_detection):
         if target_detection is not None:
-            px = target_detection[DetectionIndex.CENTER_FOV_RATIO]
+            px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
             self.node.publish_yaw_error(float(px))
 
         self.node.publish_forward_cmd(1540)
@@ -60,7 +71,7 @@ class VisionController:
         if target_detection is None:
             return
 
-        px = target_detection[DetectionIndex.CENTER_FOV_RATIO]
+        px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
         self.node.publish_yaw_error(float(px) - self.circle_marker_pixel_offset)
         self.node.publish_forward_cmd(1540)
         self.node.publish_lateral_cmd(1375)
@@ -72,8 +83,16 @@ class VisionController:
         if target_detection is None:
             return
         
-        px = target_detection[DetectionIndex.CENTER_FOV_RATIO]
+        px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
         self.node.publish_yaw_error(float(px))
+
+    def center_dropper(self, target_detection):
+        if target_detection is None:
+            return
+        
+        px_error = target_detection[DetectionIndex.CENTER_FOV_X_RATIO]
+        py_error = target_detection[DetectionIndex.CENTER_HEIGHT_RATIO]
+
 
     def split_angle(self, angle_deg):
         angle = math.radians(angle_deg)
