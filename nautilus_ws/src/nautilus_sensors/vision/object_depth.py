@@ -150,7 +150,15 @@ def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, 
     if valid_pixels.size < 20:
         return None, None
 
-    return float(np.median(valid_pixels)), filled_mask
+    depth_value = float(np.median(valid_pixels))
+
+    # if mode == "sim":
+    #     depth_value *= 1000.0
+
+    if not np.isfinite(depth_value) or depth_value <= 0:
+        return None, filled_mask
+    
+    return depth_value, filled_mask
 
 def params_cams(mode):
 
@@ -173,3 +181,4 @@ def params_cams(mode):
         return cx, fx, fy, cy
 
     return None
+
