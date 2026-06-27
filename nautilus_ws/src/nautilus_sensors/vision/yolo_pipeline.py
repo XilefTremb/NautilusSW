@@ -20,6 +20,7 @@ from vision.gate_angle import find_gate_angle, find_angle_torpedo
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
 from vision.slider_edge_detector import load_params_edge_detector_json
+from vision.item_organizer import slalom_organizer, target_organizer
 
 from enums.ObjectID import ObjectID
 
@@ -290,6 +291,7 @@ class YoloNode(Node):
         payload = []
         objects = {}
         slalom_tab = []
+        target_tab = []
 
         edge_debug = np.zeros(annotated_frame.shape[:2], dtype=np.uint8)
 
@@ -320,26 +322,6 @@ class YoloNode(Node):
                 confidence = float(box.conf[0])
 
                 # ----------- DEPTH -----------
-
-                # if (self.mode == "real" and
-                #         (object_id == ObjectID.GATE_LEG_L or
-                #          object_id == ObjectID.GATE_LEG_CENTER or
-                #          object_id == ObjectID.GATE_LEG_R or
-                #          object_id == ObjectID.SLALOM_SIDE or
-                #          object_id == ObjectID.SLALOM_CENTER or
-                #          object_id == ObjectID.TORPEDO)):
-
-                #     depth_value, filled_mask = find_depth_from_edge_detector(
-                #         depth_frame=depth,
-                #         x1=x1,
-                #         y1=y1,
-                #         x2=x2,
-                #         y2=y2,
-                #         annotated_frame = annotated_frame,
-                #         mode=self.mode
-                #     )
-                # Modfified to see boxes in sim, doesnt need to be merged into dev, this is for testing
-
                 if ((object_id == ObjectID.GATE_LEG_L or
                          object_id == ObjectID.GATE_LEG_CENTER or
                          object_id == ObjectID.GATE_LEG_R or
@@ -387,6 +369,21 @@ class YoloNode(Node):
                 # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id == ObjectID.SLALOM_SIDE:
                     slalom_tab.append({
+                        "depth": depth_value,
+                        "dist_center": dist_center,
+                        "box_cx": box_cx,
+                        "box_cy": box_cy,
+                        "confidence": confidence,
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2,
+                        "points": points
+                    })
+                    continue
+
+                elif object_id == ObjectID.TARGET:
+                    target_tab.append({
                         "depth": depth_value,
                         "dist_center": dist_center,
                         "box_cx": box_cx,
@@ -452,12 +449,12 @@ class YoloNode(Node):
 
         for object_id, obj in objects.items():
             if obj["depth"] < self.depth_threshold:
+                angle = 0.0
                 if object_id == ObjectID.TORPEDO:
-                    angle = 0
                     angle = find_angle_torpedo(objects)
                     payload.extend([float(object_id), float(obj["dist_center"]), float(obj["depth"]), angle])
                 else:
-                    payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),0.0])
+                    payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),angle])
 
 
                 draw_detection(
@@ -477,8 +474,10 @@ class YoloNode(Node):
                     points=obj["points"]
                 )
 
-        # -------- SLALOM LOGIC --------
-        objects, payload = self.slalom_organizer(slalom_tab, objects, annotated_frame, payload)
+        # -------- SLALOM AND TARGET ORGANIZER --------
+        objects, payload = slalom_organizer(slalom_tab, objects, annotated_frame, payload)
+
+        objects, payload = target_organizer(target_tab, objects, annotated_frame, payload)
 
         # -------- FIND ANGLE BETWEEN TWO OBJECTS --------
         payload_angle = find_gate_angle(objects, self.mode)
@@ -510,78 +509,6 @@ class YoloNode(Node):
         self.detection_forward_pub.publish(msg)
 
         return annotated_frame, edge_debug
-
-    def slalom_organizer(self, slalom_tab, objects, annotated_frame, payload):
-
-        if len(slalom_tab) == 0:
-            return objects, payload
-
-        # self.get_logger().info(f"{objects}")
-        
-        selected_ids = {}
-
-        if ObjectID.SLALOM_CENTER not in objects:
-            valid_slaloms = [s for s in slalom_tab if s["depth"] != -1000]
-
-            if valid_slaloms:
-                closest_side = min(valid_slaloms, key=lambda s: s["depth"])
-            else:
-                closest_side = min(slalom_tab, key=lambda s: s["depth"])
-            
-            selected_ids[id(closest_side)] = ObjectID.SLALOM_SIDE
-
-            payload.extend([
-                float(ObjectID.SLALOM_SIDE),
-                float(closest_side["dist_center"]),
-                float(closest_side["depth"]),
-                0.0
-            ])
-
-        else:
-            slalom_middle_cx = objects[ObjectID.SLALOM_CENTER]["box_cx"]
-            slalom_left = None
-            slalom_right = None
-
-            for slalom in slalom_tab:
-                depth_value = slalom["depth"]
-                box_cx = slalom["box_cx"]
-
-                if box_cx < slalom_middle_cx:
-                    if slalom_left is None or depth_value < slalom_left["depth"]:
-                        slalom_left = slalom
-
-                elif box_cx > slalom_middle_cx:
-                    if slalom_right is None or depth_value < slalom_right["depth"]:
-                        slalom_right = slalom
-
-            if slalom_left is not None:
-                objects[ObjectID.SLALOM_LEFT] = slalom_left
-                selected_ids[id(slalom_left)] = ObjectID.SLALOM_LEFT
-
-                payload.extend([float(ObjectID.SLALOM_LEFT), float(slalom_left["dist_center"]), float(slalom_left["depth"]), 0.0])
-
-            if slalom_right is not None:
-                objects[ObjectID.SLALOM_RIGHT] = slalom_right
-                selected_ids[id(slalom_right)] = ObjectID.SLALOM_RIGHT
-
-                payload.extend([float(ObjectID.SLALOM_RIGHT), float(slalom_right["dist_center"]), float(slalom_right["depth"]), 0.0])
-
-        for slalom in slalom_tab:
-            display_id  = selected_ids.get(id(slalom), ObjectID.SLALOM_SIDE)
-            color = COLOR_IN_DETECTION if id(slalom) in selected_ids else COLOR_NOT_IN_DETECTION
-
-            draw_detection(
-                annotated_frame,
-                self.type_yolo,
-                display_id,
-                slalom["confidence"], slalom["depth"],
-                slalom["dist_center"],
-                slalom["box_cx"], slalom["box_cy"],
-                slalom["x1"], slalom["y1"],
-                slalom["x2"], slalom["y2"],
-                color, slalom["points"])
-
-        return objects, payload
 
     def destroy_node(self):
         self.get_logger().info("Destroying YOLO node")
