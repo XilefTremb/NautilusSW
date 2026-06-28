@@ -52,7 +52,7 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/forward_ekf',
                 'output_topic': '/control/cmd/forward',
-                'kp': 15.0,
+                'kp': 10.0,
                 'ki': 0.1,
                 'kd': 0.5,
                 'flip_output': False

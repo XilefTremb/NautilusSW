@@ -9,7 +9,7 @@ from nautilus_controls.auv_pymavlink import AuvPymavlink
 from nautilus_interfaces.srv import SetTargetDepth
 from std_msgs.msg import Int16MultiArray
 import time
-
+from enums.ServoEnum import ServoEnum
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -82,14 +82,10 @@ class CubeInterface(Node):
         self.auv.start_receiver()
 
         # time.sleep(2)
-        self.auv.change_mode("ALT_HOLD")
-
-        self.get_logger().info("Testing servo 11...")
-        
-        # self.auv.set_servo(11, 700)
-        # time.sleep(2.0)
-        # self.auv.set_servo(11, 2300)
+        # self.auv.change_mode("ALT_HOLD")
         # self.auv.go_to_depth(-0.67)
+        self.auv.set_servo(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
+        self.auv.set_servo(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
 
     def servo_cmd_callback(self, msg):
         if len(msg.data) < 2:

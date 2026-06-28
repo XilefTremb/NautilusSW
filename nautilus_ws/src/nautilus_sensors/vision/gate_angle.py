@@ -38,8 +38,6 @@ def build_payload(GATE_ID, left_obj, right_obj, results_angle, mode):
 def find_gate_angle(objects, mode):
     results_angle = []
 
-    #print(f"{objects}")
-
     gate_left = ObjectID.GATE_LEG_L in objects
     gate_right = ObjectID.GATE_LEG_R in objects
     gate_middle = ObjectID.GATE_LEG_CENTER in objects
@@ -69,3 +67,31 @@ def find_gate_angle(objects, mode):
         build_payload(ObjectID.SLALOM_MID_RIGHT, left_obj, right_obj, results_angle, mode)
 
     return results_angle
+
+def find_angle_torpedo(objects):
+    angles = []
+
+    if ObjectID.FIRE_TRUCK in objects and ObjectID.AMBULANCE in objects:
+        angle = find_angle_plane(
+            objects[ObjectID.FIRE_TRUCK]["depth"],
+            objects[ObjectID.AMBULANCE]["depth"],
+            1524,
+            objects[ObjectID.FIRE_TRUCK]["box_cx"],
+            objects[ObjectID.AMBULANCE]["box_cx"])
+        if angle is not None:
+            angles.append(angle)
+
+    if ObjectID.BLOOD in objects and ObjectID.FIRE in objects:
+        angle = find_angle_plane(
+            objects[ObjectID.BLOOD]["depth"],
+            objects[ObjectID.FIRE]["depth"],
+            1524,
+            objects[ObjectID.BLOOD]["box_cx"],
+            objects[ObjectID.FIRE]["box_cx"])
+        if angle is not None:
+            angles.append(angle)
+
+    if not angles:
+        return 0.0
+
+    return float(np.mean(angles))
