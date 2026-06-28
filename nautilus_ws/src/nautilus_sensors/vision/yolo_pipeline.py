@@ -203,9 +203,7 @@ class YoloNode(Node):
             results = self.model(frame, conf=0.4, verbose=False)
             t1 = time.time()
 
-            annotated = frame  # Draw directly on frame (no copy needed)
-
-            annotated_frame, edge_debug = self.process_forward(results, annotated, depth)
+            annotated_frame, edge_debug = self.process_forward(results, frame, depth)
             t2 = time.time()
 
             self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
@@ -242,12 +240,10 @@ class YoloNode(Node):
             self.last_downward_time = now
 
             results = self.model(frame, conf=0.4, verbose=False)
-            annotated = frame  # Draw directly on frame (no copy needed)
-
-            self.process_downward(results, annotated)
+            self.process_downward(results, frame)
 
             # ----------- PUBLISH IMAGE ANNOTATED DOWNWARD CAM -----------
-            msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
+            msg = self.bridge.cv2_to_imgmsg(frame, 'bgr8')
             msg.header = header
             self.down_image_pub.publish(msg)
 
