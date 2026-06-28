@@ -35,6 +35,9 @@ DOWNWARD_CAM_RATE_HZ = 10
 COLOR_IN_DETECTION = (0, 255, 0)
 COLOR_NOT_IN_DETECTION = (255, 0, 0)
 
+PUBLISH_ANNOTATED_IMAGES = True
+ENABLE_DOWNWARD_INFERENCE = False
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -179,10 +182,10 @@ class YoloNode(Node):
     def inference_loop(self):
         now = time.time()
 
-        if hasattr(self, "_last_timer"):
-            self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
+        # if hasattr(self, "_last_timer"):
+        #     self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
 
-        self._last_timer = now
+        # self._last_timer = now
 
         #PRIORITY1: FORWARD CAMERA
         if self.forward_queue and (now - self.last_forward_time > self.forward_interval):
@@ -208,14 +211,15 @@ class YoloNode(Node):
             self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
 
             # ----------- PUBLISH IMAGE ANNOTATED OAKD -----------
-            out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
-            out_msg.header = header
-            self.fwd_image_pub.publish(out_msg)
+            if PUBLISH_ANNOTATED_IMAGES:
+                out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
+                out_msg.header = header
+                self.fwd_image_pub.publish(out_msg)
 
-            # ----------- PUBLISH IMAGE MASK DEPTH -----------
-            edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
-            edge_msg.header = header
-            self.edge_mask_pub.publish(edge_msg)
+                # ----------- PUBLISH IMAGE MASK DEPTH -----------
+                edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
+                edge_msg.header = header
+                self.edge_mask_pub.publish(edge_msg)
 
             # ----------- GLOBAL DEPTH -----------
             depth_global_mean = global_median_forward_cam(depth, self.mode, "forward")
@@ -227,7 +231,7 @@ class YoloNode(Node):
             return
 
         #PRIORITY2: DOWNWARD CAMERA
-        if self.downward_queue and (now - self.last_downward_time > self.downward_interval):
+        if ENABLE_DOWNWARD_INFERENCE and self.downward_queue and (now - self.last_downward_time > self.downward_interval):
 
             rgb_msg = self.downward_queue.pop()
             self.downward_queue.clear()
