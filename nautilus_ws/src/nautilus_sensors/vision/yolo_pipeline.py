@@ -82,15 +82,6 @@ class YoloNode(Node):
 
         self.edge_params = load_params_edge_detector_json()
 
-        self.raw_rgb_count = 0
-        self.raw_depth_count = 0
-        self.raw_rgb_last_ts = None
-        self.raw_depth_last_ts = None
-
-        self.latest_depth_msg = None
-        self.latest_depth_time = None
-        self.max_depth_age_s = 0.5
-
         self.last_forward_sync_ts = None
         self.last_forward_sync_count = 0
         self.last_forward_publish_ts = None
@@ -100,10 +91,8 @@ class YoloNode(Node):
         self.downward_queue = deque(maxlen=1)
 
         # -------- SUBSCRIBERS --------
-        self.fwd_rgb_raw_sub = self.create_subscription(Image, 'oakd/camera/image_raw', self.raw_rgb_callback, 10)
-        self.depth_raw_sub = self.create_subscription(Image, 'oakd/camera/depth/image_raw', self.raw_depth_callback, 10)
-        # self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
-        # self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
+        self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
+        self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
         self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,10)
         self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback, 1)
         self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback, 1)
@@ -117,14 +106,14 @@ class YoloNode(Node):
         self.edge_mask_pub = self.create_publisher(Image, '/yolo/edge_mask', 1)
 
         # ----------- SYNCHRONIZER DEPTH AND RGB -----------
-        # self.ts = ApproximateTimeSynchronizer(
-        #     [self.fwd_rgb_sub, self.depth_sub],
-        #     queue_size= 5,
-        #     slop= 0.2,
-        #     allow_headerless=True
-        # )
+        self.ts = ApproximateTimeSynchronizer(
+            [self.fwd_rgb_sub, self.depth_sub],
+            queue_size= 5,
+            slop= 0.2,
+            allow_headerless=True
+        )
 
-        # self.ts.registerCallback(self.forward_callback)
+        self.ts.registerCallback(self.forward_callback)
 
         # -------- TIMER (MAIN INFERENCE LOOP) --------
         self.timer = self.create_timer(0.05, self.inference_loop)
@@ -166,44 +155,6 @@ class YoloNode(Node):
         # CALLBACK FOR FORWARD CAM (OAK1)
         self.downward_queue.append(rgb_msg)
 
-    def raw_rgb_callback(self, rgb_msg):
-        now = time.time()
-        if self.raw_rgb_last_ts is not None:
-            interval = now - self.raw_rgb_last_ts
-            if interval > 0.15 or interval < 0.03 or self.raw_rgb_count % 20 == 0:
-                self.get_logger().info(
-                    f"[RAW_RGB] interval={interval:.3f}s count={self.raw_rgb_count + 1}"
-                )
-        self.raw_rgb_last_ts = now
-        self.raw_rgb_count += 1
-
-        if self.latest_depth_msg is None:
-            return
-
-        depth_age = time.time() - self.latest_depth_time
-
-        if depth_age > self.max_depth_age_s:
-            self.get_logger().warning(f"[DEPTH_OLD] Skipping RGB frame, latest depth age={depth_age:.3f}s")
-            return
-
-        if self.forward_queue:
-            self.get_logger().warning("[QUEUE_DROP] Forward queue overwritten")
-
-        self.forward_queue.append((rgb_msg, self.latest_depth_msg))
-
-    def raw_depth_callback(self, depth_msg):
-        now = time.time()
-        if self.raw_depth_last_ts is not None:
-            interval = now - self.raw_depth_last_ts
-            if interval > 0.15 or interval < 0.03 or self.raw_depth_count % 20 == 0:
-                self.get_logger().info(
-                    f"[RAW_DEPTH] interval={interval:.3f}s count={self.raw_depth_count + 1}"
-                )
-        self.raw_depth_last_ts = now
-        self.raw_depth_count += 1
-        self.latest_depth_time = time.time()
-        self.latest_depth_msg = depth_msg
-
     def depth_threshold_callback(self, msg):
         # CALLBACK FOR DEPTH THRESHOLD
         self.depth_threshold = msg.data
@@ -236,7 +187,7 @@ class YoloNode(Node):
             self.forward_queue.clear()
 
             frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
-            depth = self.bridge.imgmsg_to_cv2(depth_msg, '32FC1')
+            depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='passthrough')
             header = rgb_msg.header
 
             self.last_forward_time = now
