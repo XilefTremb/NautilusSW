@@ -109,6 +109,17 @@ class DualOakNode(Node):
         # ROS loop
         self.timer = self.create_timer(0.01, self.main_loop)
 
+        self.last_rgb_ts = None
+        self.last_depth_ts = None
+        self.last_rgb_host = None
+        self.last_depth_host = None
+        self.prev_rgb_ts = None
+        self.prev_depth_ts = None
+        self.prev_rgb_host = None
+        self.prev_depth_host = None
+
+        self.create_timer(0.02, self.debug_rgb_depth_timing)
+
     # =====================================================
     # KEYBOARD CONTROL
     # =====================================================
@@ -171,7 +182,7 @@ class DualOakNode(Node):
         LEFT_SOCKET = dai.CameraBoardSocket.CAM_B
         RIGHT_SOCKET = dai.CameraBoardSocket.CAM_C
 
-        RGB_SIZE = (1280, 960)
+        RGB_SIZE = (1280, 960) #1280x960 pour full 960x528 pour 75% et 640x352 pour 50%
         MONO_SIZE = (640, 400)
 
         platform = pipeline.getDefaultDevice().getPlatform()
@@ -188,7 +199,7 @@ class DualOakNode(Node):
             align = pipeline.create(dai.node.ImageAlign)
 
         # Same idea as Alignement.py
-        stereo.setExtendedDisparity(True)
+        stereo.setExtendedDisparity(False)
         stereo.setLeftRightCheck(True)
         stereo.setRectification(True)
 
@@ -199,7 +210,7 @@ class DualOakNode(Node):
             fps=FPS,
             enableUndistortion=True,
             type=dai.ImgFrame.Type.NV12,
-            resizeMode=dai.ImgResizeMode.STRETCH,
+            resizeMode=dai.ImgResizeMode.CROP,
         )
 
         left_out = left.requestOutput(size=MONO_SIZE, fps=FPS)
@@ -238,9 +249,19 @@ class DualOakNode(Node):
 
         sync_queue = sync.out.createOutputQueue(maxSize=1, blocking=False)
 
-        raw_depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
+        #raw_depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
 
         h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
+
+        rgb_debug_queue = rgb_out.createOutputQueue(
+            maxSize=10,
+            blocking=False
+        )
+
+        raw_depth_queue = stereo.depth.createOutputQueue(
+            maxSize=10,
+            blocking=False
+        )
 
         # IMU Data OAKD
         imu = pipeline.create(dai.node.IMU)
@@ -253,8 +274,42 @@ class DualOakNode(Node):
         imu.setMaxBatchReports(10)
 
         imu_queue = imu.out.createOutputQueue(maxSize=10, blocking=False)
+    
+        return sync_queue, raw_depth_queue, rgb_debug_queue, h264_queue, imu_queue
 
-        return sync_queue, raw_depth_queue, h264_queue, imu_queue
+    def debug_rgb_depth_timing(self):
+        rgb_msg = self.rgb_debug_queue.tryGet()
+        depth_msg = self.raw_depth_queue.tryGet()
+
+        now = time.time()
+
+        if rgb_msg is not None:
+            rgb_ts = rgb_msg.getTimestamp().total_seconds()
+
+            if self.prev_rgb_ts is not None:
+                rgb_period_ms = (rgb_ts - self.prev_rgb_ts) * 1000.0
+                rgb_host_period_ms = (now - self.prev_rgb_host) * 1000.0
+
+                self.get_logger().info(
+                    f"RGB period | device={rgb_period_ms:.1f} ms, host={rgb_host_period_ms:.1f} ms"
+                )
+
+            self.prev_rgb_ts = rgb_ts
+            self.prev_rgb_host = now
+
+        if depth_msg is not None:
+            depth_ts = depth_msg.getTimestamp().total_seconds()
+
+            if self.prev_depth_ts is not None:
+                depth_period_ms = (depth_ts - self.prev_depth_ts) * 1000.0
+                depth_host_period_ms = (now - self.prev_depth_host) * 1000.0
+
+                self.get_logger().warn(
+                    f"DEPTH period | device={depth_period_ms:.1f} ms, host={depth_host_period_ms:.1f} ms"
+                )
+
+            self.prev_depth_ts = depth_ts
+            self.prev_depth_host = now
 
     # =====================================================
     # DEVICE SETUP
@@ -289,16 +344,21 @@ class DualOakNode(Node):
             cameras = device.getConnectedCameras()
 
             if len(cameras) > 1:
-                sync_q, depth_q, h264_q, imu_q = self.create_oakd_pipeline(pipeline)
+                sync_q, depth_q, rgb_debug_q, h264_q, imu_q = self.create_oakd_pipeline(pipeline)
                 pipeline.start()
+
+                self.rgb_debug_queue = rgb_debug_q
+                self.raw_depth_queue = depth_q
 
                 self.devices_data.append({
                     "type": "oakd",
                     "sync": sync_q,
                     "raw_depth": depth_q,
+                    "rgb_debug": rgb_debug_q,
                     "h264": h264_q,
                     "imu": imu_q,
                 })
+                
 
 
     # =====================================================
