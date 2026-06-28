@@ -100,7 +100,7 @@ approach_gate = Objective(
 
 choose_gate_side = Objective(
     name='chooseGateSide',
-    search=SearchConfig(spin_pwm=1460),
+    search=SearchConfig(spin_pwm=1540),
     approach=ApproachConfig(
         approach_distance_mm=3000.0,
     ),
@@ -125,14 +125,14 @@ traverse_gate = Objective(
         approach_distance_mm=2000.0,
     ),
     action=ForwardAction(
-        forward_distance_m=4.0,
+        forward_distance_m=3.0,
     ),
 )
 
 slalom1 = Objective(
     name='slalom1',
     target_ids=[ObjectID.SLALOM_LEFT_MID],
-    search=SearchConfig(spin_pwm=1460),
+    search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=True,
         center_tolerance_fov=0.05,
@@ -142,16 +142,16 @@ slalom1 = Objective(
         approach_distance_mm=2500.0
     ),
     action=ForwardAction(
-        forward_distance_m=2.5,
+        forward_distance_m=2.2,
     ),
 )
 
 slalom2 = Objective(
     name='slalom2',
     target_ids=[ObjectID.SLALOM_LEFT_MID],
-    search=SearchConfig(spin_pwm=1540),
+    search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
-        center_tolerance_fov=0.05,
+        center_tolerance_fov=0.1,
     ),
     approach=ApproachConfig(
         approach_distance_mm=1500.0
@@ -164,15 +164,15 @@ slalom2 = Objective(
 slalom3 = Objective(
     name='slalom3',
     target_ids=[ObjectID.SLALOM_LEFT_MID],
-    search=SearchConfig(spin_pwm=1460),
+    search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
-        center_tolerance_fov=0.05,
+        center_tolerance_fov=0.1,
     ),
     approach=ApproachConfig(
         approach_distance_mm=1500.0
     ),
     action=ForwardAction(
-        forward_distance_m=3.0,
+        forward_distance_m=1.5,
     ),
 )
 
@@ -184,7 +184,7 @@ approach_dropper = Objective(
         full_centering=False,
     ),
     approach=ApproachConfig(
-        approach_distance_mm=2000.0
+        approach_distance_mm=3000.0
     ),
     action=ForwardAction(
         forward_distance_m=2.5,
@@ -235,7 +235,7 @@ fine_approach_torpedo = Objective(
              alignement_tolerance=150.0,
          ),
          approach=ApproachConfig(
-             approach_distance_mm=4500.0,
+             approach_distance_mm=2000.0,
          ),
      )
     
@@ -257,5 +257,5 @@ torpedo_firing_positioning = Objective(
     )
 
 #mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
-mission_list = [approach_gate, choose_gate_side, traverse_gate]
-# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3, approach_dropper, launch_dropper]
+# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
+mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3, fine_approach_torpedo, approach_dropper, launch_dropper]

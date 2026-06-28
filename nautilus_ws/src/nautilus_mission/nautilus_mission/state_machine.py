@@ -35,9 +35,11 @@ class StateMachine:
         self.forward_position = 0.0
         self.lateral_position = 0.0
         self.ekf_resetted = False
+        self.forward_action_ready = False
+        self.forward_reset_threshold_m = 0.1
 
         self.target_missing_count = 0
-        self.target_missing_limit = 500
+        self.target_missing_limit = 100
         self.state_start_time = time.monotonic()
         self.execute_action_start_time = None
 
@@ -57,7 +59,7 @@ class StateMachine:
             {'trigger': 'load_next_objective', 'source': 'LOAD_OBJECTIVE', 'dest': 'MISSION_COMPLETE', 'unless': 'has_more_objectives'},
             {'trigger': 'target_found', 'source': 'SEARCH_TARGET', 'dest': 'CENTER_TARGET'},
             {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
-            {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
+            {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET', 'conditions': 'center_lifespan_reached'},
             {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION', 'conditions': 'ekf_reset_done'},
             {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
@@ -143,8 +145,19 @@ class StateMachine:
                 else :
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
-        elif self.current_objective.action.type == (ActionType.LAUNCH_DROPPER or ActionType.FIRE_TORPEDO) :
-            self.target_ids = [self.role_choice]
+        elif self.current_objective.action.type is ActionType.LAUNCH_DROPPER :
+            if self.role_choice is ObjectID.SOS_SAFETY:
+                self.target_ids = [ObjectID.BLOOD]
+            else:
+                self.target_ids = [ObjectID.FIRE]
+
+        # elif self.current_objective.action.type is ActionType.FIRE_TORPEDO :
+            # Add logic here for right target on dropper                      // TO DO
+
+        elif self.current_objective.name == "traverseGate":
+            if self.target_ids is None:
+                self.node.get_logger().warn('Role choice unavailable')
+                self.target_ids = None
         else:
             self.target_ids = self.current_objective.target_ids
 
@@ -172,9 +185,6 @@ class StateMachine:
         reset_pids(self.node)
         self.target_missing_count = 0
         self.ekf_resetted = False
-        
-    def on_exit_APPROACH_TARGET(self, event):
-        self.ekf_resetted = reset_ekf_pose(self.node)
 
     def on_enter_EXECUTE_ACTION(self, event):
         reset_pids(self.node)
@@ -182,6 +192,9 @@ class StateMachine:
         if self.current_objective is None:
             self.finish_mission()
             return
+        
+        if self.current_objective.action.type == ActionType.FORWARD:
+            self.forward_action_ready = False
     
         self.execute_action_start_time = time.monotonic()
 
@@ -249,6 +262,13 @@ class StateMachine:
 
         if action == ActionType.FORWARD:
             #done = self.state_lifespan >= self.current_objective.action_duration
+            if not self.forward_action_ready:
+                if abs(self.forward_position) < self.forward_reset_threshold_m:
+                    self.forward_action_ready = True
+                    self.node.get_logger().info(f'Forward action armed after EKF reset: x={self.forward_position:.3f}')
+                else:
+                    self.node.get_logger().info(f'Waiting for EKF odom reset before FORWARD: x={self.forward_position:.3f}')
+                    return False
             return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.1)
             
         if action == ActionType.CIRCLE_MARKER:
@@ -333,6 +353,12 @@ class StateMachine:
         self.ekf_resetted = reset_ekf_pose(self.node)
 
         return self.ekf_resetted
+    
+    def center_lifespan_reached(self, event):
+        if self.current_objective.center.full_centering is False:
+            return (self.state_lifespan >= 0.5)
+        else:
+            return (self.state_lifespan >= 3.0)
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()
