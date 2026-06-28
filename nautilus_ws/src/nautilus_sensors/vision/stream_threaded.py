@@ -30,7 +30,7 @@ from gi.repository import Gst
 # =========================================================
 UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
-FPS = 10
+FPS = 15
 SAVE_INTERVAL = 2.0
 
 START_BLUE_FILTER = False
