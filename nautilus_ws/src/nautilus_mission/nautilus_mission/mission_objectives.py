@@ -10,6 +10,9 @@ class ActionType(Enum):
     NONE = auto()
     FORWARD = auto()
     CIRCLE_MARKER = auto()
+    SAVE_ROLE = auto()
+    CHOOSE_GATE_SIDE = auto()
+    LAUNCH_DROPPER = auto()
     FIRE_TORPEDO = auto()
 
 @dataclass
@@ -18,10 +21,13 @@ class SearchConfig:
 
 @dataclass
 class CenterConfig:
-    full_centering: bool = True
+    full_centering: bool = False
     center_tolerance_fov: float = 0.05 # fraction of the fov. 1 being the full width of the camera 
     angle_tolerance_deg: float = 15.0
     alignement_tolerance: float = 50.0 #mm for torpedo and degrees for gate or slalom
+    center_bottom: bool = False
+    target_offset_x: float = 0.2 # fraction of the fov. 1 being the full width of the camera
+    target_offset_y: float = 0.1 # fraction of the fov. 
 
 @dataclass
 class ApproachConfig:
@@ -44,18 +50,31 @@ class CircleMarkerAction:
     min_lifespan_s: float = 8.0
 
 @dataclass
+class LaunchDropperAction:
+    type: ActionType = ActionType.LAUNCH_DROPPER
+    duration_s: float = 0.0
+    fired: bool = False
+
+@dataclass
+class SaveRoleAction:
+    type: ActionType = ActionType.SAVE_ROLE
+
+@dataclass
+class ChooseGateSideAction:
+    type: ActionType = ActionType.CHOOSE_GATE_SIDE
+
+@dataclass
 class FireTorpedoAction:
     type: ActionType = ActionType.FIRE_TORPEDO
-    # camera_mean_depth_target_mm: int = 20000
     min_lifespan_s: float = 1.0
     fired: bool = False
 
-ActionConfig = Union[NoAction, ForwardAction, CircleMarkerAction,FireTorpedoAction]
+ActionConfig = Union[NoAction, ForwardAction, CircleMarkerAction, LaunchDropperAction, ChooseGateSideAction, SaveRoleAction,FireTorpedoAction]
 
 @dataclass
 class Objective:
     name: str
-    target_ids: Optional[list[ObjectID]]
+    target_ids: Optional[list[ObjectID]] = None
     detections_depth_filter_mm: Optional[int] = None
     target_auv_depth_m: Optional[float] = None #positive down
 
@@ -67,7 +86,7 @@ class Objective:
 approach_gate = Objective(
     name='approachGate',
     target_ids=[ObjectID.GATE_LEG_CENTER],
-    target_auv_depth_m = 1.45,
+    target_auv_depth_m = 0.9, #1.45
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         center_tolerance_fov=0.2,
@@ -173,7 +192,7 @@ approach_dropper = Objective(
 )
 
 launch_dropper = Objective(
-    name='LaunchDropperObjective',
+    name='launchDropperObjective',
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
@@ -188,7 +207,7 @@ launch_dropper = Objective(
 )
 
 coarse_approach_torpedo = Objective(
-         name='coarse approach torpedo',
+         name='coarseApproachTorpedo',
          target_ids=[ObjectID.TORPEDO],
          search=SearchConfig(spin_pwm=1460),
          center=CenterConfig(
@@ -201,14 +220,14 @@ coarse_approach_torpedo = Objective(
      )
      
 torpedo_depth_change = Objective(
-         name='torpedo depth change',
+         name='torpedoDepthChange',
          target_ids=None,
          target_auv_depth_m=1.5,
          action=NoAction()
      )
 
 fine_approach_torpedo = Objective(
-         name='fine approach torpedo',
+         name='fineApproachTorpedo',
          target_ids=[ObjectID.TORPEDO],
          center=CenterConfig(
              full_centering=True,
@@ -221,7 +240,7 @@ fine_approach_torpedo = Objective(
      )
     
 torpedo_firing_positioning = Objective(
-        name='Torpedo firing positioning',
+        name='torpedoFiringPositioning',
         target_ids=[ObjectID.TARGET_FIRE],
         # target_ids=None,
         center=CenterConfig(
@@ -238,4 +257,5 @@ torpedo_firing_positioning = Objective(
     )
 
 #mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
-mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3, approach_dropper, launch_dropper]
+mission_list = [approach_gate, choose_gate_side, traverse_gate]
+# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3, approach_dropper, launch_dropper]

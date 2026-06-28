@@ -87,10 +87,6 @@ class CubeInterface(Node):
         self.auv.set_servo(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
         self.auv.set_servo(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
 
-
-
-
-
     def servo_cmd_callback(self, msg):
         if len(msg.data) < 2:
             return
@@ -112,6 +108,16 @@ class CubeInterface(Node):
     def forward_cmd_callback(self, msg):
         self.last_forward_cmd = msg.data
         self.last_forward_cmd_time = self.get_clock().now()
+
+    def servo_cmd_callback(self, msg):
+        if len(msg.data) < 2:
+            return
+        
+        servo = int(msg.data[0])
+        pwm = int(msg.data[1])
+
+        self.auv.set_servo(servo, pwm)
+        self.get_logger().info(f'Set servo {servo} to {pwm}')
 
     def is_fresh(self, last_time):
         if last_time is None:

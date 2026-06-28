@@ -33,6 +33,7 @@ class MasterNode(Node):
         # Subscribers
         self.odometry_filtered_sub = self.create_subscription(Odometry, '/odometry/filtered', self.odometry_filtered_callback, fast_qos)
         self.fwd_detection_sub = self.create_subscription(Float32MultiArray,'/yolo/detections_forward',self.fwd_detection_callback,fast_qos)
+        self.dwd_detection_sub = self.create_subscription(Float32MultiArray, 'yolo/detections_downward', self.dwd_detection_callback, fast_qos)
         self.mean_depth_sub = self.create_subscription(Int16,'/yolo/mean_depth_forward_cam',self.mean_depth_callback,fast_qos)
 
         # Publishers
@@ -40,7 +41,10 @@ class MasterNode(Node):
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
         self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
         self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
+        self.bottom_cam_forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/bottom_cam/forward', 10)
+        self.bottom_cam_lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/bottom_cam/lateral', 10)
         self.yaw_cmd_pub = self.create_publisher(Int16, '/control/cmd/yaw', 10)
+        self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
         self.detections_depth_filter_mm_pub = self.create_publisher(Int16, '/yolo/detections_depth_filter_mm', 10)
@@ -66,6 +70,12 @@ class MasterNode(Node):
             return
 
         # Immediate callback-driven processing to reduce detection-to-error delay.
+        self.vision_tick()
+
+    def dwd_detection_callback(self, msg: Float32MultiArray):
+        if not self.detection_store.update_from_msg(msg):
+            return
+        
         self.vision_tick()
 
     def mean_depth_callback(self, msg: Int16):
@@ -107,6 +117,11 @@ class MasterNode(Node):
         msg.data = float(error)
         self.lateral_error_pub.publish(msg)
 
+    def publish_servo_cmd(self, servo: int, pwm: int):
+        msg = Int16MultiArray()
+        msg.data = [servo, pwm]
+        self.servo_cmd_pub.publish(msg)
+
     def publish_forward_cmd(self, pwm: int):
         msg = Int16()
         msg.data = int(pwm)
@@ -126,6 +141,16 @@ class MasterNode(Node):
         msg = Int16MultiArray()
         msg.data = [servo, pwm]
         self.servo_cmd_pub.publish(msg)
+
+    def publish_bottom_cam_lateral_error(self, error: float):
+        msg = Float32()
+        msg.data = float(error)
+        self.bottom_cam_lateral_error_pub.publish(msg)
+
+    def publish_bottom_cam_forward_error(self, error: float):
+        msg = Float32()
+        msg.data = float(error)
+        self.bottom_cam_forward_error_pub.publish(msg)
 
 def main(args=None):
     rclpy.init(args=args)

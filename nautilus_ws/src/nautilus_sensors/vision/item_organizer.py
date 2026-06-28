@@ -22,9 +22,10 @@ def slalom_organizer(slalom_tab, objects, annotated_frame, payload, type_yolo):
 
         payload.extend([
             float(ObjectID.SLALOM_SIDE),
-            float(closest_side["dist_center"]),
+            float(closest_side["dist_center_x"]),
             float(closest_side["depth"]),
-            0.0
+            0.0,
+            float(closest_side["dist_center_y"])
         ])
 
     else:
@@ -49,14 +50,14 @@ def slalom_organizer(slalom_tab, objects, annotated_frame, payload, type_yolo):
             selected_ids[id(slalom_left)] = ObjectID.SLALOM_LEFT
 
             payload.extend(
-                [float(ObjectID.SLALOM_LEFT), float(slalom_left["dist_center"]), float(slalom_left["depth"]), 0.0])
+                [float(ObjectID.SLALOM_LEFT), float(slalom_left["dist_center_x"]), float(slalom_left["depth"]), 0.0, float(slalom_left["dist_center_y"])])
 
         if slalom_right is not None:
             objects[ObjectID.SLALOM_RIGHT] = slalom_right
             selected_ids[id(slalom_right)] = ObjectID.SLALOM_RIGHT
 
             payload.extend(
-                [float(ObjectID.SLALOM_RIGHT), float(slalom_right["dist_center"]), float(slalom_right["depth"]), 0.0])
+                [float(ObjectID.SLALOM_RIGHT), float(slalom_right["dist_center_x"]), float(slalom_right["depth"]), 0.0, float(slalom_right["dist_center_y"])])
 
     for slalom in slalom_tab:
         display_id = selected_ids.get(id(slalom), ObjectID.SLALOM_SIDE)
@@ -67,7 +68,7 @@ def slalom_organizer(slalom_tab, objects, annotated_frame, payload, type_yolo):
             type_yolo,
             display_id,
             slalom["confidence"], slalom["depth"],
-            slalom["dist_center"],
+            slalom["dist_center_x"],
             slalom["box_cx"], slalom["box_cy"],
             slalom["x1"], slalom["y1"],
             slalom["x2"], slalom["y2"],
@@ -135,9 +136,10 @@ def target_organizer(target_tab, objects, annotated_frame, payload, type_yolo):
 
         payload.extend([
             float(assigned_id),
-            float(target["dist_center"]),
+            float(target["dist_center_x"]),
             float(target["depth"]),
-            0.0
+            0.0,
+            float(target["dist_center_y"])
         ])
 
     for target in target_tab:
@@ -150,7 +152,7 @@ def target_organizer(target_tab, objects, annotated_frame, payload, type_yolo):
             display_id,
             target["confidence"],
             target["depth"],
-            target["dist_center"],
+            target["dist_center_x"],
             target["box_cx"],
             target["box_cy"],
             target["x1"],

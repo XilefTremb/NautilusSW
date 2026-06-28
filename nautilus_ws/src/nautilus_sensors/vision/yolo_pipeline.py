@@ -15,7 +15,7 @@ from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
 
-from vision.object_depth import find_depth, find_dist_from_center, global_median_forward_cam, find_depth_from_edge_detector
+from vision.object_depth import find_depth, find_dist_from_center_in_x, find_dist_from_center_in_y, global_median_forward_cam, find_depth_from_edge_detector
 from vision.gate_angle import find_gate_angle, find_angle_torpedo
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
@@ -197,7 +197,7 @@ class YoloNode(Node):
             self.edge_mask_pub.publish(edge_msg)
 
             # ----------- GLOBAL DEPTH -----------
-            depth_global_mean = global_median_forward_cam(depth, self.mode)
+            depth_global_mean = global_median_forward_cam(depth, self.mode, "forward")
             if depth_global_mean is not None:
                 msg_depth = Int32()
                 msg_depth.data = int(depth_global_mean)
@@ -251,9 +251,10 @@ class YoloNode(Node):
                 object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
 
-                dist_center = find_dist_from_center(box_cx, self.mode)
+                dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "downward")
+                dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "downward")
 
-                payload.extend([float(object_id), float(dist_center), -1.0, 0.0])
+                payload.extend([float(object_id), float(dist_center_x), -1.0, 0.0, float(dist_center_y)])
 
                 # -------- PAYLOAD + DRAW --------
                 draw_detection(
@@ -261,7 +262,7 @@ class YoloNode(Node):
                     self.type_yolo,
                     object_id,
                     confidence,
-                    0, dist_center,
+                    0, dist_center_x,
                     box_cx, box_cy,
                     x1, y1, x2, y2,
                     None
@@ -271,11 +272,11 @@ class YoloNode(Node):
                 msg = Float32MultiArray()
                 msg.data = payload
 
-                nb_objects = len(payload) // 4
+                nb_objects = len(payload) // 5
 
                 msg.layout.dim = [
                     MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-                    MultiArrayDimension(label='fields', size=4, stride=4)
+                    MultiArrayDimension(label='fields', size=5, stride=5)
                 ]
                 msg.layout.data_offset = 0
 
@@ -327,7 +328,8 @@ class YoloNode(Node):
                          object_id == ObjectID.GATE_LEG_R or
                          object_id == ObjectID.SLALOM_SIDE or
                          object_id == ObjectID.TORPEDO or
-                         object_id == ObjectID.SLALOM_CENTER)):
+                         object_id == ObjectID.SLALOM_CENTER or
+                         object_id == ObjectID.DROPPER)):
 
                     depth_value, filled_mask = find_depth_from_edge_detector(
                         depth_frame=depth,
@@ -337,7 +339,8 @@ class YoloNode(Node):
                         y2=y2,
                         annotated_frame = annotated_frame,
                         id = object_id,
-                        edge_params = self.edge_params)
+                        edge_params = self.edge_params,
+                        mode = self.mode)
 
                     if filled_mask is not None:
                         annotated_frame[y1:y2, x1:x2][filled_mask > 0] = [0, 0, 255] #for debug
@@ -364,13 +367,15 @@ class YoloNode(Node):
                     continue
 
                 # ----------- DIST / ANGLE -----------
-                dist_center = find_dist_from_center(box_cx, self.mode)
+                dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "forward")
+                dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "forward")
 
                 # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id == ObjectID.SLALOM_SIDE:
                     slalom_tab.append({
                         "depth": depth_value,
-                        "dist_center": dist_center,
+                        "dist_center_x": dist_center_x,
+                        "dist_center_y": dist_center_y,
                         "box_cx": box_cx,
                         "box_cy": box_cy,
                         "confidence": confidence,
@@ -385,7 +390,8 @@ class YoloNode(Node):
                 elif object_id == ObjectID.TARGET:
                     target_tab.append({
                         "depth": depth_value,
-                        "dist_center": dist_center,
+                        "dist_center_x": dist_center_x,
+                        "dist_center_y": dist_center_y,
                         "box_cx": box_cx,
                         "box_cy": box_cy,
                         "confidence": confidence,
@@ -405,7 +411,7 @@ class YoloNode(Node):
                             object_id,
                             objects[object_id]["confidence"],
                             objects[object_id]["depth"],
-                            objects[object_id]["dist_center"],
+                            objects[object_id]["dist_center_x"],
                             objects[object_id]["box_cx"],
                             objects[object_id]["box_cy"],
                             objects[object_id]["x1"],
@@ -425,7 +431,8 @@ class YoloNode(Node):
                         "depth": depth_value,
                         "box_cx": box_cx,
                         "box_cy": box_cy,
-                        "dist_center": dist_center,
+                        "dist_center_x": dist_center_x,
+                        "dist_center_y": dist_center_y,
                         "confidence": confidence,
                         "x1": x1,
                         "y1": y1,
@@ -440,7 +447,7 @@ class YoloNode(Node):
                         object_id,
                         confidence,
                         depth_value,
-                        dist_center,
+                        dist_center_x,
                         box_cx, box_cy,
                         x1, y1, x2, y2,
                         color=COLOR_NOT_IN_DETECTION,
@@ -453,9 +460,9 @@ class YoloNode(Node):
                 if object_id == ObjectID.TORPEDO:
                     angle = find_angle_torpedo(objects)
                     self.get_logger().info(f"angle_torpedo={angle}")
-                    payload.extend([float(object_id), float(obj["dist_center"]), float(obj["depth"]), angle])
+                    payload.extend([float(object_id), float(obj["dist_center_x"]), float(obj["depth"]), angle, float(obj["dist_center_y"])])
                 else:
-                    payload.extend([float(object_id),float(obj["dist_center"]),float(obj["depth"]),angle])
+                    payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"])])
 
 
                 draw_detection(
@@ -464,7 +471,7 @@ class YoloNode(Node):
                     object_id,
                     obj["confidence"],
                     obj["depth"],
-                    obj["dist_center"],
+                    obj["dist_center_x"],
                     obj["box_cx"],
                     obj["box_cy"],
                     obj["x1"],
@@ -484,7 +491,7 @@ class YoloNode(Node):
         payload_angle = find_gate_angle(objects, self.mode)
 
         if MOVING_MEAN_ACTIVATED:
-            for i in range(0, len(payload_angle), 4):
+            for i in range(0, len(payload_angle), 5):
                 group_id = int(payload_angle[i])
                 angle_index = i + 3
 
@@ -500,11 +507,11 @@ class YoloNode(Node):
         # -------- PUBLISH DETECTION --------
         msg = Float32MultiArray()
         msg.data = payload
-        nb_objects = len(payload) // 4
+        nb_objects = len(payload) // 5
 
         msg.layout.dim = [
             MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-            MultiArrayDimension(label='fields', size=4, stride=4)]
+            MultiArrayDimension(label='fields', size=5, stride=5)]
         msg.layout.data_offset = 0
 
         self.detection_forward_pub.publish(msg)
