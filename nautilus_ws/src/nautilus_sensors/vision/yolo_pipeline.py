@@ -35,6 +35,9 @@ DOWNWARD_CAM_RATE_HZ = 10
 COLOR_IN_DETECTION = (0, 255, 0)
 COLOR_NOT_IN_DETECTION = (255, 0, 0)
 
+PUBLISH_ANNOTATED_IMAGES = True
+ENABLE_DOWNWARD_INFERENCE = True
+
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -86,11 +89,13 @@ class YoloNode(Node):
 
         self.edge_params = load_params_edge_detector_json()
 
+        self.last_forward_sync_ts = None
+        self.last_forward_sync_count = 0
+        self.last_forward_publish_ts = None
+
         # -------- FRAME QUEUE (LOW LATENCY CORE) --------
         self.forward_queue = deque(maxlen=1)
         self.downward_queue = deque(maxlen=1)
-
-
 
         # -------- SUBSCRIBERS --------
         self.fwd_rgb_sub = Subscriber(self, Image, 'oakd/camera/image_raw')
@@ -110,15 +115,15 @@ class YoloNode(Node):
         # ----------- SYNCHRONIZER DEPTH AND RGB -----------
         self.ts = ApproximateTimeSynchronizer(
             [self.fwd_rgb_sub, self.depth_sub],
-            queue_size= 2,
-            slop= 0.1,
+            queue_size= 5,
+            slop= 0.2,
             allow_headerless=True
         )
 
         self.ts.registerCallback(self.forward_callback)
 
         # -------- TIMER (MAIN INFERENCE LOOP) --------
-        self.timer = self.create_timer(0.01, self.inference_loop)
+        self.timer = self.create_timer(0.05, self.inference_loop)
 
         self.last_forward_time = 0
         self.last_downward_time = 0
@@ -131,7 +136,26 @@ class YoloNode(Node):
     # -------- CALLBACKS --------
     def forward_callback(self, rgb_msg, depth_msg):
         # CALLBACK FOR FORWARD CAM (OAKD)
-        # self.get_logger().info("SYNC")
+        now = time.time()
+
+        # if self.last_forward_sync_ts is not None:
+        #     interval = now - self.last_forward_sync_ts
+        #     self.get_logger().info(
+        #         f"[SYNC] interval={interval:.3f}s queue_len={len(self.forward_queue)}"
+        #     )
+        # else:
+        #     self.get_logger().info(
+        #         f"[SYNC] first sync queue_len={len(self.forward_queue)}"
+        #     )
+
+        # self.last_forward_sync_ts = now
+        # self.last_forward_sync_count += 1
+
+        # if self.forward_queue:
+        #     self.get_logger().warning(
+        #         f"[SYNC_DROP] Forward queue overwritten at sync #{self.last_forward_sync_count}"
+        #     )
+
         self.forward_queue.append((rgb_msg, depth_msg))
 
     def downward_callback(self, rgb_msg):
@@ -159,9 +183,9 @@ class YoloNode(Node):
         now = time.time()
 
         # if hasattr(self, "_last_timer"):
-            # self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
+        #     self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
 
-        self._last_timer = now
+        # self._last_timer = now
 
         #PRIORITY1: FORWARD CAMERA
         if self.forward_queue and (now - self.last_forward_time > self.forward_interval):
@@ -170,31 +194,30 @@ class YoloNode(Node):
             self.forward_queue.clear()
 
             frame = self.bridge.imgmsg_to_cv2(rgb_msg, 'bgr8')
-            depth = self.bridge.imgmsg_to_cv2(depth_msg, '32FC1')
+            depth = self.bridge.imgmsg_to_cv2(depth_msg, desired_encoding='passthrough')
             header = rgb_msg.header
 
             self.last_forward_time = now
 
-            # t0 = time.time()
+            t0 = time.time()
             results = self.model(frame, conf=0.4, verbose=False)
-            # t1 = time.time()
+            t1 = time.time()
 
-            annotated = frame.copy()
+            annotated_frame, edge_debug = self.process_forward(results, frame, depth)
+            t2 = time.time()
 
-            annotated_frame, edge_debug = self.process_forward(results, annotated, depth)
-            # t2 = time.time()
-
-            # self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
+            self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
 
             # ----------- PUBLISH IMAGE ANNOTATED OAKD -----------
-            out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
-            out_msg.header = header
-            self.fwd_image_pub.publish(out_msg)
+            if PUBLISH_ANNOTATED_IMAGES:
+                out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
+                out_msg.header = header
+                self.fwd_image_pub.publish(out_msg)
 
-            # ----------- PUBLISH IMAGE MASK DEPTH -----------
-            edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
-            edge_msg.header = header
-            self.edge_mask_pub.publish(edge_msg)
+                # ----------- PUBLISH IMAGE MASK DEPTH -----------
+                edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
+                edge_msg.header = header
+                self.edge_mask_pub.publish(edge_msg)
 
             # ----------- GLOBAL DEPTH -----------
             depth_global_mean = global_median_forward_cam(depth, self.mode, "forward")
@@ -206,7 +229,7 @@ class YoloNode(Node):
             return
 
         #PRIORITY2: DOWNWARD CAMERA
-        if self.downward_queue and (now - self.last_downward_time > self.downward_interval):
+        if ENABLE_DOWNWARD_INFERENCE and self.downward_queue and (now - self.last_downward_time > self.downward_interval):
 
             rgb_msg = self.downward_queue.pop()
             self.downward_queue.clear()
@@ -217,12 +240,10 @@ class YoloNode(Node):
             self.last_downward_time = now
 
             results = self.model(frame, conf=0.4, verbose=False)
-            annotated = frame.copy()
-
-            self.process_downward(results, annotated)
+            self.process_downward(results, frame)
 
             # ----------- PUBLISH IMAGE ANNOTATED DOWNWARD CAM -----------
-            msg = self.bridge.cv2_to_imgmsg(annotated, 'bgr8')
+            msg = self.bridge.cv2_to_imgmsg(frame, 'bgr8')
             msg.header = header
             self.down_image_pub.publish(msg)
 
@@ -280,7 +301,10 @@ class YoloNode(Node):
                 ]
                 msg.layout.data_offset = 0
 
+                self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
                 self.detection_downward_pub.publish(msg)
+            else:
+                self.get_logger().info(f"[EMPTY] Downward: No detections found")
 
 
     def process_forward(self, results, annotated_frame, depth):
@@ -364,6 +388,7 @@ class YoloNode(Node):
                             mode=self.mode)
 
                 if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
+                    self.get_logger().info(f"[FILTERED] Object {object_id} depth={depth_value} outside range (400-{self.depth_threshold})")
                     continue
 
                 # ----------- DIST / ANGLE -----------
@@ -513,6 +538,19 @@ class YoloNode(Node):
             MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
             MultiArrayDimension(label='fields', size=5, stride=5)]
         msg.layout.data_offset = 0
+
+        if payload:
+            now = time.time()
+            if self.last_forward_publish_ts is not None:
+                gap = now - self.last_forward_publish_ts
+                if gap > 0.15:
+                    self.get_logger().warning(
+                        f"[PUBLISH_GAP] {gap:.3f}s since last forward publish"
+                    )
+            self.last_forward_publish_ts = now
+            self.get_logger().info(f"[PUBLISHED] Forward: {nb_objects} objects detected")
+        else:
+            self.get_logger().info(f"[EMPTY] Forward: No valid detections after filtering")
 
         self.detection_forward_pub.publish(msg)
 
