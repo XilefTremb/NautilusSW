@@ -220,9 +220,8 @@ class StateMachine:
             if not self.current_objective.action.fired:
                 # self.node.fire_torpedo()
                 self.node.get_logger().info('Launching torpedo no 1!')
-                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_L_PWM)  
+                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_R_PWM)  
                 self.current_objective.action.fired = True
-                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
 
         if self.current_objective.action.type == ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
@@ -234,7 +233,7 @@ class StateMachine:
 
         if self.current_objective.action.type == ActionType.LAUNCH_DROPPER:
             self.node.get_logger().info('Launching dropper no 1!')
-            self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_1_PWM)  
+            self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_2_PWM)  
             self.node.get_logger().info('Dropper launched :) !')
             self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)  
         
@@ -269,7 +268,7 @@ class StateMachine:
                 else:
                     self.node.get_logger().info(f'Waiting for EKF odom reset before FORWARD: x={self.forward_position:.3f}')
                     return False
-            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.1)
+            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.3)
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
@@ -358,7 +357,7 @@ class StateMachine:
         if self.current_objective.center.full_centering is False:
             return (self.state_lifespan >= 0.5)
         else:
-            return (self.state_lifespan >= 3.0)
+            return (self.state_lifespan >= 5.0)
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()

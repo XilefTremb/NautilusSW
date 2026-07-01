@@ -10,6 +10,8 @@ def request_depth_change(node, depth):
     req = SetTargetDepth.Request()
     req.depth_m = float(depth)
 
+    node.get_logger().info(f"requesting depth change to {req.depth_m}")
+
     future = node.depth_client.call_async(req)
 
     # future.add_done_callback(

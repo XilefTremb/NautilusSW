@@ -81,9 +81,9 @@ class CubeInterface(Node):
         self.auv.apply_param_profile(profile)
         self.auv.start_receiver()
 
-        # time.sleep(2)
-        # self.auv.change_mode("ALT_HOLD")
-        # self.auv.go_to_depth(-0.67)
+        self.auv.change_mode("ALT_HOLD")
+        self.auv.arm()
+        
         self.auv.set_servo(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
         self.auv.set_servo(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
 
@@ -130,7 +130,7 @@ class CubeInterface(Node):
         yaw_cmd = int(self.last_yaw_cmd) if self.is_fresh(self.last_yaw_cmd_time) else None
         lateral_cmd = int(self.last_lateral_cmd) if self.is_fresh(self.last_lateral_cmd_time) else None
         forward_fresh = self.is_fresh(self.last_forward_cmd_time) 
-        self.get_logger().info(f"{forward_fresh}")
+        # self.get_logger().info(f"{forward_fresh}")
         if forward_fresh:
             forward_cmd = int(self.last_forward_cmd)
         else:
@@ -166,6 +166,7 @@ class CubeInterface(Node):
             response.message = f"Target depth set to {depth:.2f} m"
 
         except Exception as e:
+            self.get_logger().info(f"error trying to change depth: {e}")
             response.success = False
             response.message = str(e)
 

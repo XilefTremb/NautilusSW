@@ -51,7 +51,7 @@ class AuvPymavlink:
         self._rx_stop = threading.Event()
         self._state_lock = threading.Lock()
 
-        self._latest_local_pos_ned = None
+        self._latest_ahrs2 = None
         self._latest_attitude = None
         self._latest_heartbeat = None
 
@@ -107,8 +107,8 @@ class AuvPymavlink:
                 with self._state_lock:
                     self._last_msgs.append(msg)
 
-                    if msg_type == "LOCAL_POSITION_NED":
-                        self._latest_local_pos_ned = msg
+                    if msg_type == "AHRS2":
+                        self._latest_ahrs2 = msg
                     elif msg_type == "ATTITUDE":
                         self._latest_attitude = msg
                     elif msg_type == "HEARTBEAT":
@@ -126,20 +126,20 @@ class AuvPymavlink:
             except Exception as exc:
                 self.node.get_logger().error(f"[RX] Exception: {exc}")
 
-    def get_local_pos_ned_cached(self):
+    def get_ahrs2_cached(self):
         with self._state_lock:
-            return self._latest_local_pos_ned
+            return self._latest_ahrs2
 
     def get_attitude_cached(self):
         with self._state_lock:
             return self._latest_attitude
 
-    def get_local_pos_ned(self):
+    def get_ahrs2(self):
         if self._rx_thread and self._rx_thread.is_alive():
-            return self.get_local_pos_ned_cached()
+            return self.get_ahrs2_cached()
 
         return self.the_connection.recv_match(
-            type="LOCAL_POSITION_NED",
+            type="AHRS2",
             blocking=True,
         )
 
@@ -383,7 +383,7 @@ class AuvPymavlink:
         self.node.get_logger().info("Reset position succeeded!")
 
     def validate_local_ned_reset(self):
-        msg = self.get_local_pos_ned()
+        msg = self.get_ahrs2()
         self.node.get_logger().info(f"Validating local position ned was reset: {msg}")
 
         if msg is None:
@@ -439,7 +439,7 @@ class AuvPymavlink:
         self.send_pos_local(north, east, down, yaw)
 
         while True:
-            pos = self.get_local_pos_ned()
+            pos = self.get_ahrs2()
 
             if pos:
                 ok, dist, speed = self.arrived_logic(pos, target)
@@ -597,9 +597,10 @@ class AuvPymavlink:
     
         
     def go_to_depth(self, depth):
-        z = self.get_local_pos_ned().z
+        depth *= -1
+        z = self.get_ahrs2().altitude
         while(abs(z-depth)>0.1):
-            z = self.get_local_pos_ned().z
+            z = self.get_ahrs2().altitude
             if abs(z-depth)>0.1:
                 self.set_target_depth(depth)
             time.sleep(0.1)

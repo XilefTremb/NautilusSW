@@ -7,7 +7,7 @@ import numpy as np
 #LIGHT_BRIGHT_PERCENTILE = 85
 #LIGHT_MIN_BRIGHTNESS = 200
 
-LIGHT_CLOSE_KERNEL_SIZE = (5, 5)  # Reduced from (7, 7) for speed
+LIGHT_CLOSE_KERNEL_SIZE = (7, 7)  # Reduced from (7, 7) for speed
 LIGHT_OPEN_KERNEL_SIZE = (3, 3)
 LIGHT_CLOSE_KERNEL = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, LIGHT_CLOSE_KERNEL_SIZE)  # Pre-computed
 LIGHT_OPEN_KERNEL = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, LIGHT_OPEN_KERNEL_SIZE)    # Pre-computed
