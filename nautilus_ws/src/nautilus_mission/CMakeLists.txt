@@ -10,17 +10,6 @@ find_package(ament_cmake_python REQUIRED)
 #  Install.
 
 # Install project launch files.
-install(
-  DIRECTORY
-    launch/
-  DESTINATION share/${PROJECT_NAME}/launch
-)
-
-# install(
-#   DIRECTORY
-#     enums/
-#   DESTINATION share/${PROJECT_NAME}/enums
-# )
 
 install(
   DIRECTORY

@@ -39,14 +39,19 @@ class MasterNode(Node):
         # Publishers
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
-        self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
         self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
+        self.throttle_error_pub = self.create_publisher(Float32, '/control/vision_errors/throttle', 10)
+        self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
+
         self.bottom_cam_forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/bottom_cam/forward', 10)
         self.bottom_cam_lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/bottom_cam/lateral', 10)
+
         self.yaw_cmd_pub = self.create_publisher(Int16, '/control/cmd/yaw', 10)
         self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
+        self.throttle_cmd_pub = self.create_publisher(Int16, '/control/cmd/throttle', 10)
+
         self.detections_depth_filter_mm_pub = self.create_publisher(Int16, '/yolo/detections_depth_filter_mm', 10)
         self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
    
@@ -102,6 +107,11 @@ class MasterNode(Node):
         msg.data = float(error)
         self.yaw_error_pub.publish(msg)
 
+    def publish_throttle_error(self, error: float):
+        msg = Float32()
+        msg.data = float(error)
+        self.throttle_error_pub.publish(msg)
+
     def publish_forward_error(self, error: float):
         msg = Float32()
         msg.data = float(error)
@@ -131,6 +141,11 @@ class MasterNode(Node):
         msg = Int16()
         msg.data = int(pwm)
         self.lateral_cmd_pub.publish(msg)
+
+    def publish_throttle_cmd(self, cmd: float):
+        msg = Int16()
+        msg.data = int(cmd)
+        self.throttle_cmd_pub.publish(msg)
 
     def publish_yaw_cmd(self, pwm: int):
         msg = Int16()

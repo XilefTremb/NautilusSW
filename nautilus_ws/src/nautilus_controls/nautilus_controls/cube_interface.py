@@ -44,6 +44,9 @@ class CubeInterface(Node):
         self.last_forward_cmd = None
         self.last_forward_cmd_time = None
 
+        self.last_throttle_cmd = None
+        self.last_throttle_cmd_time = None
+
         self.startup(args)
 
         self.subs = {
@@ -58,6 +61,9 @@ class CubeInterface(Node):
             ),
             'forward_cmd': self.create_subscription(
                 Int16, '/control/cmd/forward', self.forward_cmd_callback, 10
+            ),
+            'throttle_cmd': self.create_subscription(
+                Int16, '/control/cmd/throttle', self.throttle_cmd_callback, 10
             ),
         }
 
@@ -109,6 +115,10 @@ class CubeInterface(Node):
         self.last_forward_cmd = msg.data
         self.last_forward_cmd_time = self.get_clock().now()
 
+    def throttle_cmd_callback(self,msg):
+        self.last_throttle_cmd = msg.data
+        self.last_throttle_cmd_time = self.get_clock().now()
+
     def servo_cmd_callback(self, msg):
         if len(msg.data) < 2:
             return
@@ -129,14 +139,10 @@ class CubeInterface(Node):
     def timer_callback(self):
         yaw_cmd = int(self.last_yaw_cmd) if self.is_fresh(self.last_yaw_cmd_time) else None
         lateral_cmd = int(self.last_lateral_cmd) if self.is_fresh(self.last_lateral_cmd_time) else None
-        forward_fresh = self.is_fresh(self.last_forward_cmd_time) 
-        # self.get_logger().info(f"{forward_fresh}")
-        if forward_fresh:
-            forward_cmd = int(self.last_forward_cmd)
-        else:
-            forward_cmd = None
+        forward_cmd = int(self.last_forward_cmd) if self.is_fresh(self.last_forward_cmd_time) else None
+        throttle_cmd = int(self.last_throttle_cmd) if self.is_fresh(self.last_throttle_cmd_time) else None
 
-        if yaw_cmd is None and lateral_cmd is None and forward_cmd is None:
+        if yaw_cmd is None and lateral_cmd is None and forward_cmd is None and throttle_cmd is None:
             self.get_logger().info('No fresh command')
             return
 
@@ -144,10 +150,11 @@ class CubeInterface(Node):
             forward=forward_cmd,
             lateral=lateral_cmd,
             yaw=yaw_cmd,
+            throttle=throttle_cmd
         )
 
         self.get_logger().info(
-            f'Sent cmd yaw: {yaw_cmd}, forward: {forward_cmd}, lateral: {lateral_cmd}'
+            f'Sent cmd yaw: {yaw_cmd}, forward: {forward_cmd}, lateral: {lateral_cmd}, throttle: {throttle_cmd}'
         )
 
     def set_target_depth_callback(self, request, response):

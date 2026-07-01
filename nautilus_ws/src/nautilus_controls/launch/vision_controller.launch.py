@@ -48,6 +48,20 @@ def generate_launch_description():
         Node(
             package='nautilus_controls',
             executable='pid_node',
+            name='pid_forward_cam_throttle',
+            parameters=[{
+                'input_topic': '/control/vision_errors/throttle',
+                'output_topic': '/control/cmd/throttle',
+                'kp': 10.0,
+                'ki': 0.0,
+                'kd': 1.0, #TO BE TUNED
+                'flip_outout': True,
+            }]
+        ),
+
+        Node(
+            package='nautilus_controls',
+            executable='pid_node',
             name='pid_forward_ekf',
             parameters=[{
                 'input_topic': '/control/vision_errors/forward_ekf',
