@@ -42,6 +42,7 @@ class ForwardAction:
     type: ActionType = ActionType.FORWARD
     duration_s: float = 0.0
     forward_distance_m: float = 0.0
+    dropper_search: bool = False
 
 @dataclass
 class CircleMarkerAction:
@@ -183,6 +184,7 @@ slalom3 = Objective(
 approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
+    target_auv_depth_m = 0.75,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=False,
@@ -192,13 +194,14 @@ approach_dropper = Objective(
     ),
     action=ForwardAction(
         forward_distance_m=3.0,
+        dropper_search=True
     ),
 )
 
 launch_dropper = Objective(
     name='launchDropperObjective',
     search=SearchConfig(spin_pwm=1460),
-    target_auv_depth_m = 1.0,
+    target_auv_depth_m = 0.25,
     center=CenterConfig(
         full_centering=False,
         center_tolerance_fov=0.05,

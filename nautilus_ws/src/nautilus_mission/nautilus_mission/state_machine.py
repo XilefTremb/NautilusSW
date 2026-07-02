@@ -27,6 +27,11 @@ class StateMachine:
         self.objectives : list[Objective] = mission_list
         self.role_choice = ObjectID.SOS_SAFETY
 
+        if self.role_choice == ObjectID.SOS_SAFETY:
+            self.dropper_choice = ObjectID.BLOOD
+        else:
+            self.dropper_choice = ObjectID.FIRE
+
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
         self.target_ids: Optional[list[ObjectID]] = None
@@ -146,10 +151,7 @@ class StateMachine:
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
         elif self.current_objective.action.type is ActionType.LAUNCH_DROPPER :
-            if self.role_choice is ObjectID.SOS_SAFETY:
-                self.target_ids = [ObjectID.BLOOD]
-            else:
-                self.target_ids = [ObjectID.FIRE]
+            self.target_ids = [self.dropper_choice]
 
         # elif self.current_objective.action.type is ActionType.FIRE_TORPEDO :
             # Add logic here for right target on dropper                      // TO DO
@@ -260,7 +262,7 @@ class StateMachine:
             return True
 
         if action == ActionType.FORWARD:
-            #done = self.state_lifespan >= self.current_objective.action_duration
+            #done = self.state_lifespan >= self.current_objective.action_duration            
             if not self.forward_action_ready:
                 if abs(self.forward_position) < self.forward_reset_threshold_m:
                     self.forward_action_ready = True
@@ -268,6 +270,10 @@ class StateMachine:
                 else:
                     self.node.get_logger().info(f'Waiting for EKF odom reset before FORWARD: x={self.forward_position:.3f}')
                     return False
+                
+            if self.current_objective.action.dropper_search and self.is_dropper_present():
+                return True
+            
             return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.3)
             
         if action == ActionType.CIRCLE_MARKER:
@@ -289,6 +295,9 @@ class StateMachine:
             return self.state_lifespan > self.current_objective.action.min_lifespan_s
         
         return False
+
+    def is_dropper_present(self) -> bool:
+        return self.detection_store.get_detection(self.dropper_choice) is not None
 
     def is_target_present(self) -> bool:
         return self.detection_store.get_detection(self.target_ids) is not None
