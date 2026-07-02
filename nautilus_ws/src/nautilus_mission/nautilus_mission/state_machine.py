@@ -151,6 +151,18 @@ class StateMachine:
             else:
                 self.target_ids = [ObjectID.FIRE]
 
+        elif self.current_objective.action.type == ActionType.FIRE_TORPEDO:
+
+            if self.current_objective.name == "torpedoFiringPositioning1":
+                self.target_ids = ([ObjectID.TARGET_BLOOD] if self.role_choice == ObjectID.SOS_SAFETY
+                    else [ObjectID.TARGET_FIRE] )
+
+            elif self.current_objective.name == "torpedoFiringPositioning2":
+                self.target_ids = ([ObjectID.TARGET_AMBULANCE] if self.role_choice == ObjectID.SOS_SAFETY
+                    else [ObjectID.TARGET_FIRETRUK])
+
+            self.current_objective.action.fired = False
+
         # elif self.current_objective.action.type is ActionType.FIRE_TORPEDO :
             # Add logic here for right target on dropper                      // TO DO
 
@@ -174,8 +186,7 @@ class StateMachine:
 
         if self.current_objective.target_auv_depth_m is not None:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
-        if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
-            self.current_objective.action.fired = False
+
 
     def on_enter_CENTER_TARGET(self, event):
         reset_pids(self.node)
@@ -214,13 +225,18 @@ class StateMachine:
 
     def run_current_action(self):
         if self.state != 'EXECUTE_ACTION' or self.current_objective is None:
-            return  
+            return
 
         if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
             if not self.current_objective.action.fired:
-                # self.node.fire_torpedo()
-                self.node.get_logger().info('Launching torpedo no 1!')
-                self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_R_PWM)  
+                if self.current_objective.name == "torpedoFiringPositioning1":
+                    self.node.get_logger().info('Launching torpedo no 1!')
+                    self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_L_PWM)
+
+                elif self.current_objective.name == "torpedoFiringPositioning2":
+                    self.node.get_logger().info('Launching torpedo no 2!')
+                    self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_R_PWM)
+
                 self.current_objective.action.fired = True
 
         if self.current_objective.action.type == ActionType.FORWARD:
@@ -284,9 +300,20 @@ class StateMachine:
         
         if action == ActionType.LAUNCH_DROPPER:
             return self.state_lifespan > self.current_objective.action.duration_s
-        
+
         if action == ActionType.FIRE_TORPEDO:
-            return self.state_lifespan > self.current_objective.action.min_lifespan_s
+            if not self.current_objective.action.fired:
+                return False
+
+            if self.state_lifespan <= self.current_objective.action.min_lifespan_s:
+                return False
+
+            self.node.publish_servo_cmd(
+                ServoEnum.TORPEDO_ID,
+                ServoEnum.TORPEDO_INIT_PWM
+            )
+
+            return True
         
         return False
 
