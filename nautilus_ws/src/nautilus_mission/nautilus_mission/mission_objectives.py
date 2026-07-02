@@ -245,22 +245,37 @@ fine_approach_torpedo = Objective(
          ),
      )
     
-torpedo_firing_positioning = Objective(
-        name='torpedoFiringPositioning',
-        target_ids=[ObjectID.TARGET_FIRE],
-        # target_ids=None,
-        center=CenterConfig(
-            full_centering=False,
-            center_tolerance_fov=0.02,
-            alignement_tolerance=20.0,
-        ),
-        approach=ApproachConfig(
-             approach_distance_mm=1000.0,
-        ),
-        action=FireTorpedoAction(
-            min_lifespan_s=4.0,
-        ),
-    )
+torpedo_firing_positioning_1 = Objective(
+    name='torpedoFiringPositioning1',
+    target_ids=None,
+    center=CenterConfig(
+        full_centering=True,
+        center_tolerance_fov=0.02,
+        alignement_tolerance=20.0,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=1000.0,
+    ),
+    action=FireTorpedoAction(
+        min_lifespan_s=1.0,
+    ),
+)
+
+torpedo_firing_positioning_2 = Objective(
+    name='torpedoFiringPositioning2',
+    target_ids=None,
+    center=CenterConfig(
+        full_centering=True,
+        center_tolerance_fov=0.02,
+        alignement_tolerance=20.0,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=1000.0,
+    ),
+    action=FireTorpedoAction(
+        min_lifespan_s=1.0,
+    ),
+)
 
 test_depth = Objective(name="changeDepth",
 target_auv_depth_m = 1.0
@@ -268,5 +283,5 @@ target_auv_depth_m = 1.0
 
 #mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
-# mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
+# mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper]
 mission_list = [test_depth]
