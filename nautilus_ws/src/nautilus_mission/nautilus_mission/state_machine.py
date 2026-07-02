@@ -163,9 +163,6 @@ class StateMachine:
 
             self.current_objective.action.fired = False
 
-        # elif self.current_objective.action.type is ActionType.FIRE_TORPEDO :
-            # Add logic here for right target on dropper                      // TO DO
-
         elif self.current_objective.name == "traverseGate":
             if self.target_ids is None:
                 self.node.get_logger().warn('Role choice unavailable')
