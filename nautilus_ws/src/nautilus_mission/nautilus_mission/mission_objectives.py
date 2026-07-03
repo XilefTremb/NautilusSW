@@ -85,6 +85,7 @@ class Objective:
     center: CenterConfig = field(default_factory=CenterConfig)
     approach: ApproachConfig = field(default_factory=ApproachConfig)
     action: ActionConfig = field(default_factory=NoAction)
+    success_frame_treshold: int = 1
 
 approach_gate = Objective(
     name='approachGate',
@@ -103,6 +104,7 @@ approach_gate = Objective(
 
 choose_gate_side = Objective(
     name='chooseGateSide',
+    success_frame_treshold=3,
     search=SearchConfig(spin_pwm=1540),
     approach=ApproachConfig(
         approach_distance_mm=3000.0,
@@ -134,6 +136,7 @@ traverse_gate = Objective(
 
 slalom1 = Objective(
     name='slalom1',
+    success_frame_treshold=3,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 2000,
     target_auv_depth_m = 2.6,
@@ -153,6 +156,7 @@ slalom1 = Objective(
 
 slalom2 = Objective(
     name='slalom2',
+    success_frame_treshold=3,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 1500,
     search=SearchConfig(spin_pwm=1540),
@@ -169,6 +173,7 @@ slalom2 = Objective(
 
 slalom3 = Objective(
     name='slalom3',
+    success_frame_treshold=3,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1460),
@@ -214,6 +219,7 @@ return_dropper_overshoot = Objective(
 
 launch_dropper = Objective(
     name='launchDropperObjective',
+    success_frame_treshold=2,
     search=SearchConfig(spin_pwm=1460),
     # target_auv_depth_m = 0.25,
     center=CenterConfig(

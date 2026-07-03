@@ -45,6 +45,7 @@ class StateMachine:
         self.forward_action_ready = False
         self.forward_reset_threshold_m = 0.1
 
+        self.current_success_frame_count = 0
         self.target_missing_count = 0
         self.target_missing_limit = 100
         self.state_start_time = time.monotonic()
@@ -336,10 +337,24 @@ class StateMachine:
             error_x = abs(px - self.current_objective.center.target_offset_x) < self.current_objective.center.center_tolerance_fov
             error_y = abs(py - self.current_objective.center.target_offset_y) < self.current_objective.center.center_tolerance_fov
             
-            return (error_x and error_y)
+            if error_x and error_y:
+                self.current_success_frame_count += 1
+            else:
+                self.current_success_frame_count = 0
+
+            if self.current_success_frame_count >= self.current_objective.success_frame_treshold:
+                self.current_success_frame_count = 0
+                return True
         
         else :
-            return abs(px) < self.current_objective.center.center_tolerance_fov
+            if abs(px) < self.current_objective.center.center_tolerance_fov:
+                self.current_success_frame_count += 1
+            else:
+                self.current_success_frame_count = 0
+
+            if self.current_success_frame_count >= self.current_objective.success_frame_treshold:
+                self.current_success_frame_count = 0
+                return True
 
     def is_target_approached(self) -> bool:
         if self.current_objective is None:
@@ -350,7 +365,15 @@ class StateMachine:
             return False
 
         depth = target[DetectionIndex.DEPTH_MM]
-        return depth < self.current_objective.approach.approach_distance_mm
+
+        if depth < self.current_objective.approach.approach_distance_mm:
+            self.current_success_frame_count += 1
+        else:
+            self.current_success_frame_count = 0
+
+        if self.current_success_frame_count >= self.current_objective.success_frame_treshold:
+            self.current_success_frame_count = 0
+            return True
 
     def is_target_perpendicular(self) -> bool:
         if self.current_objective is None:
@@ -361,7 +384,15 @@ class StateMachine:
             return False
 
         alignement_error = target[DetectionIndex.ANGLE_DEG]
-        return abs(alignement_error) < self.current_objective.center.alignement_tolerance
+
+        if abs(alignement_error) < self.current_objective.center.alignement_tolerance:
+            self.current_success_frame_count += 1 
+        else:
+            self.current_success_frame_count = 0
+
+        if self.current_success_frame_count >= self.current_objective.success_frame_treshold:
+            self.current_success_frame_count = 0
+            return True
     
     def ekf_reset_done(self, event):
         self.node.get_logger().info("hi")
