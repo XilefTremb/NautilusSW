@@ -198,7 +198,7 @@ approach_dropper = Objective(
         center_tolerance_fov=0.05
     ),
     approach=ApproachConfig(
-        approach_distance_mm=4000.0
+        approach_distance_mm=1000.0
     ),
     action=ForwardAction(
         forward_distance_m=4.0,
