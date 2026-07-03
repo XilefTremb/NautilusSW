@@ -31,7 +31,7 @@ class CenterConfig:
 
 @dataclass
 class ApproachConfig:
-    approach_distance_mm: float = 5000.0
+    approach_distance_mm: Optional[float] = None
     
 @dataclass
 class NoAction:
@@ -43,6 +43,7 @@ class ForwardAction:
     duration_s: float = 0.0
     forward_distance_m: float = 0.0
     dropper_search: bool = False
+    reset_ekf_flag: bool = True
 
 @dataclass
 class CircleMarkerAction:
@@ -53,7 +54,7 @@ class CircleMarkerAction:
 @dataclass
 class LaunchDropperAction:
     type: ActionType = ActionType.LAUNCH_DROPPER
-    fire_second_dropper: bool = False
+    launch_second_dropper: bool = False
     duration_s: float = 0.0
     fired: bool = False
 
@@ -185,24 +186,36 @@ slalom3 = Objective(
 approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
-    target_auv_depth_m = 0.75,
+    # target_auv_depth_m = 0.75,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=False,
+        center_tolerance_fov=0.1
     ),
     approach=ApproachConfig(
-        approach_distance_mm=3000.0
+        approach_distance_mm=5000.0
     ),
     action=ForwardAction(
-        forward_distance_m=3.0,
-        dropper_search=True
+        forward_distance_m=5.0,
+        dropper_search=True,
     ),
+)
+
+return_dropper_overshoot = Objective(
+    name='returnDropperOvershootObjective',
+    target_ids = None,
+    # target_auv_depth_m = 0.75,
+    action=ForwardAction(
+        forward_distance_m=0.0, 
+        dropper_search=True,
+        reset_ekf_flag=False,
+    )
 )
 
 launch_dropper = Objective(
     name='launchDropperObjective',
     search=SearchConfig(spin_pwm=1460),
-    target_auv_depth_m = 0.25,
+    # target_auv_depth_m = 0.25,
     center=CenterConfig(
         full_centering=False,
         center_tolerance_fov=0.05,
@@ -218,7 +231,7 @@ launch_dropper = Objective(
 launch_second_dropper = Objective(
     name='launchSecondDropperObjective',
     search=SearchConfig(spin_pwm=1460),
-    target_auv_depth_m = 0.25,
+    # target_auv_depth_m = 0.25,
     center=CenterConfig(
         full_centering=False,
         center_tolerance_fov=0.05,
@@ -228,6 +241,7 @@ launch_second_dropper = Objective(
     ),
     action=LaunchDropperAction(
         duration_s=2.0,
+        launch_second_dropper=True,
     ),
 )
 
@@ -290,4 +304,5 @@ target_auv_depth_m = 1.0
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
 # mission_list = [test_depth]
-mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
+mission_list = [approach_dropper, return_dropper_overshoot, launch_dropper, launch_second_dropper]
+
