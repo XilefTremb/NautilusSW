@@ -29,8 +29,10 @@ class StateMachine:
 
         if self.role_choice == ObjectID.SOS_SAFETY:
             self.dropper_choice = ObjectID.BLOOD
+            self.second_dropper_choice = ObjectID.FIRE
         else:
             self.dropper_choice = ObjectID.FIRE
+            self.second_dropper_choice = ObjectID.BLOOD
 
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
@@ -151,7 +153,10 @@ class StateMachine:
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
         elif self.current_objective.action.type is ActionType.LAUNCH_DROPPER :
-            self.target_ids = [self.dropper_choice]
+            if self.current_objective.action.fire_second_dropper:
+                self.target_ids = [self.second_dropper_choice]
+            else:
+                self.target_ids = [ObjectID.dropper_choice]
 
         # elif self.current_objective.action.type is ActionType.FIRE_TORPEDO :
             # Add logic here for right target on dropper                      // TO DO

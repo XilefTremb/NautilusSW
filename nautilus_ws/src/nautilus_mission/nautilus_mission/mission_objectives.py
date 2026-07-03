@@ -53,6 +53,7 @@ class CircleMarkerAction:
 @dataclass
 class LaunchDropperAction:
     type: ActionType = ActionType.LAUNCH_DROPPER
+    fire_second_dropper: bool = False
     duration_s: float = 0.0
     fired: bool = False
 
@@ -214,6 +215,22 @@ launch_dropper = Objective(
     ),
 )
 
+launch_second_dropper = Objective(
+    name='launchSecondDropperObjective',
+    search=SearchConfig(spin_pwm=1460),
+    target_auv_depth_m = 0.25,
+    center=CenterConfig(
+        full_centering=False,
+        center_tolerance_fov=0.05,
+        center_bottom=True,
+        target_offset_x=-0.25,
+        target_offset_y=0.25,
+    ),
+    action=LaunchDropperAction(
+        duration_s=2.0,
+    ),
+)
+
 coarse_approach_torpedo = Objective(
          name='coarseApproachTorpedo',
          target_ids=[ObjectID.TORPEDO],
@@ -272,4 +289,5 @@ target_auv_depth_m = 1.0
 #mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-mission_list = [test_depth]
+# mission_list = [test_depth]
+mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
