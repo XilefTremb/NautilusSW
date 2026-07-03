@@ -72,6 +72,7 @@ class StateMachine:
             {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
             {'trigger': 'finish_mission', 'source': '*', 'dest': 'MISSION_COMPLETE'},
+            {'trigger': 'skip_to_next_objective', 'source': '*', 'dest': 'LOAD_OBJECTIVE', 'after': 'increment_objective_index'},
         ]
 
         self.machine = Machine(
@@ -113,6 +114,10 @@ class StateMachine:
                     self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
+            if self.current_objective.action.type is ActionType.FORWARD:
+                if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
+                    self.skip_to_next_objective()
+
             if self.current_objective.approach.approach_distance_mm is None:
                 self.target_reached()
                 return 
@@ -188,6 +193,9 @@ class StateMachine:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
         if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
             self.current_objective.action.fired = False
+
+    def increment_objective_index(self, event):
+        self.objective_index+=1
 
     def on_enter_CENTER_TARGET(self, event):
         reset_pids(self.node)
@@ -282,6 +290,9 @@ class StateMachine:
                 else:
                     self.node.get_logger().info(f'Waiting for EKF odom reset before FORWARD: x={self.forward_position:.3f}')
                     return False
+                
+            if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
+                return True
             
             return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.3)
             
@@ -305,11 +316,11 @@ class StateMachine:
         
         return False
 
-    def is_dropper_present(self) -> bool:
-        return self.detection_store.get_detection(self.dropper_choice) is not None
+    def is_target_present(self, IDs = None) -> bool:
+        if IDs is None:
+            IDs = self.target_ids
 
-    def is_target_present(self) -> bool:
-        return self.detection_store.get_detection(self.target_ids) is not None
+        return self.detection_store.get_detection(IDs) is not None
 
     def is_target_lost_filtered(self) -> bool:
         if self.is_target_present():
