@@ -1,0 +1,6 @@
+{
+    "dark_threshold": 157,
+    "light_min_brightness": 138,
+    "light_bright_percentile": 71,
+    "min_pixel_count": 185
+}

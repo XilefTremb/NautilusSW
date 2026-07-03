@@ -8,7 +8,20 @@ import threading
 import json
 from pathlib import Path
 
-CONFIG_FILE = Path(__file__).parent / "edge_params.json"
+
+repo_root = Path.home() / "NautilusSW"
+
+CONFIG_FILE = (
+    repo_root
+    / "nautilus_ws"
+    / "src"
+    / "nautilus_sensors"
+    / "vision"
+    / "edge_params.json"
+)
+
+CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+print(CONFIG_FILE)
 
 def load_params_edge_detector_json():
     default_params = {
