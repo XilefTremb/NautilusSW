@@ -192,10 +192,11 @@ approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
     # target_auv_depth_m = 0.75,
+    success_frame_treshold= 3,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=False,
-        center_tolerance_fov=0.1
+        center_tolerance_fov=0.05
     ),
     approach=ApproachConfig(
         approach_distance_mm=5000.0
@@ -219,8 +220,8 @@ return_dropper_overshoot = Objective(
 
 launch_dropper = Objective(
     name='launchDropperObjective',
-    success_frame_treshold=2,
-    search=SearchConfig(spin_pwm=1460),
+    success_frame_treshold=1,
+    search=SearchConfig(spin_pwm=1400),
     # target_auv_depth_m = 0.25,
     center=CenterConfig(
         full_centering=False,
@@ -310,5 +311,5 @@ target_auv_depth_m = 1.0
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
 # mission_list = [test_depth]
-mission_list = [approach_dropper, return_dropper_overshoot, launch_dropper, launch_second_dropper]
+mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
 
