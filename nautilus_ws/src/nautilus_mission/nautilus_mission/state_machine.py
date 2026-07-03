@@ -27,6 +27,13 @@ class StateMachine:
         self.objectives : list[Objective] = mission_list
         self.role_choice = ObjectID.SOS_SAFETY
 
+        if self.role_choice == ObjectID.SOS_SAFETY:
+            self.dropper_choice = ObjectID.BLOOD
+            self.second_dropper_choice = ObjectID.FIRE
+        else:
+            self.dropper_choice = ObjectID.FIRE
+            self.second_dropper_choice = ObjectID.BLOOD
+
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
         self.target_ids: Optional[list[ObjectID]] = None
@@ -39,6 +46,7 @@ class StateMachine:
         self.forward_reset_threshold_m = 0.1
         self.approach_distance_error_m = 0.0
 
+        self.current_success_frame_count = 0
         self.target_missing_count = 0
         self.target_missing_limit = 100
         self.state_start_time = time.monotonic()
@@ -65,6 +73,7 @@ class StateMachine:
             {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
             {'trigger': 'finish_mission', 'source': '*', 'dest': 'MISSION_COMPLETE'},
+            {'trigger': 'skip_to_next_objective', 'source': '*', 'dest': 'LOAD_OBJECTIVE', 'after': 'increment_objective_index'},
         ]
 
         self.machine = Machine(
@@ -106,6 +115,14 @@ class StateMachine:
                     self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
+            if self.current_objective.action.type is ActionType.FORWARD:
+                if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
+                    self.skip_to_next_objective()
+
+            if self.current_objective.approach.approach_distance_mm is None:
+                self.target_reached()
+                return 
+            
             self.vision_action = VisionAction.APPROACH_TARGET
             if self.is_target_lost_filtered():
                 self.target_lost()
@@ -148,10 +165,10 @@ class StateMachine:
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
         elif self.current_objective.action.type is ActionType.LAUNCH_DROPPER :
-            if self.role_choice is ObjectID.SOS_SAFETY:
-                self.target_ids = [ObjectID.BLOOD]
+            if self.current_objective.action.launch_second_dropper:
+                self.target_ids = [self.second_dropper_choice]
             else:
-                self.target_ids = [ObjectID.FIRE]
+                self.target_ids = [self.dropper_choice]
 
         elif self.current_objective.action.type == ActionType.FIRE_TORPEDO:
 
@@ -186,6 +203,9 @@ class StateMachine:
         if self.current_objective.target_auv_depth_m is not None:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
 
+
+    def increment_objective_index(self, event):
+        self.objective_index+=1
 
     def on_enter_CENTER_TARGET(self, event):
         reset_pids(self.node)
@@ -255,6 +275,8 @@ class StateMachine:
     def spin_search(self):
         cmd = self.current_objective.search.spin_pwm
         self.node.publish_yaw_cmd(cmd)
+        if self.current_objective.center.center_bottom:
+            self.node.publish_forward_cmd(1510)
         
     def get_vision_action_for_current_objective(self) -> VisionAction:
         if self.current_objective is None:
@@ -275,7 +297,7 @@ class StateMachine:
             return True
 
         if action == ActionType.FORWARD:
-            #done = self.state_lifespan >= self.current_objective.action_duration
+            #done = self.state_lifespan >= self.current_objective.action_duration            
             if not self.forward_action_ready:
                 if abs(self.forward_position) < self.forward_reset_threshold_m:
                     self.forward_action_ready = True
@@ -284,7 +306,11 @@ class StateMachine:
                     self.node.get_logger().info(f'Waiting for EKF odom reset before FORWARD: x={self.forward_position:.3f}')
                     return False
                 
+            if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
+                return True
+                
             return self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
+            
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
@@ -317,8 +343,11 @@ class StateMachine:
         
         return False
 
-    def is_target_present(self) -> bool:
-        return self.detection_store.get_detection(self.target_ids) is not None
+    def is_target_present(self, IDs = None) -> bool:
+        if IDs is None:
+            IDs = self.target_ids
+
+        return self.detection_store.get_detection(IDs) is not None
 
     def is_target_lost_filtered(self) -> bool:
         if self.is_target_present():
@@ -344,10 +373,10 @@ class StateMachine:
             error_x = abs(px - self.current_objective.center.target_offset_x) < self.current_objective.center.center_tolerance_fov
             error_y = abs(py - self.current_objective.center.target_offset_y) < self.current_objective.center.center_tolerance_fov
             
-            return (error_x and error_y)
-        
+            return self.update_success_frame_count(error_x and error_y)
+               
         else :
-            return abs(px) < self.current_objective.center.center_tolerance_fov
+            return self.update_success_frame_count(abs(px) < self.current_objective.center.center_tolerance_fov)
 
     def is_target_approached(self) -> bool:
         if self.current_objective is None:
@@ -359,7 +388,8 @@ class StateMachine:
 
         depth = target[DetectionIndex.DEPTH_MM]
         self.approach_distance_error_m = (self.current_objective.approach.approach_distance_mm - depth) / 1000.0
-        return depth < self.current_objective.approach.approach_distance_mm
+
+        return self.update_success_frame_count(depth < self.current_objective.approach.approach_distance_mm)
 
     def is_target_perpendicular(self) -> bool:
         if self.current_objective is None:
@@ -370,7 +400,9 @@ class StateMachine:
             return False
 
         alignement_error = target[DetectionIndex.ANGLE_DEG]
-        return abs(alignement_error) < self.current_objective.center.alignement_tolerance
+
+        return self.update_success_frame_count(abs(alignement_error) < self.current_objective.center.alignement_tolerance)
+    
     
     def ekf_reset_done(self, event):
         if self.ekf_resetted:
@@ -378,7 +410,6 @@ class StateMachine:
 
         self.node.get_logger().info("Resetting EKF before leaving APPROACH_TARGET")
         self.ekf_resetted = reset_ekf_pose(self.node)
-
         return self.ekf_resetted
     
     def center_lifespan_reached(self, event):
@@ -393,6 +424,16 @@ class StateMachine:
         self.node.get_logger().info(f'Entered state {self.state}')
         self.node.get_logger().info(f'Transition: {event.transition.source} -> {event.transition.dest}, current state: {self.state}')
 
+    def update_success_frame_count(self, condition):
+        if condition:
+            self.current_success_frame_count += 1
+            self.node.get_logger().info(f"current success frame count {self.current_success_frame_count}")
+        else: 
+            self.current_success_frame_count = 0
+            self.node.get_logger().info("reset success frame count to 0")
+
+        return self.current_success_frame_count > self.current_objective.success_frame_treshold
+       
     @property
     def state_lifespan(self):
         return time.monotonic() - self.state_start_time
