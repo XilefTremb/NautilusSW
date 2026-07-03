@@ -37,6 +37,7 @@ class StateMachine:
         self.ekf_resetted = False
         self.forward_action_ready = False
         self.forward_reset_threshold_m = 0.1
+        self.approach_distance_error_m = 0.0
 
         self.target_missing_count = 0
         self.target_missing_limit = 100
@@ -127,6 +128,7 @@ class StateMachine:
     def on_enter_LOAD_OBJECTIVE(self, event):
         self.vision_action = VisionAction.IDLE
         self.node.publish_forward_cmd(1500)
+        self.approach_distance_error_m = 0.0
 
     def load_current_objective(self, event):
         self.current_objective = self.objectives[self.objective_index]
@@ -281,7 +283,7 @@ class StateMachine:
                 else:
                     self.node.get_logger().info(f'Waiting for EKF odom reset before FORWARD: x={self.forward_position:.3f}')
                     return False
-            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.3)
+            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m)
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
@@ -355,6 +357,7 @@ class StateMachine:
             return False
 
         depth = target[DetectionIndex.DEPTH_MM]
+        self.approach_distance_error_m = (self.current_objective.approach.approach_distance_mm - depth) / 1000.0
         return depth < self.current_objective.approach.approach_distance_mm
 
     def is_target_perpendicular(self) -> bool:
