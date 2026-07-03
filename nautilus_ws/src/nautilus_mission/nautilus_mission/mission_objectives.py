@@ -43,7 +43,6 @@ class ForwardAction:
     duration_s: float = 0.0
     forward_distance_m: float = 0.0
     dropper_search: bool = False
-    reset_ekf_flag: bool = True
 
 @dataclass
 class CircleMarkerAction:
@@ -205,17 +204,6 @@ approach_dropper = Objective(
         forward_distance_m=5.0,
         dropper_search=True,
     ),
-)
-
-return_dropper_overshoot = Objective(
-    name='returnDropperOvershootObjective',
-    target_ids = None,
-    # target_auv_depth_m = 0.75,
-    action=ForwardAction(
-        forward_distance_m=0.0, 
-        dropper_search=True,
-        reset_ekf_flag=False,
-    )
 )
 
 launch_dropper = Objective(

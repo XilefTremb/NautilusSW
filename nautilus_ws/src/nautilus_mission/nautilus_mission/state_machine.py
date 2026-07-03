@@ -282,10 +282,6 @@ class StateMachine:
                 else:
                     self.node.get_logger().info(f'Waiting for EKF odom reset before FORWARD: x={self.forward_position:.3f}')
                     return False
-                
-            if self.current_objective.action.dropper_search and self.is_dropper_present():
-                self.ekf_resetted = reset_ekf_pose(self.node)
-                return True
             
             return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.3)
             
@@ -370,21 +366,12 @@ class StateMachine:
     
     
     def ekf_reset_done(self, event):
-        self.node.get_logger().info("hi")
-        if self.current_objective.action.type is ActionType.FORWARD and not self.current_objective.action.reset_ekf_flag:
-            self.node.get_logger().info(f"{self.current_objective.action.reset_ekf_flag}")
-            self.node.get_logger().info("hey there")
+        if self.ekf_resetted:
             return True
-        
-        else:
-            self.node.get_logger().info("helo")
 
-            if self.ekf_resetted:
-                return True
-
-            self.node.get_logger().info("Resetting EKF before leaving APPROACH_TARGET")
-            self.ekf_resetted = reset_ekf_pose(self.node)
-            return self.ekf_resetted
+        self.node.get_logger().info("Resetting EKF before leaving APPROACH_TARGET")
+        self.ekf_resetted = reset_ekf_pose(self.node)
+        return self.ekf_resetted
     
     def center_lifespan_reached(self, event):
         if self.current_objective.center.full_centering is False:
