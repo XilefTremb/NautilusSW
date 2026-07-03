@@ -19,7 +19,7 @@ USB_DEVICE = "/dev/sda1"
 USB_MOUNT_POINT = "/media/nautilus/95B9-46D3"
 USB_OUTPUT_DIR = "/media/nautilus/95B9-46D3/rosbags"
 
-COMPUTER_OUTPUT_DIR = "~/home/nautilus/rosbags"
+COMPUTER_OUTPUT_DIR = "/home/nautilus/rosbag"
 
 
 
@@ -30,7 +30,7 @@ class RosbagRecorder:
         self.bag_path = None
 
         self.bridge = CvBridge()
-        self.annotated_frames = deque(maxlen=100)
+        self.annotated_frames = deque(maxlen=150)
 
         if self.node is not None:
             self.annotated_sub = self.node.create_subscription(Image, "/yolo/image_annotated_fwd_cam", self.annotated_callback, 10)
