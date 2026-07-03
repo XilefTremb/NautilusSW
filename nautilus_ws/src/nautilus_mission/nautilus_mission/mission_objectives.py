@@ -31,7 +31,7 @@ class CenterConfig:
 
 @dataclass
 class ApproachConfig:
-    approach_distance_mm: float = 5000.0
+    approach_distance_mm: Optional[float] = None
     
 @dataclass
 class NoAction:
@@ -42,6 +42,7 @@ class ForwardAction:
     type: ActionType = ActionType.FORWARD
     duration_s: float = 0.0
     forward_distance_m: float = 0.0
+    dropper_search: bool = False
 
 @dataclass
 class CircleMarkerAction:
@@ -52,6 +53,7 @@ class CircleMarkerAction:
 @dataclass
 class LaunchDropperAction:
     type: ActionType = ActionType.LAUNCH_DROPPER
+    launch_second_dropper: bool = False
     duration_s: float = 0.0
     fired: bool = False
 
@@ -82,6 +84,7 @@ class Objective:
     center: CenterConfig = field(default_factory=CenterConfig)
     approach: ApproachConfig = field(default_factory=ApproachConfig)
     action: ActionConfig = field(default_factory=NoAction)
+    success_frame_treshold: int = 1
 
 approach_gate = Objective(
     name='approachGate',
@@ -100,6 +103,7 @@ approach_gate = Objective(
 
 choose_gate_side = Objective(
     name='chooseGateSide',
+    success_frame_treshold=3,
     search=SearchConfig(spin_pwm=1540),
     approach=ApproachConfig(
         approach_distance_mm=3000.0,
@@ -131,6 +135,7 @@ traverse_gate = Objective(
 
 slalom1 = Objective(
     name='slalom1',
+    success_frame_treshold=3,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 2000,
     target_auv_depth_m = 2.6,
@@ -150,6 +155,7 @@ slalom1 = Objective(
 
 slalom2 = Objective(
     name='slalom2',
+    success_frame_treshold=3,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 1500,
     search=SearchConfig(spin_pwm=1540),
@@ -166,6 +172,7 @@ slalom2 = Objective(
 
 slalom3 = Objective(
     name='slalom3',
+    success_frame_treshold=3,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1460),
@@ -183,22 +190,27 @@ slalom3 = Objective(
 approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
+    # target_auv_depth_m = 0.75,
+    success_frame_treshold= 3,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=False,
+        center_tolerance_fov=0.05
     ),
     approach=ApproachConfig(
-        approach_distance_mm=3000.0
+        approach_distance_mm=1000.0
     ),
     action=ForwardAction(
-        forward_distance_m=3.0,
+        forward_distance_m=4.0,
+        dropper_search=True,
     ),
 )
 
 launch_dropper = Objective(
     name='launchDropperObjective',
-    search=SearchConfig(spin_pwm=1460),
-    target_auv_depth_m = 1.0,
+    success_frame_treshold=1,
+    search=SearchConfig(spin_pwm=1400),
+    # target_auv_depth_m = 0.25,
     center=CenterConfig(
         full_centering=False,
         center_tolerance_fov=0.05,
@@ -208,6 +220,23 @@ launch_dropper = Objective(
     ),
     action=LaunchDropperAction(
         duration_s=2.0,
+    ),
+)
+
+launch_second_dropper = Objective(
+    name='launchSecondDropperObjective',
+    search=SearchConfig(spin_pwm=1460),
+    # target_auv_depth_m = 0.25,
+    center=CenterConfig(
+        full_centering=False,
+        center_tolerance_fov=0.05,
+        center_bottom=True,
+        target_offset_x=-0.25,
+        target_offset_y=0.25,
+    ),
+    action=LaunchDropperAction(
+        duration_s=2.0,
+        launch_second_dropper=True,
     ),
 )
 
@@ -283,5 +312,7 @@ target_auv_depth_m = 1.0
 
 #mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
-# mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper]
-mission_list = [test_depth]
+# mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
+# mission_list = [test_depth]
+mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
+
