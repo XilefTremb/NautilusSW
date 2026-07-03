@@ -283,7 +283,13 @@ class StateMachine:
                 else:
                     self.node.get_logger().info(f'Waiting for EKF odom reset before FORWARD: x={self.forward_position:.3f}')
                     return False
-            return self.forward_position >= (self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m)
+                
+            real_distance_m = self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
+            if real_distance_m < 0.0:
+                self.node.get_logger().info(f'Forward action distance is too small, skipping: {self.current_objective.action.forward_distance_m:.3f} m')
+                return True     
+            else:
+                return self.forward_position >= real_distance_m
             
         if action == ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
