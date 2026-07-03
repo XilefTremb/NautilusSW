@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 
+from nautilus_ws.src.nautilus_mission.enums import ObjectID
+
 # =====================================================
 # LIGHT OBJECT DETECTOR
 # =====================================================
@@ -24,9 +26,13 @@ DARK_OPEN_KERNEL = cv2.getStructuringElement(cv2.MORPH_RECT, DARK_OPEN_KERNEL_SI
 
 #MIN_PIXEL_COUNT = 30
 
-def detect_light_object_in_roi(roi, edge_params):
+def detect_light_object_in_roi(roi, edge_params, id):
 
-    LIGHT_MIN_BRIGHTNESS, LIGHT_BRIGHT_PERCENTILE, MIN_PIXEL_COUNT, _ = get_edge_params(edge_params)
+    if id == ObjectID.TORPEDO:
+        _, _, MIN_PIXEL_COUNT, _, LIGHT_MIN_BRIGHTNESS, LIGHT_BRIGHT_PERCENTILE = get_edge_params(edge_params)
+
+    elif id == ObjectID.SLALOM_SIDE:
+        LIGHT_MIN_BRIGHTNESS, LIGHT_BRIGHT_PERCENTILE, MIN_PIXEL_COUNT, _ ,_,_= get_edge_params(edge_params)
 
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
     h, s, v = cv2.split(hsv)
@@ -55,7 +61,7 @@ def detect_light_object_in_roi(roi, edge_params):
 
 def detect_dark_object_in_roi(roi, edge_params):
 
-    _,_,MIN_PIXEL_COUNT, DARK_THRESHOLD = get_edge_params(edge_params)
+    _,_,MIN_PIXEL_COUNT, DARK_THRESHOLD,_,_ = get_edge_params(edge_params)
 
     hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
@@ -97,6 +103,8 @@ def detect_dark_object_in_roi(roi, edge_params):
 def get_edge_params(edge_params):
     LIGHT_MIN_BRIGHTNESS = edge_params["light_min_brightness"]
     LIGHT_BRIGHT_PERCENTILE = edge_params["light_bright_percentile"]
+    LIGHT_MIN_BRIGHTNESS_TORPEDO = edge_params["light_min_brightness_torpedo"]
+    LIGHT_BRIGHT_PERCENTILE_TORPEDO = edge_params["light_bright_percentile_torpedo"]
     MIN_PIXEL_COUNT = edge_params["min_pixel_count"]
     DARK_THRESHOLD = edge_params["dark_threshold"]
 
@@ -106,5 +114,5 @@ def get_edge_params(edge_params):
     # print("DARK_THRESHOLD", DARK_THRESHOLD)
 
 
-    return LIGHT_MIN_BRIGHTNESS, LIGHT_BRIGHT_PERCENTILE, MIN_PIXEL_COUNT, DARK_THRESHOLD
+    return LIGHT_MIN_BRIGHTNESS, LIGHT_BRIGHT_PERCENTILE, MIN_PIXEL_COUNT, DARK_THRESHOLD, LIGHT_MIN_BRIGHTNESS_TORPEDO, LIGHT_BRIGHT_PERCENTILE_TORPEDO
 

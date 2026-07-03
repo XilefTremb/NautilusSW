@@ -168,13 +168,15 @@ class YoloNode(Node):
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
 
     def edge_params_callback(self, msg):
-        if len(msg.data) < 4:
+        if len(msg.data) < 6:
             return
 
         self.edge_params["dark_threshold"] = msg.data[0]
         self.edge_params["light_min_brightness"] = msg.data[1]
         self.edge_params["light_bright_percentile"] = msg.data[2]
-        self.edge_params["min_pixel_count"] = msg.data[3]
+        self.edge_params["light_min_brightness_torpedo"] = msg.data[3]
+        self.edge_params["light_bright_percentile_torpedo"] = msg.data[4]
+        self.edge_params["min_pixel_count"] = msg.data[5]
 
         self.get_logger().info(f'EDGE PARAMS UPDATED: {self.edge_params}')
         #print("EDGE PARAMS UPDATED", self.edge_params)

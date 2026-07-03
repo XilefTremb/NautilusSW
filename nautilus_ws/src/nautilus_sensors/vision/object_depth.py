@@ -132,8 +132,8 @@ def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, 
     if roi.size == 0:
         return None, None
 
-    if id == ObjectID.SLALOM_SIDE:
-        filled_mask = detect_light_object_in_roi(roi, edge_params)
+    if id == ObjectID.SLALOM_SIDE or id == ObjectID.TORPEDO:
+        filled_mask = detect_light_object_in_roi(roi, edge_params, id)
 
     else:
         filled_mask = detect_dark_object_in_roi(roi, edge_params)
