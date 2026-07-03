@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from nautilus_ws.src.nautilus_mission.enums import ObjectID
+from enums.ObjectID import ObjectID
 
 # =====================================================
 # LIGHT OBJECT DETECTOR
