@@ -88,6 +88,8 @@ class YoloNode(Node):
         self.last_filter_time = {}
 
         self.edge_params = load_params_edge_detector_json()
+        self.get_logger().info(f'edege_params: {self.edge_params}')
+
 
         self.last_forward_sync_ts = None
         self.last_forward_sync_count = 0
@@ -168,13 +170,15 @@ class YoloNode(Node):
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
 
     def edge_params_callback(self, msg):
-        if len(msg.data) < 4:
+        if len(msg.data) < 6:
             return
 
         self.edge_params["dark_threshold"] = msg.data[0]
         self.edge_params["light_min_brightness"] = msg.data[1]
         self.edge_params["light_bright_percentile"] = msg.data[2]
-        self.edge_params["min_pixel_count"] = msg.data[3]
+        self.edge_params["light_min_brightness_torpedo"] = msg.data[3]
+        self.edge_params["light_bright_percentile_torpedo"] = msg.data[4]
+        self.edge_params["min_pixel_count"] = msg.data[5]
 
         self.get_logger().info(f'EDGE PARAMS UPDATED: {self.edge_params}')
         #print("EDGE PARAMS UPDATED", self.edge_params)
@@ -206,7 +210,7 @@ class YoloNode(Node):
             annotated_frame, edge_debug = self.process_forward(results, frame, depth)
             t2 = time.time()
 
-            self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
+            #self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
 
             # ----------- PUBLISH IMAGE ANNOTATED OAKD -----------
             if PUBLISH_ANNOTATED_IMAGES:
@@ -301,7 +305,7 @@ class YoloNode(Node):
                 ]
                 msg.layout.data_offset = 0
 
-                self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
+                #self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
                 self.detection_downward_pub.publish(msg)
             else:
                 self.get_logger().info(f"[EMPTY] Downward: No detections found")
@@ -388,7 +392,7 @@ class YoloNode(Node):
                             mode=self.mode)
 
                 if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
-                    self.get_logger().info(f"[FILTERED] Object {object_id} depth={depth_value} outside range (400-{self.depth_threshold})")
+                    #self.get_logger().info(f"[FILTERED] Object {object_id} depth={depth_value} outside range (400-{self.depth_threshold})")
                     continue
 
                 # ----------- DIST / ANGLE -----------
@@ -484,7 +488,7 @@ class YoloNode(Node):
                 angle = 0.0
                 if object_id == ObjectID.TORPEDO:
                     angle = find_angle_torpedo(objects)
-                    self.get_logger().info(f"angle_torpedo={angle}")
+                    #self.get_logger().info(f"angle_torpedo={angle}")
                     payload.extend([float(object_id), float(obj["dist_center_x"]), float(obj["depth"]), angle, float(obj["dist_center_y"])])
                 else:
                     payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"])])
@@ -544,11 +548,12 @@ class YoloNode(Node):
             if self.last_forward_publish_ts is not None:
                 gap = now - self.last_forward_publish_ts
                 if gap > 0.15:
-                    self.get_logger().warning(
-                        f"[PUBLISH_GAP] {gap:.3f}s since last forward publish"
-                    )
+                    #self.get_logger().warning(
+                    #    f"[PUBLISH_GAP] {gap:.3f}s since last forward publish"
+                    #)
+                    pass
             self.last_forward_publish_ts = now
-            self.get_logger().info(f"[PUBLISHED] Forward: {nb_objects} objects detected")
+            #self.get_logger().info(f"[PUBLISHED] Forward: {nb_objects} objects detected")
         else:
             self.get_logger().info(f"[EMPTY] Forward: No valid detections after filtering")
 
