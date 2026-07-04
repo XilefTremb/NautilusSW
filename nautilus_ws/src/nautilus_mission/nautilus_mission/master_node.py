@@ -20,8 +20,6 @@ from std_srvs.srv import Trigger
 class MasterNode(Node):
     def __init__(self, args):
         super().__init__('master_node')
-        
-        time.sleep(args.timer) 
 
         fast_qos = QoSProfile(
             history=HistoryPolicy.KEEP_LAST,
@@ -69,9 +67,11 @@ class MasterNode(Node):
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
 
-        self.get_logger().info('Master mission + vision node started.')
-
+        self.get_logger().info(f'Mission will start in {args.timer} seconds.')
+        time.sleep(args.timer) 
         self.fsm.start_mission()
+
+        self.get_logger().info('Master mission + vision node started.')
 
     def fwd_detection_callback(self, msg: Float32MultiArray):
         if not self.detection_store.update_from_msg(msg):
