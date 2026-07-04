@@ -148,13 +148,13 @@ slalom1 = Objective(
         approach_distance_mm=2000.0
     ),
     action=ForwardAction(
-        forward_distance_m=2.2,
+        forward_distance_m=2.0,
     ),
 )
 
 slalom2 = Objective(
     name='slalom2',
-    success_frame_treshold=3,
+    success_frame_treshold=1,
     detections_depth_filter_mm = 1500,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
@@ -170,7 +170,7 @@ slalom2 = Objective(
 
 slalom3 = Objective(
     name='slalom3',
-    success_frame_treshold=3,
+    success_frame_treshold=1,
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
@@ -188,7 +188,7 @@ approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
     # target_auv_depth_m = 0.75,
-    success_frame_treshold= 3,
+    success_frame_treshold= 1,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=False,

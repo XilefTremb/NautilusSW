@@ -138,7 +138,7 @@ traverse_gate = Objective(
 
 slalom1 = Objective(
     name='slalom1',
-    success_frame_treshold=3,
+    success_frame_treshold=2,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 2000,
     # target_auv_depth_m = 2.6,
@@ -159,7 +159,7 @@ slalom1 = Objective(
 
 slalom2 = Objective(
     name='slalom2',
-    success_frame_treshold=3,
+    success_frame_treshold=1,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 1500,
     search=SearchConfig(spin_pwm=1540),
@@ -177,7 +177,7 @@ slalom2 = Objective(
 
 slalom3 = Objective(
     name='slalom3',
-    success_frame_treshold=3,
+    success_frame_treshold=1,
     target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1460),
@@ -197,7 +197,7 @@ approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
     # target_auv_depth_m = 0.75,
-    success_frame_treshold= 3,
+    success_frame_treshold= 2,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=False,
