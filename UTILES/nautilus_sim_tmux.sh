@@ -37,7 +37,7 @@ tmux split-window -v -t "$SESSION:mission.1"
 # Run commands in each pane
 tmux send-keys -t "$SESSION:mission.0" "ros2 launch nautilus_controls vision_controller_sim.launch.py" C-m
 tmux send-keys -t "$SESSION:mission.1" "ros2 run nautilus_controls cube_interface --sitl" C-m
-tmux send-keys -t "$SESSION:mission.2" "ros2 run nautilus_mission master_node"
+tmux send-keys -t "$SESSION:mission.2" "ros2 run nautilus_mission master_node -- --sim"
 
 # Optional: make panes evenly sized
 tmux select-layout -t "$SESSION:mission" tiled

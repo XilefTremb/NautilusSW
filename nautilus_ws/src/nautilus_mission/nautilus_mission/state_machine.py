@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import time
 from typing import Optional
 
@@ -12,17 +13,24 @@ from enums.DetectionIndex import DetectionIndex
 from enums.ServoEnum import ServoEnum
 
 from .detection_store import DetectionStore
-from .mission_objectives import mission_list, Objective, ActionType
 from .ekf_reset import reset_ekf_pose
 from nautilus_services import request_depth_change, reset_pids
-
 
 class StateMachine:
     """Mission decision logic only. No ROS subscriptions and no vision error calculation."""
 
-    def __init__(self, node: Node, detection_store: DetectionStore):
+    def __init__(self, node: Node, detection_store: DetectionStore, use_sim: bool):
         self.node = node
         self.detection_store = detection_store
+
+        if use_sim:
+            from .mission_objectives_sim import mission_list, Objective, ActionType
+        else:
+            from .mission_objectives import mission_list, Objective, ActionType
+
+        self.ActionType = ActionType
+        self.Objective = Objective
+        self.objectives: list[Objective] = mission_list
 
         self.objectives : list[Objective] = mission_list
         self.role_choice = ObjectID.SOS_SAFETY
@@ -122,7 +130,7 @@ class StateMachine:
                 self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
-            if self.current_objective.action.type is ActionType.FORWARD:
+            if self.current_objective.action.type is self.ActionType.FORWARD:
                 if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
                     self.skip_to_next_objective()
 
@@ -158,7 +166,7 @@ class StateMachine:
     def load_current_objective(self, event):
         self.current_objective = self.objectives[self.objective_index]
 
-        if self.current_objective.action.type == ActionType.CHOOSE_GATE_SIDE:
+        if self.current_objective.action.type == self.ActionType.CHOOSE_GATE_SIDE:
             self.detection_store.save_role = False
             positions = self.detection_store.role_positions
 
@@ -172,13 +180,13 @@ class StateMachine:
                 else :
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
-        elif self.current_objective.action.type is ActionType.LAUNCH_DROPPER :
+        elif self.current_objective.action.type is self.ActionType.LAUNCH_DROPPER :
             if self.current_objective.action.launch_second_dropper:
                 self.target_ids = [self.second_dropper_choice]
             else:
                 self.target_ids = [self.dropper_choice]
 
-        elif self.current_objective.action.type == ActionType.FIRE_TORPEDO:
+        elif self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
 
             if self.current_objective.name == "torpedoFiringPositioning1":
                 self.target_ids = ([ObjectID.TARGET_BLOOD] if self.role_choice == ObjectID.SOS_SAFETY
@@ -231,7 +239,7 @@ class StateMachine:
             self.finish_mission()
             return
         
-        if self.current_objective.action.type == ActionType.FORWARD:
+        if self.current_objective.action.type == self.ActionType.FORWARD:
             self.forward_action_ready = False
     
         self.execute_action_start_time = time.monotonic()
@@ -254,7 +262,7 @@ class StateMachine:
         if self.state != 'EXECUTE_ACTION' or self.current_objective is None:
             return
 
-        if self.current_objective.action.type == ActionType.FIRE_TORPEDO:
+        if self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
             if not self.current_objective.action.fired:
                 if self.current_objective.name == "torpedoFiringPositioning1":
                     self.node.get_logger().info('Launching torpedo no 1!')
@@ -266,15 +274,15 @@ class StateMachine:
 
                 self.current_objective.action.fired = True
 
-        if self.current_objective.action.type == ActionType.FORWARD:
+        if self.current_objective.action.type == self.ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
             self.node.publish_forward_ekf_error(error_ekf_fwd_position)
 
-        if self.current_objective.action.type == ActionType.SAVE_ROLE:
+        if self.current_objective.action.type == self.ActionType.SAVE_ROLE:
             self.node.get_logger().info('Saving role choice for current objective.')
             self.detection_store.save_role = True 
 
-        if self.current_objective.action.type == ActionType.LAUNCH_DROPPER:
+        if self.current_objective.action.type == self.ActionType.LAUNCH_DROPPER:
             self.node.get_logger().info('Launching dropper no 1!')
             self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_2_PWM)  
             self.node.get_logger().info('Dropper launched :) !')
@@ -312,7 +320,7 @@ class StateMachine:
         if self.current_objective is None:
             return VisionAction.IDLE
 
-        if self.current_objective.action.type == ActionType.CIRCLE_MARKER:
+        if self.current_objective.action.type == self.ActionType.CIRCLE_MARKER:
             return VisionAction.CIRCLE_MARKER
 
         return VisionAction.IDLE
@@ -323,10 +331,10 @@ class StateMachine:
 
         action = self.current_objective.action.type
 
-        if action == ActionType.NONE or action == ActionType.CHOOSE_GATE_SIDE:
+        if action == self.ActionType.NONE or action == self.ActionType.CHOOSE_GATE_SIDE:
             return True
 
-        if action == ActionType.FORWARD:
+        if action == self.ActionType.FORWARD:
             #done = self.state_lifespan >= self.current_objective.action_duration            
             if not self.forward_action_ready:
                 if abs(self.forward_position) < self.forward_reset_threshold_m:
@@ -342,7 +350,7 @@ class StateMachine:
             return self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
             
             
-        if action == ActionType.CIRCLE_MARKER:
+        if action == self.ActionType.CIRCLE_MARKER:
             if self.current_objective.action.camera_mean_depth_target_mm is None:
                 return False
 
@@ -351,13 +359,13 @@ class StateMachine:
                 and self.state_lifespan >= self.current_objective.action.min_lifespan_s
             )
         
-        if action == ActionType.SAVE_ROLE:
+        if action == self.ActionType.SAVE_ROLE:
             return self.state_lifespan > 2.0
         
-        if action == ActionType.LAUNCH_DROPPER:
+        if action == self.ActionType.LAUNCH_DROPPER:
             return self.state_lifespan > self.current_objective.action.duration_s
 
-        if action == ActionType.FIRE_TORPEDO:
+        if action == self.ActionType.FIRE_TORPEDO:
             if not self.current_objective.action.fired:
                 return False
 
