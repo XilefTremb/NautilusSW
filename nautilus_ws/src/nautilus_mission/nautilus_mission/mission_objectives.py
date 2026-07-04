@@ -121,6 +121,7 @@ choose_gate_side = Objective(
 
 traverse_gate = Objective(
     name='traverseGate',
+    success_frame_treshold=20,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=True,
@@ -331,7 +332,6 @@ target_auv_depth_m = 1.0
 )
 
 mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
-# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
 # mission_list = [test_depth]
 # mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
