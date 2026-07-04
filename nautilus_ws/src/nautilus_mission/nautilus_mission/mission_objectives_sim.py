@@ -195,10 +195,10 @@ approach_dropper = Objective(
         x_center_tolerance_fov=0.05
     ),
     approach=ApproachConfig(
-        approach_distance_mm=1000.0
+        approach_distance_mm=3000.0
     ),
     action=ForwardAction(
-        forward_distance_m=4.0,
+        forward_distance_m=3.0,
         dropper_search=True,
     ),
 )
@@ -303,8 +303,8 @@ torpedo_firing_positioning_2 = Objective(
     ),
 )
 
-mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
+# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-# mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
+mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
 

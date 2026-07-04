@@ -139,7 +139,6 @@ traverse_gate = Objective(
 slalom1 = Objective(
     name='slalom1',
     success_frame_treshold=2,
-    target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 2000,
     # target_auv_depth_m = 2.6,
     search=SearchConfig(spin_pwm=1540),
@@ -160,7 +159,6 @@ slalom1 = Objective(
 slalom2 = Objective(
     name='slalom2',
     success_frame_treshold=1,
-    target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 1500,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
@@ -178,7 +176,6 @@ slalom2 = Objective(
 slalom3 = Objective(
     name='slalom3',
     success_frame_treshold=1,
-    target_ids=[ObjectID.SLALOM_MID_RIGHT],
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
@@ -204,10 +201,10 @@ approach_dropper = Objective(
         x_center_tolerance_fov=0.05
     ),
     approach=ApproachConfig(
-        approach_distance_mm=1000.0
+        approach_distance_mm=3000.0
     ),
     action=ForwardAction(
-        forward_distance_m=4.0,
+        forward_distance_m=3.0,
         dropper_search=True,
     ),
 )
@@ -312,27 +309,8 @@ torpedo_firing_positioning_2 = Objective(
     ),
 )
 
-approach_left_leg = Objective(
-        name='approach_left_leg',
-        target_ids=[ObjectID.GATE_LEG_L],
-        # target_ids=None,
-        center=CenterConfig(
-            full_centering=False,
-            x_center_tolerance_fov=0.0,
-            y_center_tolerance_fov=0.0,
-        ),
-        # approach=ApproachConfig(
-        #      approach_distance_mm=1000.0,
-        # ),
-        action=NoAction()
-    )
-
-test_depth = Objective(name="changeDepth",
-target_auv_depth_m = 1.0
-)
-
-mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
+mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
+# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-# mission_list = [test_depth]
 # mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
 
