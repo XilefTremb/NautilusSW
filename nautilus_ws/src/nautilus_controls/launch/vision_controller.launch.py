@@ -7,7 +7,7 @@ def generate_launch_description():
         Node(
             package='nautilus_controls',
             executable='pid_node',
-            name='pid_yaw',
+            name='pid_forward_cam_yaw',
             parameters=[{
                 'input_topic': '/control/vision_errors/yaw',
                 'output_topic': '/control/cmd/yaw',
@@ -20,7 +20,7 @@ def generate_launch_description():
          Node(
             package='nautilus_controls',
             executable='pid_node',
-            name='pid_forward',
+            name='pid_forward_cam_forward',
             parameters=[{
                 'input_topic': '/control/vision_errors/forward',
                 'output_topic': '/control/cmd/forward',
@@ -34,7 +34,7 @@ def generate_launch_description():
         Node(
             package='nautilus_controls',
             executable='pid_node',
-            name='pid_lateral',
+            name='pid_forward_cam_lateral',
             parameters=[{
                 'input_topic': '/control/vision_errors/lateral',
                 'output_topic': '/control/cmd/lateral',
