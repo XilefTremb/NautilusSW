@@ -68,7 +68,7 @@ class StateMachine:
             {'trigger': 'load_next_objective', 'source': 'LOAD_OBJECTIVE', 'dest': 'MISSION_COMPLETE', 'unless': 'has_more_objectives'},
             {'trigger': 'target_found', 'source': 'SEARCH_TARGET', 'dest': 'CENTER_TARGET'},
             {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
-            {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET', 'conditions': 'center_lifespan_reached'},
+            {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
             {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION', 'conditions': 'ekf_reset_done'},
             {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
@@ -106,13 +106,20 @@ class StateMachine:
                 self.vision_action = VisionAction.CENTER_BOTTOM
             else:
                 self.vision_action = VisionAction.CENTER_FOV
+
             if self.is_target_lost_filtered():
                 self.target_lost()
-            if self.is_target_centered():
-                if self.is_target_perpendicular() and self.current_objective.center.full_centering:
-                    self.target_centered_event()
-                elif not self.current_objective.center.full_centering:
-                    self.target_centered_event()
+                return
+
+            is_centered = self.is_target_centered()
+
+            if self.current_objective.center.full_centering:
+                success_condition = is_centered and self.is_target_perpendicular()
+            else:
+                success_condition = is_centered
+
+            if self.update_success_frame_count(success_condition):
+                self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
             if self.current_objective.action.type is ActionType.FORWARD:
@@ -146,6 +153,7 @@ class StateMachine:
         self.vision_action = VisionAction.IDLE
         self.node.publish_forward_cmd(1500)
         self.approach_distance_error_m = 0.0
+        self.current_success_frame_count = 0
 
     def load_current_objective(self, event):
         self.current_objective = self.objectives[self.objective_index]
@@ -373,10 +381,10 @@ class StateMachine:
             error_x = abs(px - self.current_objective.center.target_offset_x) < self.current_objective.center.x_center_tolerance_fov
             error_y = abs(py - self.current_objective.center.target_offset_y) < self.current_objective.center.x_center_tolerance_fov
             
-            return self.update_success_frame_count(error_x and error_y)
+            return error_x and error_y
                
         else :
-            return self.update_success_frame_count(abs(px) < self.current_objective.center.x_center_tolerance_fov)
+            return abs(px) < self.current_objective.center.x_center_tolerance_fov
 
     def is_target_approached(self) -> bool:
         if self.current_objective is None:
@@ -389,7 +397,7 @@ class StateMachine:
         depth = target[DetectionIndex.DEPTH_MM]
         self.approach_distance_error_m = (self.current_objective.approach.approach_distance_mm - depth) / 1000.0
 
-        return self.update_success_frame_count(depth < self.current_objective.approach.approach_distance_mm)
+        return depth < self.current_objective.approach.approach_distance_mm
 
     def is_target_perpendicular(self) -> bool:
         if self.current_objective is None:
@@ -401,7 +409,7 @@ class StateMachine:
 
         alignement_error = target[DetectionIndex.ANGLE_DEG]
 
-        return self.update_success_frame_count(abs(alignement_error) < self.current_objective.center.alignement_tolerance)
+        return abs(alignement_error) < self.current_objective.center.alignement_tolerance
     
     
     def ekf_reset_done(self, event):
@@ -412,11 +420,11 @@ class StateMachine:
         self.ekf_resetted = reset_ekf_pose(self.node)
         return self.ekf_resetted
     
-    def center_lifespan_reached(self, event):
-        if self.current_objective.center.full_centering is False:
-            return (self.state_lifespan >= 0.5)
-        else:
-            return (self.state_lifespan >= 5.0)
+    # def center_lifespan_reached(self, event):
+    #     if self.current_objective.center.full_centering is False:
+    #         return (self.state_lifespan >= 0.5)
+    #     else:
+    #         return (self.state_lifespan >= 0.5)
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()
@@ -425,14 +433,15 @@ class StateMachine:
         self.node.get_logger().info(f'Transition: {event.transition.source} -> {event.transition.dest}, current state: {self.state}')
 
     def update_success_frame_count(self, condition):
+        # self.node.get_logger().info(f"{condition}")
         if condition:
             self.current_success_frame_count += 1
             self.node.get_logger().info(f"current success frame count {self.current_success_frame_count}")
         else: 
             self.current_success_frame_count = 0
-            self.node.get_logger().info("reset success frame count to 0")
+            # self.node.get_logger().info("reset success frame count to 0")
 
-        return self.current_success_frame_count > self.current_objective.success_frame_treshold
+        return self.current_success_frame_count >= self.current_objective.success_frame_treshold
        
     @property
     def state_lifespan(self):
