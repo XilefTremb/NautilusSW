@@ -9,8 +9,6 @@ from datetime import timedelta
 from geometry_msgs.msg import Vector3
 from scipy.spatial.transform import Rotation as R
 
-
-
 import cv2
 import depthai as dai
 import gi
@@ -22,10 +20,8 @@ import sys
 import select
 import numpy as np
 
-
 gi.require_version("Gst", "1.0")
 from gi.repository import Gst
-
 
 # =========================================================
 # CONFIG
@@ -34,16 +30,16 @@ UDP_IP = "192.168.1.10"
 UDP_PORT = 5600
 FPS = 10
 SAVE_INTERVAL = 2.0
-START_BLUE_FILTER = True
-START_DEPTH_COLOR = True
-START_OVERLAY = True
+START_BLUE_FILTER = False
+START_DEPTH_COLOR = False
+START_OVERLAY = False
 
 #DOWNWARD CAM SPECS
 DOWNWARD_CAMERA_INDEX = 0
 DOWNWARD_CAMERA_WIDTH = 1280
 DOWNWARD_CAMERA_HEIGHT = 720
 DOWNWARD_CAMERA_FPS = 8
-DOWNWARD_ROTATE_180 = True
+DOWNWARD_ROTATE_180 = False
 
 SAVE_DIR = os.path.expanduser("~/Documents/dataset")
 RGB_OAKD_DIR = os.path.join(SAVE_DIR, "rgb_oakd")
@@ -53,7 +49,6 @@ DEPTH_DIR = os.path.join(SAVE_DIR, "depth")
 os.makedirs(RGB_OAKD_DIR, exist_ok=True)
 os.makedirs(RGB_OAK1_DIR, exist_ok=True)
 os.makedirs(DEPTH_DIR, exist_ok=True)
-
 
 # =========================================================
 # ROS2 NODE
@@ -108,6 +103,17 @@ class DualOakNode(Node):
 
         # ROS loop
         self.timer = self.create_timer(0.01, self.main_loop)
+
+        self.last_rgb_ts = None
+        self.last_depth_ts = None
+        self.last_rgb_host = None
+        self.last_depth_host = None
+        self.prev_rgb_ts = None
+        self.prev_depth_ts = None
+        self.prev_rgb_host = None
+        self.prev_depth_host = None
+
+        self.create_timer(0.02, self.debug_rgb_depth_timing)
 
     # =====================================================
     # KEYBOARD CONTROL
@@ -171,8 +177,8 @@ class DualOakNode(Node):
         LEFT_SOCKET = dai.CameraBoardSocket.CAM_B
         RIGHT_SOCKET = dai.CameraBoardSocket.CAM_C
 
-        RGB_SIZE = (1280, 960)
-        MONO_SIZE = (640, 400)
+        RGB_SIZE = (1280, 960) #1280x960 pour full 960x528 pour 75% et 640x352 pour 50%
+        MONO_SIZE = (400, 400)
 
         platform = pipeline.getDefaultDevice().getPlatform()
 
@@ -188,7 +194,7 @@ class DualOakNode(Node):
             align = pipeline.create(dai.node.ImageAlign)
 
         # Same idea as Alignement.py
-        stereo.setExtendedDisparity(True)
+        stereo.setExtendedDisparity(False)
         stereo.setLeftRightCheck(True)
         stereo.setRectification(True)
 
@@ -199,7 +205,7 @@ class DualOakNode(Node):
             fps=FPS,
             enableUndistortion=True,
             type=dai.ImgFrame.Type.NV12,
-            resizeMode=dai.ImgResizeMode.STRETCH,
+            resizeMode=dai.ImgResizeMode.CROP,
         )
 
         left_out = left.requestOutput(size=MONO_SIZE, fps=FPS)
@@ -238,9 +244,19 @@ class DualOakNode(Node):
 
         sync_queue = sync.out.createOutputQueue(maxSize=1, blocking=False)
 
-        raw_depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
+        #raw_depth_queue = stereo.depth.createOutputQueue(maxSize=1, blocking=False)
 
         h264_queue = enc.bitstream.createOutputQueue(maxSize=1, blocking=False)
+
+        rgb_debug_queue = rgb_out.createOutputQueue(
+            maxSize=10,
+            blocking=False
+        )
+
+        raw_depth_queue = stereo.depth.createOutputQueue(
+            maxSize=10,
+            blocking=False
+        )
 
         # IMU Data OAKD
         imu = pipeline.create(dai.node.IMU)
@@ -253,8 +269,42 @@ class DualOakNode(Node):
         imu.setMaxBatchReports(10)
 
         imu_queue = imu.out.createOutputQueue(maxSize=10, blocking=False)
+    
+        return sync_queue, raw_depth_queue, rgb_debug_queue, h264_queue, imu_queue
 
-        return sync_queue, raw_depth_queue, h264_queue, imu_queue
+    def debug_rgb_depth_timing(self):
+        rgb_msg = self.rgb_debug_queue.tryGet()
+        depth_msg = self.raw_depth_queue.tryGet()
+
+        now = time.time()
+
+        if rgb_msg is not None:
+            rgb_ts = rgb_msg.getTimestamp().total_seconds()
+
+            if self.prev_rgb_ts is not None:
+                rgb_period_ms = (rgb_ts - self.prev_rgb_ts) * 1000.0
+                rgb_host_period_ms = (now - self.prev_rgb_host) * 1000.0
+
+                self.get_logger().info(
+                    f"RGB period | device={rgb_period_ms:.1f} ms, host={rgb_host_period_ms:.1f} ms"
+                )
+
+            self.prev_rgb_ts = rgb_ts
+            self.prev_rgb_host = now
+
+        if depth_msg is not None:
+            depth_ts = depth_msg.getTimestamp().total_seconds()
+
+            if self.prev_depth_ts is not None:
+                depth_period_ms = (depth_ts - self.prev_depth_ts) * 1000.0
+                depth_host_period_ms = (now - self.prev_depth_host) * 1000.0
+
+                self.get_logger().warn(
+                    f"DEPTH period | device={depth_period_ms:.1f} ms, host={depth_host_period_ms:.1f} ms"
+                )
+
+            self.prev_depth_ts = depth_ts
+            self.prev_depth_host = now
 
     # =====================================================
     # DEVICE SETUP
@@ -289,16 +339,21 @@ class DualOakNode(Node):
             cameras = device.getConnectedCameras()
 
             if len(cameras) > 1:
-                sync_q, depth_q, h264_q, imu_q = self.create_oakd_pipeline(pipeline)
+                sync_q, depth_q, rgb_debug_q, h264_q, imu_q = self.create_oakd_pipeline(pipeline)
                 pipeline.start()
+
+                self.rgb_debug_queue = rgb_debug_q
+                self.raw_depth_queue = depth_q
 
                 self.devices_data.append({
                     "type": "oakd",
                     "sync": sync_q,
                     "raw_depth": depth_q,
+                    "rgb_debug": rgb_debug_q,
                     "h264": h264_q,
                     "imu": imu_q,
                 })
+                
 
 
     # =====================================================
@@ -316,9 +371,42 @@ class DualOakNode(Node):
                 sync_pkt = self.get_latest(dev["sync"])
                 imu_pkt = self.get_latest(dev["imu"])
 
+                raw_depth_pkt = self.get_latest(dev["raw_depth"])
+
+                if raw_depth_pkt is not None:
+                    raw_depth_ts = raw_depth_pkt.getTimestampDevice()
+                    raw_depth_host = time.time()
+
+                    if not hasattr(self, "last_raw_depth_device_ts"):
+                        self.last_raw_depth_device_ts = raw_depth_ts
+                        self.last_raw_depth_host_ts = raw_depth_host
+                    else:
+                        raw_depth_device_period_ms = (
+                            raw_depth_ts - self.last_raw_depth_device_ts
+                        ).total_seconds() * 1000.0
+
+                        raw_depth_host_period_ms = (
+                            raw_depth_host - self.last_raw_depth_host_ts
+                        ) * 1000.0
+
+                        self.get_logger().warn(
+                            f"RAW DEPTH period | device={raw_depth_device_period_ms:.1f} ms, "
+                            f"host={raw_depth_host_period_ms:.1f} ms"
+                        )
+
+                        self.last_raw_depth_device_ts = raw_depth_ts
+                        self.last_raw_depth_host_ts = raw_depth_host
+
                 if sync_pkt is not None:
                     rgb_msg = sync_pkt["rgb"]
                     depth_msg = sync_pkt["depth_aligned"]
+
+                    rgb_ts = rgb_msg.getTimestampDevice()
+                    depth_ts = depth_msg.getTimestampDevice()
+
+                    delta_ms = abs((rgb_ts - depth_ts).total_seconds()) * 1000.0
+
+                    self.get_logger().info(f"RGB-DEPTH delta = {delta_ms:.2f} ms")
 
                     frame_rgb = rgb_msg.getCvFrame()
                     frame_depth = depth_msg.getFrame()
@@ -332,17 +420,17 @@ class DualOakNode(Node):
                     self.rgb_oakd_latest = frame_rgb
                     self.depth_latest = frame_depth
 
-                    # Publish RGB
+                    # Publish YOLO input first; keep the blue filter on the frame the model sees.
                     self.rgb_pub.publish(
                         self.bridge.cv2_to_imgmsg(frame_rgb, "bgr8")
                     )
 
-                    # Publish aligned depth
+                    # Publish aligned depth immediately as well.
                     self.depth_pub.publish(
                         self.bridge.cv2_to_imgmsg(frame_depth, "16UC1")
                     )
 
-                    # Publish color depth
+                    # Defer expensive color/overlay work to after the raw topics are already published.
                     if START_DEPTH_COLOR:
                         depth_color = self.depth_to_colormap(
                             frame_depth,
@@ -353,7 +441,6 @@ class DualOakNode(Node):
                             self.bridge.cv2_to_imgmsg(depth_color, "bgr8")
                         )
 
-                        # Publish overlay RGB + depth
                         if START_OVERLAY:
                             if depth_color.shape[:2] != frame_rgb.shape[:2]:
                                 depth_color = cv2.resize(
@@ -420,18 +507,18 @@ class DualOakNode(Node):
 
             # Camera downward
             # =================================================
-            elif dev["type"] == "downward_usb":
-                ret, frame = self.usb_cap.read()
+            # elif dev["type"] == "downward_usb":
+            #     ret, frame = self.usb_cap.read()
 
-                if ret:
-                    if DOWNWARD_ROTATE_180:
-                        frame = cv2.rotate(frame, cv2.ROTATE_180)
+            #     if ret:
+            #         if DOWNWARD_ROTATE_180:
+            #             frame = cv2.rotate(frame, cv2.ROTATE_180)
 
-                    self.rgb_oak1_latest = frame
-                    self.rgb1_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
-                elif now - self.last_downward_warn_time > 2.0:
-                    self.get_logger().warn("USB downward camera: frame non reçue")
-                    self.last_downward_warn_time = now
+            #         self.rgb_oak1_latest = frame
+            #         self.rgb1_pub.publish(self.bridge.cv2_to_imgmsg(frame, "bgr8"))
+            #     elif now - self.last_downward_warn_time > 2.0:
+            #         self.get_logger().warn("USB downward camera: frame non reçue")
+            #         self.last_downward_warn_time = now
 
             # =================================================
             # H264 UDP stream switchable

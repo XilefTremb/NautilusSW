@@ -10,17 +10,6 @@ find_package(ament_cmake_python REQUIRED)
 #  Install.
 
 # Install project launch files.
-install(
-  DIRECTORY
-    launch/
-  DESTINATION share/${PROJECT_NAME}/launch
-)
-
-# install(
-#   DIRECTORY
-#     enums/
-#   DESTINATION share/${PROJECT_NAME}/enums
-# )
 
 install(
   DIRECTORY
@@ -33,6 +22,13 @@ install(
     nautilus_mission/master_node.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME master_node
+)
+
+install(
+  PROGRAMS
+    nautilus_mission/rosbag_recorder.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME rosbag_recorder
 )
 
 ament_python_install_package(${PROJECT_NAME})

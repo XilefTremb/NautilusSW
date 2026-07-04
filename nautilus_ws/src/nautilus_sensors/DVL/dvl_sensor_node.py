@@ -146,7 +146,7 @@ class DVLSensor(Node):
 
             self.dvl_pub.publish(twist_msg)
 
-            self.SendDVLAsGps(t_usec, dt_usec, droll, dpitch, dyaw, dx, dy, dz, confidence) #TODO : verify send dvl as gps takes usecs
+            # self.SendDVLAsGps(t_usec, dt_usec, droll, dpitch, dyaw, dx, dy, dz, confidence) #TODO : verify send dvl as gps takes usecs
 
             self.get_logger().info(f"Sent DVL data t:{t_usec}, dt:{dt_usec}, dx:{dx}, dy:{dy}, dz:{dz}, confidence:{confidence}")
 

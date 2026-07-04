@@ -27,6 +27,13 @@ install(
 )
 
 install(
+  PROGRAMS
+    nautilus_controls/joy_servo_node.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME joy_servo_node
+)
+
+install(
   DIRECTORY
     launch/
   DESTINATION share/${PROJECT_NAME}/launch
