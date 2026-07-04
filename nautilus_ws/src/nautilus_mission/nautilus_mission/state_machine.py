@@ -281,7 +281,29 @@ class StateMachine:
             self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)  
         
     def spin_search(self):
-        cmd = self.current_objective.search.spin_pwm
+        gate_like_ids = [ObjectID.GATE_MID_RIGHT, ObjectID.GATE_LEFT_MID]
+        gate_id = next((id for id in self.target_ids if id in gate_like_ids), None)
+        spin_amplitude = abs(self.current_objective.search.spin_pwm-1500)
+        if gate_id is not None:
+            if gate_id == ObjectID.GATE_LEFT_MID:
+                if self.is_target_present([ObjectID.GATE_LEG_L]):
+                    cmd = 1500 + spin_amplitude
+                elif self.is_target_present([ObjectID.GATE_LEG_CENTER]):
+                    cmd = 1500 - spin_amplitude
+                else:
+                    cmd = self.current_objective.search.spin_pwm
+
+            elif gate_id == ObjectID.GATE_MID_RIGHT:
+                if self.is_target_present([ObjectID.GATE_LEG_CENTER]):
+                    cmd = 1500 + spin_amplitude
+                elif self.is_target_present([ObjectID.GATE_LEG_R]):
+                    cmd = 1500 - spin_amplitude
+                else:
+                    cmd = self.current_objective.search.spin_pwm
+
+        else:
+            cmd = self.current_objective.search.spin_pwm
+
         self.node.publish_yaw_cmd(cmd)
         if self.current_objective.center.center_bottom:
             self.node.publish_forward_cmd(1510)
@@ -351,25 +373,29 @@ class StateMachine:
         
         return False
 
-    def is_target_present(self, IDs = None) -> bool:
-        if IDs is None:
-            IDs = self.target_ids
+    def is_target_present(self, ids=None) -> bool:
+        ids = self.target_ids if ids is None else ids
+        return self.detection_store.get_detection(ids) is not None
 
-        return self.detection_store.get_detection(IDs) is not None
 
-    def is_target_lost_filtered(self) -> bool:
-        if self.is_target_present():
+    def is_target_lost_filtered(self, ids=None) -> bool:
+        ids = self.target_ids if ids is None else ids
+
+        if self.is_target_present(ids):
             self.target_missing_count = 0
             return False
 
         self.target_missing_count += 1
         return self.target_missing_count >= self.target_missing_limit
 
-    def is_target_centered(self) -> bool:
+
+    def is_target_centered(self, ids=None) -> bool:
+        ids = self.target_ids if ids is None else ids
+
         if self.current_objective is None:
             return False
 
-        target = self.detection_store.get_detection(self.target_ids)
+        target = self.detection_store.get_detection(ids)
         if target is None:
             return False
         
@@ -386,11 +412,14 @@ class StateMachine:
         else :
             return abs(px) < self.current_objective.center.x_center_tolerance_fov
 
-    def is_target_approached(self) -> bool:
+
+    def is_target_approached(self, ids=None) -> bool:
+        ids = self.target_ids if ids is None else ids
+
         if self.current_objective is None:
             return False
 
-        target = self.detection_store.get_detection(self.target_ids)
+        target = self.detection_store.get_detection(ids)
         if target is None:
             return False
 
@@ -399,11 +428,14 @@ class StateMachine:
 
         return depth < self.current_objective.approach.approach_distance_mm
 
-    def is_target_perpendicular(self) -> bool:
+
+    def is_target_perpendicular(self, ids=None) -> bool:
+        ids = self.target_ids if ids is None else ids
+
         if self.current_objective is None:
             return False
 
-        target = self.detection_store.get_detection(self.target_ids)
+        target = self.detection_store.get_detection(ids)
         if target is None:
             return False
 
