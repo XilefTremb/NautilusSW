@@ -200,7 +200,7 @@ approach_dropper = Objective(
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=False,
-        center_tolerance_fov=0.05
+        x_center_tolerance_fov=0.05
     ),
     approach=ApproachConfig(
         approach_distance_mm=1000.0
@@ -234,7 +234,7 @@ launch_second_dropper = Objective(
     # target_auv_depth_m = 0.25,
     center=CenterConfig(
         full_centering=False,
-        center_tolerance_fov=0.05,
+        x_center_tolerance_fov=0.05,
         center_bottom=True,
         target_offset_x=-0.25,
         target_offset_y=0.25,
@@ -330,9 +330,9 @@ test_depth = Objective(name="changeDepth",
 target_auv_depth_m = 1.0
 )
 
-#mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
+mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
 # mission_list = [test_depth]
-mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
+# mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
 

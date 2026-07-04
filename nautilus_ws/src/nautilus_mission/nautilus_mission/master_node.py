@@ -61,7 +61,7 @@ class MasterNode(Node):
         self.yaw_reset_client = self.create_client(Trigger, '/pid_forward_cam_yaw/reset_pid')
         self.forward_reset_client = self.create_client(Trigger, '/pid_forward_cam_forward/reset_pid')
         self.lateral_reset_client = self.create_client(Trigger, '/pid_forward_cam_lateral/reset_pid')
-        self.forward_ekf_reset_client = self.create_client(Trigger, '/pid_forward_cam_ekf/reset_pid')
+        self.forward_ekf_reset_client = self.create_client(Trigger, '/pid_forward_ekf/reset_pid')
 
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)

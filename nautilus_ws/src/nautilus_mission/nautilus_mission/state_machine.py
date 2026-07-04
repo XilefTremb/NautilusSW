@@ -274,7 +274,7 @@ class StateMachine:
         
     def spin_search(self):
         gate_like_ids = [ObjectID.GATE_MID_RIGHT, ObjectID.GATE_LEFT_MID]
-        gate_id = next((id for id in self.current_objective.target_ids if id in gate_like_ids), None)
+        gate_id = next((id for id in self.target_ids if id in gate_like_ids), None)
         spin_amplitude = abs(self.current_objective.search.spin_pwm-1500)
         if gate_id is not None:
             if gate_id == ObjectID.GATE_LEFT_MID:
@@ -292,7 +292,7 @@ class StateMachine:
                     cmd = 1500 - spin_amplitude
                 else:
                     cmd = self.current_objective.search.spin_pwm
-                    
+
         else:
             cmd = self.current_objective.search.spin_pwm
 
