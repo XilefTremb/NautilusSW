@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import sys
-use_sim = '--sim' in sys.argv
-
+import argparse
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
@@ -20,7 +18,7 @@ from std_srvs.srv import Trigger
 
 
 class MasterNode(Node):
-    def __init__(self):
+    def __init__(self, use_sim=False):
         super().__init__('master_node')
 
         fast_qos = QoSProfile(
@@ -156,9 +154,14 @@ class MasterNode(Node):
         self.bottom_cam_forward_error_pub.publish(msg)
 
 def main(args=None):
-    rclpy.init(args=args)
 
-    node = MasterNode()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sim", action="store_true")
+    parsed_args, ros_args = parser.parse_known_args(args)
+
+    rclpy.init(args=ros_args)
+
+    node = MasterNode(use_sim=parsed_args.sim)
 
     recorder = RosbagRecorder(node)
     recorder.start()
