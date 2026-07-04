@@ -180,6 +180,18 @@ class StateMachine:
                 else :
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
+        if 'slalom' in self.current_objective.name:
+            positions = self.detection_store.role_positions
+            if positions is None:
+                self.node.get_logger().warn('Role choice unavailable')
+                self.target_ids = None
+            else:
+                
+                if positions[0] == self.role_choice :
+                    self.target_ids = [ObjectID.SLALOM_MID_RIGHT]
+                else :
+                    self.target_ids = [ObjectID.SLALOM_LEFT_MID]
+
         elif self.current_objective.action.type is self.ActionType.LAUNCH_DROPPER :
             if self.current_objective.action.launch_second_dropper:
                 self.target_ids = [self.second_dropper_choice]
