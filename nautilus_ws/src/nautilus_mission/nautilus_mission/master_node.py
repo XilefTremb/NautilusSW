@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import sys
+use_sim = '--sim' in sys.argv
+
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
@@ -27,7 +30,7 @@ class MasterNode(Node):
         )
 
         self.detection_store = DetectionStore(self.get_logger())
-        self.fsm = StateMachine(self, self.detection_store)
+        self.fsm = StateMachine(self, self.detection_store, use_sim=use_sim)
         self.vision_controller = VisionController(self)
 
         # Subscribers

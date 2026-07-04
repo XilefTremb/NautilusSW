@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import time
 from typing import Optional
 
@@ -12,17 +13,20 @@ from enums.DetectionIndex import DetectionIndex
 from enums.ServoEnum import ServoEnum
 
 from .detection_store import DetectionStore
-from .mission_objectives import mission_list, Objective, ActionType
 from .ekf_reset import reset_ekf_pose
 from nautilus_services import request_depth_change, reset_pids
-
 
 class StateMachine:
     """Mission decision logic only. No ROS subscriptions and no vision error calculation."""
 
-    def __init__(self, node: Node, detection_store: DetectionStore):
+    def __init__(self, node: Node, detection_store: DetectionStore, use_sim: bool):
         self.node = node
         self.detection_store = detection_store
+
+        if use_sim:
+            from .mission_objectives_sim import mission_list, Objective, ActionType
+        else:
+            from .mission_objectives import mission_list, Objective, ActionType
 
         self.objectives : list[Objective] = mission_list
         self.role_choice = ObjectID.SOS_SAFETY
