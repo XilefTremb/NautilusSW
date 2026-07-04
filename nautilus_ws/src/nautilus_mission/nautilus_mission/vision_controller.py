@@ -42,13 +42,16 @@ class VisionController:
         if target_detection is None:
             return
 
-        px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
+        cx = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
+        cy = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y]
         angle = target_detection[DetectionIndex.ANGLE_DEG]
 
         forward_error, lateral_error = self.split_angle(angle)
         self.node.publish_forward_error(forward_error)
         self.node.publish_lateral_error(lateral_error)
-        self.node.publish_yaw_error(float(px))
+        self.node.publish_yaw_error(float(cx))
+        self.node.publish_throttle_error(float(cy))
+
 
     def center_bottom(self, target_detection):
         if target_detection is None:
@@ -83,8 +86,10 @@ class VisionController:
         if target_detection is None:
             return
         
-        px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
-        self.node.publish_yaw_error(float(px))
+        cx = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
+        cy = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y]
+        self.node.publish_yaw_error(float(cx))
+        self.node.publish_throttle_error(float(cy))
 
     def center_dropper(self, target_detection):
         if target_detection is None:
