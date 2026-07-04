@@ -89,7 +89,7 @@ class Objective:
 approach_gate = Objective(
     name='approachGate',
     target_ids=[ObjectID.GATE_LEG_CENTER],
-    target_auv_depth_m = 0.9, #1.45
+    # target_auv_depth_m = 0.9, #1.45
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         x_center_tolerance_fov=0.2,
@@ -137,7 +137,7 @@ slalom1 = Objective(
     name='slalom1',
     success_frame_treshold=3,
     detections_depth_filter_mm = 2000,
-    target_auv_depth_m = 2.6,
+    # target_auv_depth_m = 2.6,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=True,
@@ -156,7 +156,7 @@ slalom2 = Objective(
     name='slalom2',
     success_frame_treshold=3,
     detections_depth_filter_mm = 1500,
-    search=SearchConfig(spin_pwm=1540),
+    search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         x_center_tolerance_fov=0.1,
     ),
@@ -172,7 +172,7 @@ slalom3 = Objective(
     name='slalom3',
     success_frame_treshold=3,
     detections_depth_filter_mm = 2000,
-    search=SearchConfig(spin_pwm=1460),
+    search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         x_center_tolerance_fov=0.1,
     ),
@@ -254,7 +254,7 @@ coarse_approach_torpedo = Objective(
 torpedo_depth_change = Objective(
          name='torpedoDepthChange',
          target_ids=None,
-         target_auv_depth_m=1.5,
+        #  target_auv_depth_m=1.5,
          action=NoAction()
      )
 
@@ -303,13 +303,8 @@ torpedo_firing_positioning_2 = Objective(
     ),
 )
 
-test_depth = Objective(name="changeDepth",
-target_auv_depth_m = 1.0
-)
-
 mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-# mission_list = [test_depth]
 # mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
 

@@ -171,7 +171,7 @@ class StateMachine:
             positions = self.detection_store.role_positions
 
             if positions is None:
-                self.node.get_logger().warn('Role choice unavailable')
+                self.node.get_logger().warn('Role choice unavailable for chooseGateSide')
                 self.target_ids = None
             else:
                 
@@ -180,10 +180,10 @@ class StateMachine:
                 else :
                     self.target_ids = [ObjectID.GATE_MID_RIGHT]
 
-        if 'slalom' in self.current_objective.name:
+        elif 'slalom' in self.current_objective.name:
             positions = self.detection_store.role_positions
             if positions is None:
-                self.node.get_logger().warn('Role choice unavailable')
+                self.node.get_logger().warn('Role choice unavailable for slalom')
                 self.target_ids = None
             else:
                 
@@ -212,7 +212,7 @@ class StateMachine:
 
         elif self.current_objective.name == "traverseGate":
             if self.target_ids is None:
-                self.node.get_logger().warn('Role choice unavailable')
+                self.node.get_logger().warn('Role choice unavailable for traverseGate')
                 self.target_ids = None
         else:
             self.target_ids = self.current_objective.target_ids
