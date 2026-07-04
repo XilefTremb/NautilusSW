@@ -273,7 +273,7 @@ class StateMachine:
             self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)  
         
     def spin_search(self):
-        gate_like_ids = [ObjectID.GATE_MID_RIGHT, ObjectID.GATE_LEFT_MID, ObjectID.SLALOM_LEFT_MID, ObjectID.SLALOM_MID_RIGHT]
+        gate_like_ids = [ObjectID.GATE_MID_RIGHT, ObjectID.GATE_LEFT_MID]
         gate_id = next((id for id in self.current_objective.target_ids if id in gate_like_ids), None)
         spin_amplitude = abs(self.current_objective.search.spin_pwm-1500)
         if gate_id is not None:
@@ -292,22 +292,7 @@ class StateMachine:
                     cmd = 1500 - spin_amplitude
                 else:
                     cmd = self.current_objective.search.spin_pwm
-
-            elif gate_id == ObjectID.SLALOM_LEFT_MID:
-                if self.is_target_present([ObjectID.SLALOM_LEFT]):
-                    cmd = 1500 + spin_amplitude
-                elif self.is_target_present([ObjectID.SLALOM_CENTER]):
-                    cmd = 1500 - spin_amplitude
-                else:
-                    cmd = self.current_objective.search.spin_pwm
-
-            elif gate_id == ObjectID.SLALOM_MID_RIGHT:
-                if self.is_target_present([ObjectID.SLALOM_CENTER]):
-                    cmd = 1500 + spin_amplitude
-                elif self.is_target_present([ObjectID.SLALOM_RIGHT]):
-                    cmd = 1500 - spin_amplitude
-                else:
-                    cmd = self.current_objective.search.spin_pwm
+                    
         else:
             cmd = self.current_objective.search.spin_pwm
 
