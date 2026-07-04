@@ -19,9 +19,10 @@ from nautilus_services import request_depth_change, reset_pids
 class StateMachine:
     """Mission decision logic only. No ROS subscriptions and no vision error calculation."""
 
-    def __init__(self, node: Node, detection_store: DetectionStore, use_sim: bool):
+    def __init__(self, node: Node, detection_store: DetectionStore, use_sim: bool, mission_offset_timer: float = 0.0):
         self.node = node
         self.detection_store = detection_store
+        self.mission_offset_timer = mission_offset_timer
 
         if use_sim:
             from .mission_objectives_sim import mission_list, Objective, ActionType

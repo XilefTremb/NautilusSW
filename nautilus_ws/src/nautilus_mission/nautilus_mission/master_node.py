@@ -2,6 +2,7 @@
 
 import argparse
 import rclpy
+import time
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 
@@ -16,10 +17,11 @@ from nautilus_mission.rosbag_recorder import RosbagRecorder
 from robot_localization.srv import SetPose
 from std_srvs.srv import Trigger
 
-
 class MasterNode(Node):
-    def __init__(self, use_sim=False):
+    def __init__(self, args):
         super().__init__('master_node')
+        
+        time.sleep(args.timer) 
 
         fast_qos = QoSProfile(
             history=HistoryPolicy.KEEP_LAST,
@@ -28,7 +30,7 @@ class MasterNode(Node):
         )
 
         self.detection_store = DetectionStore(self.get_logger())
-        self.fsm = StateMachine(self, self.detection_store, use_sim=use_sim)
+        self.fsm = StateMachine(self, self.detection_store, use_sim=args.use_sim)
         self.vision_controller = VisionController(self)
 
         # Subscribers
@@ -172,11 +174,12 @@ def main(args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--sim", action="store_true")
+    parser.add_argument("--timer", type=float, default=0.0)
     parsed_args, ros_args = parser.parse_known_args(args)
 
     rclpy.init(args=ros_args)
 
-    node = MasterNode(use_sim=parsed_args.sim)
+    node = MasterNode(parsed_args)
 
     # recorder = RosbagRecorder(node)
     # recorder.start()
