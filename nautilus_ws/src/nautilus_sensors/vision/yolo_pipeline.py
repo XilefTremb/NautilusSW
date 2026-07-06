@@ -279,7 +279,10 @@ class YoloNode(Node):
                 dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "downward")
                 dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "downward")
 
-                payload.extend([float(object_id), float(dist_center_x), -1.0, 0.0, float(dist_center_y)])
+                width = float(x2 - x1)
+                height = float(y2 - y1)
+
+                payload.extend([float(object_id), float(dist_center_x), -1.0, 0.0, float(dist_center_y), width, height])
 
                 # -------- PAYLOAD + DRAW --------
                 draw_detection(
@@ -297,11 +300,11 @@ class YoloNode(Node):
                 msg = Float32MultiArray()
                 msg.data = payload
 
-                nb_objects = len(payload) // 5
+                nb_objects = len(payload) // 7
 
                 msg.layout.dim = [
                     MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-                    MultiArrayDimension(label='fields', size=5, stride=5)
+                    MultiArrayDimension(label='fields', size=7, stride=7)
                 ]
                 msg.layout.data_offset = 0
 
@@ -345,6 +348,9 @@ class YoloNode(Node):
                 x2 = int(np.clip(x2, 0, w - 1))
                 y1 = int(np.clip(y1, 0, w - 1))
                 y2 = int(np.clip(y2, 0, w - 1))
+
+                width = float(x2 - x1)
+                height = float(y2 - y1)
 
                 # ----------- CLASS / CONF -----------
                 object_id = int(box.cls[0])
@@ -412,6 +418,8 @@ class YoloNode(Node):
                         "y1": y1,
                         "x2": x2,
                         "y2": y2,
+                        "width": width,
+                        "height": height,
                         "points": points
                     })
                     continue
@@ -428,6 +436,8 @@ class YoloNode(Node):
                         "y1": y1,
                         "x2": x2,
                         "y2": y2,
+                        "width": width,
+                        "height": height,
                         "points": points
                     })
                     continue
@@ -467,6 +477,8 @@ class YoloNode(Node):
                         "y1": y1,
                         "x2": x2,
                         "y2": y2,
+                        "width": width,
+                        "height": height,
                         "points": points}
 
                 else:
@@ -484,14 +496,20 @@ class YoloNode(Node):
                     )
 
         for object_id, obj in objects.items():
+            if object_id == ObjectID.TORPEDO:
+                w = obj["width"]
+                h = obj["height"]
+            else:
+                w = 0.0
+                h = 0.0
             if obj["depth"] < self.depth_threshold:
                 angle = 0.0
                 if object_id == ObjectID.TORPEDO:
                     angle = find_angle_torpedo(objects)
                     #self.get_logger().info(f"angle_torpedo={angle}")
-                    payload.extend([float(object_id), float(obj["dist_center_x"]), float(obj["depth"]), angle, float(obj["dist_center_y"])])
+                    payload.extend([float(object_id), float(obj["dist_center_x"]), float(obj["depth"]), angle, float(obj["dist_center_y"]), float(w), float(h)])
                 else:
-                    payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"])])
+                    payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"]), float(w), float(h)])
 
 
                 draw_detection(
@@ -536,11 +554,11 @@ class YoloNode(Node):
         # -------- PUBLISH DETECTION --------
         msg = Float32MultiArray()
         msg.data = payload
-        nb_objects = len(payload) // 5
+        nb_objects = len(payload) // 7
 
         msg.layout.dim = [
             MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-            MultiArrayDimension(label='fields', size=5, stride=5)]
+            MultiArrayDimension(label='fields', size=7, stride=7)]
         msg.layout.data_offset = 0
 
         if payload:
