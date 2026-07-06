@@ -61,6 +61,10 @@ class StateMachine:
         self.state_start_time = time.monotonic()
         self.execute_action_start_time = None
 
+        self.current_objective_lifetime_s = 0.0
+        self.current_objective_start_time_s = 0.0
+        self.objective_timeout_s = 5 * 60
+
         states = [
             'IDLE',
             'LOAD_OBJECTIVE',
@@ -96,6 +100,10 @@ class StateMachine:
         )
 
     def tick(self):
+        self.current_objective_lifetime_s = time.monotonic() - self.current_objective_start_time_s
+        if self.current_objective_lifetime_s > self.objective_timeout_s and self.state is not 'MISSION_COMPLETE':
+            self.skip_to_next_objective()
+
         if self.state == 'LOAD_OBJECTIVE':
             self.load_next_objective()
 
@@ -166,6 +174,8 @@ class StateMachine:
 
     def load_current_objective(self, event):
         self.current_objective = self.objectives[self.objective_index]
+        self.current_objective_start_time_s = time.monotonic()
+        self.current_objective_lifetime_s = 0.0
 
         if self.current_objective.action.type == self.ActionType.CHOOSE_GATE_SIDE:
             self.detection_store.save_role = False

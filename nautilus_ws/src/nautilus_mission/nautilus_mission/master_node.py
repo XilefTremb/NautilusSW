@@ -28,7 +28,7 @@ class MasterNode(Node):
         )
 
         self.detection_store = DetectionStore(self.get_logger())
-        self.fsm = StateMachine(self, self.detection_store, use_sim=args.use_sim)
+        self.fsm = StateMachine(self, self.detection_store, use_sim=args.sim)
         self.vision_controller = VisionController(self)
 
         # Subscribers
@@ -175,7 +175,7 @@ def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--sim", action="store_true")
     parser.add_argument("--timer", type=float, default=0.0)
-    parsed_args, ros_args = parser.parse_known_args(args)
+    parsed_args, ros_args = parser.parse_known_args()
 
     rclpy.init(args=ros_args)
 
