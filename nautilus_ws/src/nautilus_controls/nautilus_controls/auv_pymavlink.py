@@ -574,7 +574,7 @@ class AuvPymavlink:
             0, 0,
             mavutil.mavlink.MAV_FRAME_GLOBAL,
             self.depth_mask,
-            0, 0, -depth, 
+            0, 0, depth, 
             0, 0, 0, #vx vy vz
             0, 0, 0, #ax ay az
             0, 0) #yaw yawrate
