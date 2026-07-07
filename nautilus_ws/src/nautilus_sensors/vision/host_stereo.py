@@ -127,7 +127,21 @@ class HostStereoDepth:
         E_left_to_right = self.calib.getCameraExtrinsics(self.left_socket, self.right_socket)
         self.R_left_to_right, t_lr_raw = self._extrinsic_rt(E_left_to_right)
         self.t_left_to_right_mm = self._translation_to_mm(t_lr_raw)
-        self.baseline_mm = float(np.linalg.norm(self.t_left_to_right_mm))
+
+        # Baseline: prefer the calibrated value reported by DepthAI (returned in cm)
+        # rather than the unit-guessing norm, which can silently mis-scale depth.
+        try:
+            baseline_cm = self.calib.getBaselineDistance(
+                self.right_socket,
+                self.left_socket,
+                useSpecTranslation=False,
+            )
+            self.baseline_mm = abs(float(baseline_cm)) * 10.0
+            if self.baseline_mm <= 0.0:
+                raise ValueError(f"non-positive baseline {self.baseline_mm}")
+        except Exception as exc:
+            self._warn(f"getBaselineDistance failed ({exc}); falling back to extrinsic norm")
+            self.baseline_mm = float(np.linalg.norm(self.t_left_to_right_mm))
 
         # Left -> RGB transform, used to align depth into RGB frame.
         E_left_to_rgb = self.calib.getCameraExtrinsics(self.left_socket, self.rgb_socket)

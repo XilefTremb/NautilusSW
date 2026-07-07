@@ -20,7 +20,6 @@ from scipy.spatial.transform import Rotation as R
 from sensor_msgs.msg import Image, Imu
 
 from vision.blue_filter import blue_filter
-from vision.img_manipulation import *
 from vision.host_stereo import HostStereoDepth
 
 gi.require_version("Gst", "1.0")
@@ -61,7 +60,6 @@ DEPTH_DIR = os.path.join(SAVE_DIR, "depth")
 os.makedirs(RGB_OAKD_DIR, exist_ok=True)
 os.makedirs(RGB_OAK1_DIR, exist_ok=True)
 os.makedirs(DEPTH_DIR, exist_ok=True)
-
 
 # =========================================================
 # ROS2 NODE
@@ -341,6 +339,12 @@ class DualOakNode(Node):
         """
         dev = self.oakd_dev
 
+        # The three camera streams are free-running and drained independently each tick,
+        # so they rarely land in the same loop iteration. Persist the most recent left/right
+        # frames and drive processing off RGB arrival.
+        last_left = None
+        last_right = None
+
         while not self.shutdown_event.is_set() and rclpy.ok():
             try:
                 rgb_msg = self.get_latest(dev["rgb"])
@@ -348,8 +352,13 @@ class DualOakNode(Node):
                 right_msg = self.get_latest(dev["right"])
                 imu_pkt = self.get_latest(dev["imu"])
 
-                if rgb_msg is not None and left_msg is not None and right_msg is not None:
-                    self.handle_oakd_host_stereo_packet(rgb_msg, left_msg, right_msg)
+                if left_msg is not None:
+                    last_left = left_msg
+                if right_msg is not None:
+                    last_right = right_msg
+
+                if rgb_msg is not None:
+                    self.handle_oakd_host_stereo_packet(rgb_msg, last_left, last_right)
 
                 if imu_pkt is not None:
                     self.handle_imu_packet(imu_pkt)
@@ -362,6 +371,29 @@ class DualOakNode(Node):
 
     def handle_oakd_host_stereo_packet(self, rgb_msg, left_msg, right_msg):
         # Host-side replacement for DepthAI Sync. More forgiving, like Luxonis suggested.
+        # RGB path always runs, independent of stereo sync. This keeps the ROS RGB topic
+        # and the host UDP stream flowing even when left/right/depth cannot be synced.
+        frame_rgb = rgb_msg.getCvFrame()
+        frame_rgb = cv2.rotate(frame_rgb, cv2.ROTATE_180)
+
+        if START_BLUE_FILTER:
+            frame_rgb = blue_filter(frame_rgb)
+
+        now_stamp = self.get_clock().now().to_msg()
+
+        rgb_ros_msg = self.bridge.cv2_to_imgmsg(frame_rgb, "bgr8")
+        rgb_ros_msg.header.stamp = now_stamp
+        rgb_ros_msg.header.frame_id = "oakd_rgb_frame"
+        self.rgb_pub.publish(rgb_ros_msg)
+
+        with self.latest_lock:
+            self.rgb_oakd_latest = frame_rgb
+
+        # Depth path is gated: it needs both mono frames, the host stereo backend,
+        # and the three frames closely aligned in time.
+        if left_msg is None or right_msg is None or self.host_stereo is None:
+            return
+
         rgb_ts = rgb_msg.getTimestampDevice()
         left_ts = left_msg.getTimestampDevice()
         right_ts = right_msg.getTimestampDevice()
@@ -374,36 +406,20 @@ class DualOakNode(Node):
 
         if max_dt > 0.05:
             if LOG_CAMERA_TIMING:
-                self.get_logger().warn(f"OAK-D host sync rejected, max_dt={max_dt * 1000.0:.1f} ms")
+                self.get_logger().warn(f"OAK-D depth sync rejected, max_dt={max_dt * 1000.0:.1f} ms")
             return
 
-        frame_rgb = rgb_msg.getCvFrame()
         frame_left = left_msg.getCvFrame()
         frame_right = right_msg.getCvFrame()
 
-        if self.host_stereo is None:
-            self.get_logger().warn("HostStereoDepth is not initialized; skipping OAK-D frame")
-            return
-
         # IMPORTANT: compute depth/alignment before rotation because calibration is for
-        # the camera-native orientation. Then rotate RGB and depth together afterward.
+        # the camera-native orientation. Then rotate depth to match the rotated RGB.
         frame_depth, _disparity, _depth_left = self.host_stereo.compute_depth_aligned_to_rgb(
             frame_left,
             frame_right,
         )
 
-        frame_rgb = cv2.rotate(frame_rgb, cv2.ROTATE_180)
         frame_depth = cv2.rotate(frame_depth, cv2.ROTATE_180)
-
-        if START_BLUE_FILTER:
-            frame_rgb = blue_filter(frame_rgb)
-
-        now_stamp = self.get_clock().now().to_msg()
-
-        rgb_ros_msg = self.bridge.cv2_to_imgmsg(frame_rgb, "bgr8")
-        rgb_ros_msg.header.stamp = now_stamp
-        rgb_ros_msg.header.frame_id = "oakd_rgb_frame"
-        self.rgb_pub.publish(rgb_ros_msg)
 
         depth_ros_msg = self.bridge.cv2_to_imgmsg(frame_depth, "16UC1")
         depth_ros_msg.header.stamp = now_stamp
@@ -411,7 +427,6 @@ class DualOakNode(Node):
         self.depth_pub.publish(depth_ros_msg)
 
         with self.latest_lock:
-            self.rgb_oakd_latest = frame_rgb
             self.depth_latest = frame_depth
             self.pending_viz_rgb = frame_rgb
             self.pending_viz_depth = frame_depth
