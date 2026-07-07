@@ -2,6 +2,7 @@
 
 import argparse
 import rclpy
+import time
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 
@@ -16,9 +17,8 @@ from nautilus_mission.rosbag_recorder import RosbagRecorder
 from robot_localization.srv import SetPose
 from std_srvs.srv import Trigger
 
-
 class MasterNode(Node):
-    def __init__(self, use_sim=False):
+    def __init__(self, args):
         super().__init__('master_node')
 
         fast_qos = QoSProfile(
@@ -28,7 +28,7 @@ class MasterNode(Node):
         )
 
         self.detection_store = DetectionStore(self.get_logger())
-        self.fsm = StateMachine(self, self.detection_store, use_sim=use_sim)
+        self.fsm = StateMachine(self, self.detection_store, use_sim=args.sim)
         self.vision_controller = VisionController(self)
 
         # Subscribers
@@ -67,9 +67,11 @@ class MasterNode(Node):
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
 
-        self.get_logger().info('Master mission + vision node started.')
-
+        self.get_logger().info(f'Mission will start in {args.timer} seconds.')
+        time.sleep(args.timer) 
         self.fsm.start_mission()
+
+        self.get_logger().info('Master mission + vision node started.')
 
     def fwd_detection_callback(self, msg: Float32MultiArray):
         if not self.detection_store.update_from_msg(msg):
@@ -172,11 +174,12 @@ def main(args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--sim", action="store_true")
-    parsed_args, ros_args = parser.parse_known_args(args)
+    parser.add_argument("--timer", type=float, default=0.0)
+    parsed_args, ros_args = parser.parse_known_args()
 
     rclpy.init(args=ros_args)
 
-    node = MasterNode(use_sim=parsed_args.sim)
+    node = MasterNode(parsed_args)
 
     # recorder = RosbagRecorder(node)
     # recorder.start()
