@@ -325,10 +325,7 @@ class StateMachine:
             search_bottom_spiral(self)
         else:
             forward_search(self)
-
-            
-       
-        
+ 
     def get_vision_action_for_current_objective(self) -> VisionAction:
         if self.current_objective is None:
             return VisionAction.IDLE

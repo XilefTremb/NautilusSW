@@ -94,9 +94,9 @@ approach_gate = Objective(
     success_frame_treshold = 50,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
+        full_centering = False,
         x_center_tolerance_fov=0.2,
         angle_tolerance_deg=5.0,
-        full_centering = False,
     ),
     approach=ApproachConfig(
         approach_distance_mm=4000.0,
@@ -113,9 +113,10 @@ choose_gate_side = Objective(
         approach_distance_mm=3000.0,
     ),
     center=CenterConfig(
+        full_centering = False,
         x_center_tolerance_fov=0.05,
         angle_tolerance_deg=5.0,
-        full_centering = False,
+        
     ),
     action=ChooseGateSideAction(
     ),
@@ -126,9 +127,9 @@ traverse_gate = Objective(
     success_frame_treshold=50,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
+        full_centering = False,
         x_center_tolerance_fov=0.05,
         angle_tolerance_deg=5.0,
-        full_centering = False,
     ),
     approach=ApproachConfig(
         approach_distance_mm=2000.0,
@@ -144,10 +145,10 @@ slalom1 = Objective(
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
+        full_centering = False,
         x_center_tolerance_fov=0.05,
         y_center_tolerance_fov=1.0,
         angle_tolerance_deg=5.0,
-        full_centering = False,
     ),
     approach=ApproachConfig(
         approach_distance_mm=2000.0
@@ -245,10 +246,10 @@ launch_second_dropper = Objective(
 
 coarse_approach_torpedo = Objective(
          name='coarseApproachTorpedo',
+         success_frame_treshold=10,
          target_ids=[ObjectID.TORPEDO],
          detections_depth_filter_mm = 10000,
          search=SearchConfig(spin_pwm=1540),
-         success_frame_treshold=10,
          center=CenterConfig(
              full_centering=False,
              x_center_tolerance_fov=0.2,
