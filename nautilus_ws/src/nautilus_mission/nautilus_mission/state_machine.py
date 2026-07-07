@@ -108,7 +108,7 @@ class StateMachine:
             self.load_next_objective()
 
         self.current_objective_lifetime_s = time.monotonic() - self.current_objective_start_time_s
-        if self.current_objective_lifetime_s > self.objective_timeout_s and self.state is not 'MISSION_COMPLETE':
+        if self.current_objective_lifetime_s > self.objective_timeout_s and self.state != 'MISSION_COMPLETE':
             self.node.get_logger().warn(f"Objective {self.current_objective.name} timed out after {self.current_objective_lifetime_s:.1f}s. Skipping to next objective.")
             self.skip_to_next_objective()
 
