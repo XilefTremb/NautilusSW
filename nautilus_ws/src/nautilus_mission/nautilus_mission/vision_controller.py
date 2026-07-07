@@ -91,14 +91,6 @@ class VisionController:
         self.node.publish_yaw_error(float(cx))
         self.node.publish_throttle_error(float(cy))
 
-    def center_dropper(self, target_detection):
-        if target_detection is None:
-            return
-        
-        px_error = target_detection[DetectionIndex.CENTER_FOV_X_RATIO]
-        py_error = target_detection[DetectionIndex.CENTER_HEIGHT_RATIO]
-
-
     def split_angle(self, angle_deg):
         angle = math.radians(angle_deg)
         forward_error = -angle_deg * math.sin(angle)

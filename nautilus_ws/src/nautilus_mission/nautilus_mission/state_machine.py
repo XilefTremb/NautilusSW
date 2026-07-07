@@ -423,7 +423,7 @@ class StateMachine:
             py = target[DetectionIndex.CENTER_FOV_RATIO_Y]
             
             error_x = abs(px - self.current_objective.center.target_offset_x) < self.current_objective.center.x_center_tolerance_fov
-            error_y = abs(py - self.current_objective.center.target_offset_y) < self.current_objective.center.x_center_tolerance_fov
+            error_y = abs(py - self.current_objective.center.target_offset_y) < self.current_objective.center.y_center_tolerance_fov
             
             return error_x and error_y
                

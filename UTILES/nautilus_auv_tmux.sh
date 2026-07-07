@@ -40,6 +40,7 @@ tmux split-window -v -t "$SESSION:mission.1"
 tmux send-keys -t "$SESSION:mission.0" "ros2 launch nautilus_controls vision_controller.launch.py" C-m
 tmux send-keys -t "$SESSION:mission.1" "ros2 run nautilus_controls cube_interface --auv" C-m
 tmux send-keys -t "$SESSION:mission.2" "ros2 run nautilus_mission master_node"
+tmux send-keys -t "$SESSION:mission.3" "ros2 run nautilus_sensors yolo_detections_viewer --ros-args -p detection_topic:=/yolo/detections_forward"
 
 # Optional: make panes evenly sized
 tmux select-layout -t "$SESSION:mission" tiled
