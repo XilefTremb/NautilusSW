@@ -15,6 +15,7 @@ from enums.ServoEnum import ServoEnum
 from .detection_store import DetectionStore
 from .ekf_reset import reset_ekf_pose
 from nautilus_services import request_depth_change, reset_pids
+from nautilus_mission.search_patterns import search_bottom_spiral, forward_search
 
 class StateMachine:
     """Mission decision logic only. No ROS subscriptions and no vision error calculation."""
@@ -62,8 +63,11 @@ class StateMachine:
         self.execute_action_start_time = None
 
         self.current_objective_lifetime_s = 0.0
-        self.current_objective_start_time_s = 0.0
+        self.current_objective_start_time_s = time.monotonic()
         self.objective_timeout_s = 5 * 60
+
+        self.bottom_search_leg = 0
+        self.bottom_search_leg_start = 0.0
 
         states = [
             'IDLE',
@@ -101,7 +105,8 @@ class StateMachine:
 
     def tick(self):
         self.current_objective_lifetime_s = time.monotonic() - self.current_objective_start_time_s
-        if self.current_objective_lifetime_s > self.objective_timeout_s and self.state is not 'MISSION_COMPLETE':
+        if self.current_objective_lifetime_s > self.objective_timeout_s and self.state != 'MISSION_COMPLETE':
+            self.node.get_logger().warn("Objective timeout reached, skipping to next objective")
             self.skip_to_next_objective()
 
         if self.state == 'LOAD_OBJECTIVE':
@@ -111,7 +116,7 @@ class StateMachine:
             self.no_target_to_be_reached()
 
         elif self.state == 'SEARCH_TARGET':
-            self.spin_search()
+            self.search()
             self.vision_action = VisionAction.IDLE
             if self.is_target_present():
                 self.target_found()
@@ -171,6 +176,10 @@ class StateMachine:
         self.node.publish_forward_cmd(1500)
         self.approach_distance_error_m = 0.0
         self.current_success_frame_count = 0
+
+    def on_enter_SEARCH_TARGET(self, event):
+        self.bottom_search_leg = 0
+        self.bottom_search_leg_start = self.node.get_clock().now()
 
     def load_current_objective(self, event):
         self.current_objective = self.objectives[self.objective_index]
@@ -311,33 +320,14 @@ class StateMachine:
             self.node.get_logger().info('Dropper launched :) !')
             self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)  
         
-    def spin_search(self):
-        gate_like_ids = [ObjectID.GATE_MID_RIGHT, ObjectID.GATE_LEFT_MID]
-        gate_id = next((id for id in self.target_ids if id in gate_like_ids), None)
-        spin_amplitude = abs(self.current_objective.search.spin_pwm-1500)
-        if gate_id is not None:
-            if gate_id == ObjectID.GATE_LEFT_MID:
-                if self.is_target_present([ObjectID.GATE_LEG_L]):
-                    cmd = 1500 + spin_amplitude
-                elif self.is_target_present([ObjectID.GATE_LEG_CENTER]):
-                    cmd = 1500 - spin_amplitude
-                else:
-                    cmd = self.current_objective.search.spin_pwm
-
-            elif gate_id == ObjectID.GATE_MID_RIGHT:
-                if self.is_target_present([ObjectID.GATE_LEG_CENTER]):
-                    cmd = 1500 + spin_amplitude
-                elif self.is_target_present([ObjectID.GATE_LEG_R]):
-                    cmd = 1500 - spin_amplitude
-                else:
-                    cmd = self.current_objective.search.spin_pwm
-
-        else:
-            cmd = self.current_objective.search.spin_pwm
-
-        self.node.publish_yaw_cmd(cmd)
+    def search(self):
         if self.current_objective.center.center_bottom:
-            self.node.publish_forward_cmd(1510)
+            search_bottom_spiral(self)
+        else:
+            forward_search(self)
+
+            
+       
         
     def get_vision_action_for_current_objective(self) -> VisionAction:
         if self.current_objective is None:
