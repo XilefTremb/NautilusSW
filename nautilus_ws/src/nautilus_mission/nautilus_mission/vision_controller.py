@@ -68,7 +68,7 @@ class VisionController:
             px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
             self.node.publish_yaw_error(float(px))
 
-        self.node.publish_forward_cmd(1540)
+        self.node.publish_forward_cmd(1580)
 
     def circle_marker(self, target_detection):
         if target_detection is None:

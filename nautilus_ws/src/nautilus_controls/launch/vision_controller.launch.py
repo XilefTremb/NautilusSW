@@ -11,9 +11,9 @@ def generate_launch_description():
             parameters=[{
                 'input_topic': '/control/vision_errors/yaw',
                 'output_topic': '/control/cmd/yaw',
-                'kp': 150.0,
+                'kp': 100.0,
                 'ki': 0.0,
-                'kd': 32.0,
+                'kd': 50.0,
             }]
         ),
 

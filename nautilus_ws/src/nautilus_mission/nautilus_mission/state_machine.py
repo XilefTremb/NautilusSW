@@ -35,7 +35,7 @@ class StateMachine:
         self.objectives: list[Objective] = mission_list
 
         self.objectives : list[Objective] = mission_list
-        self.role_choice = ObjectID.SOS_SAFETY
+        self.role_choice = ObjectID.COMPASS_HAMMER
 
         if self.role_choice == ObjectID.SOS_SAFETY:
             self.dropper_choice = ObjectID.BLOOD
@@ -226,7 +226,7 @@ class StateMachine:
 
             elif self.current_objective.name == "torpedoFiringPositioning2":
                 self.target_ids = ([ObjectID.TARGET_AMBULANCE] if self.role_choice == ObjectID.SOS_SAFETY
-                    else [ObjectID.TARGET_FIRETRUK])
+                    else [ObjectID.TARGET_TRUCK])
 
             self.current_objective.action.fired = False
 
@@ -490,9 +490,9 @@ class StateMachine:
         if condition:
             self.current_success_frame_count += 1
             self.node.get_logger().info(f"current success frame count {self.current_success_frame_count}")
-        else: 
-            self.current_success_frame_count = 0
-            # self.node.get_logger().info("reset success frame count to 0")
+        # else: 
+        #     self.current_success_frame_count = 0
+        #     # self.node.get_logger().info("reset success frame count to 0")success_frame_treshold=10,
 
         return self.current_success_frame_count >= self.current_objective.success_frame_treshold
        
