@@ -314,9 +314,24 @@ torpedo_firing_positioning_2 = Objective(
     ),
 )
 
+test_objective = Objective(
+    name='testObjective',
+    success_frame_treshold=10,
+    target_ids=[ObjectID.TORPEDO],
+    center=CenterConfig(
+        full_centering=False,
+        x_center_tolerance_fov=0.1,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=1000.0,
+    ),
+    action=NoAction()
+)
+
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
 # mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
-mission_list = [coarse_approach_torpedo, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
+# mission_list = [coarse_approach_torpedo, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
+mission_list = [test_objective]
 
