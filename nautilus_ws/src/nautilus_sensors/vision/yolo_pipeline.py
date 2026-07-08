@@ -39,6 +39,19 @@ COLOR_NOT_IN_DETECTION = (255, 0, 0)
 PUBLISH_ANNOTATED_IMAGES = True
 ENABLE_DOWNWARD_INFERENCE = True
 
+# -------- INFERENCE TUNING --------
+# Detection confidence threshold passed to the model.
+INFERENCE_CONF = 0.4
+# Run the model in FP16 when a CUDA device is available. Big speedup on GPU with
+# negligible accuracy impact for detection. Ignored on CPU. Easy to A/B with the
+# profiler by toggling this flag.
+USE_HALF_PRECISION = True
+# Run one dummy inference at startup so the first real frame isn't slow.
+WARMUP_ON_START = True
+# Rate at which the main inference loop polls the frame queues. A higher rate
+# reduces how long a ready frame waits before being picked up (less latency).
+INFERENCE_LOOP_HZ = 30
+
 # -------- PROFILING --------
 # When True: measure per-stage run times, publish them on /yolo/profiling
 # (consumed by yolo_profiling_viewer.py) and print them in the console.
@@ -161,6 +174,19 @@ class YoloNode(Node):
         if torch.cuda.is_available():
             self.model.to('cuda')
 
+        # -------- INFERENCE CONFIG --------
+        self.use_half = USE_HALF_PRECISION and torch.cuda.is_available()
+        self.infer_imgsz = INFERENCE_IMGSZ
+
+        # Warm up the model so the first real frame doesn't pay the lazy-init cost.
+        if WARMUP_ON_START:
+            warmup_size = self.infer_imgsz or 640
+            dummy = np.zeros((warmup_size, warmup_size, 3), dtype=np.uint8)
+            self.run_inference(dummy)
+            self.get_logger().info(
+                f'Model warmed up (half={self.use_half}, imgsz={self.infer_imgsz or "native"})'
+            )
+
         # ----------- INIT PARAMS -----------
         self.depth_threshold = 99999
         self.bridge = CvBridge()
@@ -220,7 +246,7 @@ class YoloNode(Node):
         self.ts.registerCallback(self.forward_callback)
 
         # -------- TIMER (MAIN INFERENCE LOOP) --------
-        self.timer = self.create_timer(0.05, self.inference_loop)
+        self.timer = self.create_timer(1.0 / INFERENCE_LOOP_HZ, self.inference_loop)
 
         self.last_forward_time = 0
         self.last_downward_time = 0
@@ -283,13 +309,17 @@ class YoloNode(Node):
         self.get_logger().info(f'EDGE PARAMS UPDATED: {self.edge_params}')
         #print("EDGE PARAMS UPDATED", self.edge_params)
 
+    def run_inference(self, frame):
+        # CENTRALIZED MODEL CALL (applies inference tuning config)
+        kwargs = {"conf": INFERENCE_CONF, "verbose": False}
+        if self.use_half:
+            kwargs["half"] = True
+        if self.infer_imgsz:
+            kwargs["imgsz"] = self.infer_imgsz
+        return self.model(frame, **kwargs)
+
     def inference_loop(self):
         now = time.time()
-
-        # if hasattr(self, "_last_timer"):
-        #     self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
-
-        # self._last_timer = now
 
         #PRIORITY1: FORWARD CAMERA
         if self.forward_queue and (now - self.last_forward_time > self.forward_interval):
@@ -312,9 +342,9 @@ class YoloNode(Node):
             t0 = time.time()
             if self.profiler is not None:
                 with self.profiler.span("yolo_inference"):
-                    results = self.model(frame, conf=0.4, verbose=False)
+                    results = self.run_inference(frame)
             else:
-                results = self.model(frame, conf=0.4, verbose=False)
+                results = self.run_inference(frame)
             t1 = time.time()
 
             if self.profiler is not None:
@@ -372,11 +402,11 @@ class YoloNode(Node):
 
             if self.profiler is not None:
                 with self.profiler.span("yolo_inference"):
-                    results = self.model(frame, conf=0.4, verbose=False)
+                    results = self.run_inference(frame)
                 with self.profiler.span("process_total"):
                     self.process_downward(results, frame)
             else:
-                results = self.model(frame, conf=0.4, verbose=False)
+                results = self.run_inference(frame)
                 self.process_downward(results, frame)
 
             # ----------- PUBLISH IMAGE ANNOTATED DOWNWARD CAM -----------
