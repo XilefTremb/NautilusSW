@@ -2,15 +2,12 @@
 
 import contextlib
 import os
-import select
-import sys
 import threading
 import time
 from datetime import timedelta
 
 import cv2
 import depthai as dai
-import gi
 import numpy as np
 import rclpy
 from cv_bridge import CvBridge
@@ -20,21 +17,16 @@ from scipy.spatial.transform import Rotation as R
 from sensor_msgs.msg import Image, Imu
 
 from vision.blue_filter import blue_filter
-from vision.host_stereo import HostStereoDepth
 
-gi.require_version("Gst", "1.0")
-from gi.repository import Gst
 
 
 # =========================================================
 # CONFIG
 # =========================================================
-UDP_IP = "192.168.1.10"
-UDP_PORT = 5600
 FPS = 15
 SAVE_INTERVAL = 2.0
 
-START_BLUE_FILTER = True
+START_BLUE_FILTER = False
 START_DEPTH_COLOR = True
 START_OVERLAY = True
 
@@ -61,6 +53,7 @@ os.makedirs(RGB_OAKD_DIR, exist_ok=True)
 os.makedirs(RGB_OAK1_DIR, exist_ok=True)
 os.makedirs(DEPTH_DIR, exist_ok=True)
 
+
 # =========================================================
 # ROS2 NODE
 # =========================================================
@@ -74,7 +67,6 @@ class DualOakNode(Node):
         self.save_images = self.get_parameter("save_images").value
         self.get_logger().info(f"save_images: {self.save_images}")
 
-        self.active_stream = "oakd"
         self.bridge = CvBridge()
 
         # ROS Publishers
@@ -101,25 +93,17 @@ class DualOakNode(Node):
         self.shutdown_event = threading.Event()
         self.worker_threads = []
 
-        # GStreamer init
-        Gst.init(None)
-        self.setup_gstreamer()
-
         # Devices
         self.stack = contextlib.ExitStack()
         self.devices_data = []
         self.oakd_dev = None
         self.downward_dev = None
         self.usb_cap = None
-        self.host_stereo = None
         self.setup_devices()
 
         # Start workers
-        self.start_thread(self.keyboard_listener, "keyboard_listener")
-
         if self.oakd_dev is not None:
             self.start_thread(self.oakd_worker, "oakd_worker")
-            self.start_thread(self.h264_worker, "h264_worker")
 
         if self.downward_dev is not None:
             self.start_thread(self.downward_worker, "downward_worker")
@@ -135,54 +119,6 @@ class DualOakNode(Node):
         thread = threading.Thread(target=target, name=name, daemon=True)
         thread.start()
         self.worker_threads.append(thread)
-
-    # =====================================================
-    # KEYBOARD CONTROL
-    # =====================================================
-    def keyboard_listener(self):
-        self.get_logger().info("Press 's' to switch camera stream")
-
-        while not self.shutdown_event.is_set():
-            try:
-                if select.select([sys.stdin], [], [], 0.1)[0]:
-                    key = sys.stdin.read(1)
-
-                    if key == "s":
-                        self.active_stream = "oak1" if self.active_stream == "oakd" else "oakd"
-                        self.get_logger().info(f"Switched UDP stream to: {self.active_stream}")
-            except Exception as exc:
-                self.get_logger().warn(f"Keyboard listener stopped: {exc}")
-                return
-
-    # =====================================================
-    # GSTREAMER
-    # =====================================================
-    def setup_gstreamer(self):
-        # Host-side H264 encoding. The OAK no longer runs VideoEncoder.
-        # Frames pushed here are raw BGR frames from the Jetson.
-        pipeline_str = (
-            "appsrc name=src is-live=true do-timestamp=true format=time "
-            "block=false max-buffers=4 ! "
-            "queue leaky=downstream max-size-buffers=4 ! "
-            "videoconvert ! "
-            "x264enc tune=zerolatency speed-preset=ultrafast bitrate=7000 key-int-max=15 ! "
-            "h264parse config-interval=1 ! "
-            "rtph264pay config-interval=1 pt=96 ! "
-            f"udpsink host={UDP_IP} port={UDP_PORT} sync=false async=false"
-        )
-
-        self.gst_pipeline = Gst.parse_launch(pipeline_str)
-        self.appsrc = self.gst_pipeline.get_by_name("src")
-
-        self.appsrc.set_property(
-            "caps",
-            Gst.Caps.from_string(
-                f"video/x-raw,format=BGR,width=1280,height=960,framerate={FPS}/1"
-            ),
-        )
-
-        self.gst_pipeline.set_state(Gst.State.PLAYING)
-        self.last_udp_push_time = 0.0
 
     # =====================================================
     # QUEUE HELPERS
@@ -232,12 +168,27 @@ class DualOakNode(Node):
         RGB_SIZE = (1280, 960)
         MONO_SIZE = (640, 400)
 
+        platform = pipeline.getDefaultDevice().getPlatform()
+
         camRgb = pipeline.create(dai.node.Camera).build(RGB_SOCKET)
         left = pipeline.create(dai.node.Camera).build(LEFT_SOCKET)
         right = pipeline.create(dai.node.Camera).build(RIGHT_SOCKET)
 
-        # Camera sends raw/undistorted frames only. No StereoDepth, no ImageManip,
-        # no VideoEncoder on the OAK VPU.
+        stereo = pipeline.create(dai.node.StereoDepth)
+        sync = pipeline.create(dai.node.Sync)
+
+        align = None
+        if platform == dai.Platform.RVC4:
+            align = pipeline.create(dai.node.ImageAlign)
+
+        # Original functionality preserved.
+        # If you want the lighter tested config, set ExtendedDisparity(False).
+        stereo.setExtendedDisparity(True)
+        stereo.setLeftRightCheck(True)
+        stereo.setRectification(True)
+
+        sync.setSyncThreshold(timedelta(seconds=0.05))
+
         rgb_out = camRgb.requestOutput(
             size=RGB_SIZE,
             fps=FPS,
@@ -246,21 +197,24 @@ class DualOakNode(Node):
             resizeMode=dai.ImgResizeMode.STRETCH,
         )
 
-        left_out = left.requestOutput(
-            size=MONO_SIZE,
-            fps=FPS,
-            type=dai.ImgFrame.Type.GRAY8,
-        )
+        left_out = left.requestOutput(size=MONO_SIZE, fps=FPS)
+        right_out = right.requestOutput(size=MONO_SIZE, fps=FPS)
 
-        right_out = right.requestOutput(
-            size=MONO_SIZE,
-            fps=FPS,
-            type=dai.ImgFrame.Type.GRAY8,
-        )
+        left_out.link(stereo.left)
+        right_out.link(stereo.right)
 
-        rgb_queue = rgb_out.createOutputQueue(maxSize=4, blocking=False)
-        left_queue = left_out.createOutputQueue(maxSize=4, blocking=False)
-        right_queue = right_out.createOutputQueue(maxSize=4, blocking=False)
+        rgb_out.link(sync.inputs["rgb"])
+
+        if platform == dai.Platform.RVC4:
+            stereo.depth.link(align.input)
+            rgb_out.link(align.inputAlignTo)
+            align.outputAligned.link(sync.inputs["depth_aligned"])
+        else:
+            stereo.depth.link(sync.inputs["depth_aligned"])
+            rgb_out.link(stereo.inputAlignTo)
+
+        sync_queue = sync.out.createOutputQueue(maxSize=4, blocking=False)
+        raw_depth_queue = stereo.depth.createOutputQueue(maxSize=4, blocking=False)
 
         # IMU Data OAKD
         imu = pipeline.create(dai.node.IMU)
@@ -271,7 +225,7 @@ class DualOakNode(Node):
         imu.setMaxBatchReports(10)
         imu_queue = imu.out.createOutputQueue(maxSize=20, blocking=False)
 
-        return rgb_queue, left_queue, right_queue, imu_queue
+        return sync_queue, raw_depth_queue, imu_queue
 
     # =====================================================
     # DEVICE SETUP
@@ -302,27 +256,13 @@ class DualOakNode(Node):
             cameras = device.getConnectedCameras()
 
             if len(cameras) > 1:
-                rgb_q, left_q, right_q, imu_q = self.create_oakd_pipeline(pipeline)
-
-                try:
-                    calib = device.readCalibration()
-                    self.host_stereo = HostStereoDepth(
-                        calib=calib,
-                        rgb_size=(1280, 960),
-                        mono_size=(640, 400),
-                        logger=self.get_logger(),
-                    )
-                except Exception as exc:
-                    self.get_logger().error(f"Could not initialize HostStereoDepth: {exc}")
-                    self.host_stereo = None
-
+                sync_q, depth_q, imu_q = self.create_oakd_pipeline(pipeline)
                 pipeline.start()
 
                 self.oakd_dev = {
                     "type": "oakd",
-                    "rgb": rgb_q,
-                    "left": left_q,
-                    "right": right_q,
+                    "sync": sync_q,
+                    "raw_depth": depth_q,
                     "imu": imu_q,
                 }
                 self.devices_data.append(self.oakd_dev)
@@ -332,33 +272,23 @@ class DualOakNode(Node):
     # CRITICAL OAK-D WORKER
     # =====================================================
     def oakd_worker(self):
-        """Fast path: read OAK-D RGB/left/right + IMU queues and publish ROS RGB/depth.
+        """Fast path: read OAK-D sync + IMU queues and publish ROS RGB/depth.
 
-        Depth is now computed on the Jetson through HostStereoDepth.
-        Keep this thread lightweight: visualization, saving, and GStreamer stay elsewhere.
+        This must stay lightweight. Do not run depth colormap, overlay, USB camera,
+        saving, or GStreamer in this thread.
         """
         dev = self.oakd_dev
 
-        # The three camera streams are free-running and drained independently each tick,
-        # so they rarely land in the same loop iteration. Persist the most recent left/right
-        # frames and drive processing off RGB arrival.
-        last_left = None
-        last_right = None
-
         while not self.shutdown_event.is_set() and rclpy.ok():
             try:
-                rgb_msg = self.get_latest(dev["rgb"])
-                left_msg = self.get_latest(dev["left"])
-                right_msg = self.get_latest(dev["right"])
+                if LOG_RAW_DEPTH_TIMING:
+                    self.drain_and_log_periods(dev["raw_depth"], "raw_depth")
+
+                sync_pkt = self.get_latest(dev["sync"])
                 imu_pkt = self.get_latest(dev["imu"])
 
-                if left_msg is not None:
-                    last_left = left_msg
-                if right_msg is not None:
-                    last_right = right_msg
-
-                if rgb_msg is not None:
-                    self.handle_oakd_host_stereo_packet(rgb_msg, last_left, last_right)
+                if sync_pkt is not None:
+                    self.handle_oakd_sync_packet(sync_pkt)
 
                 if imu_pkt is not None:
                     self.handle_imu_packet(imu_pkt)
@@ -369,12 +299,18 @@ class DualOakNode(Node):
                 self.get_logger().error(f"OAK-D worker error: {exc}")
                 time.sleep(0.05)
 
-    def handle_oakd_host_stereo_packet(self, rgb_msg, left_msg, right_msg):
-        # Host-side replacement for DepthAI Sync. More forgiving, like Luxonis suggested.
-        # RGB path always runs, independent of stereo sync. This keeps the ROS RGB topic
-        # and the host UDP stream flowing even when left/right/depth cannot be synced.
+    def handle_oakd_sync_packet(self, sync_pkt):
+        rgb_msg = sync_pkt["rgb"]
+        depth_msg = sync_pkt["depth_aligned"]
+
+        if LOG_CAMERA_TIMING:
+            self.log_sync_timing(rgb_msg, depth_msg)
+
         frame_rgb = rgb_msg.getCvFrame()
+        frame_depth = depth_msg.getFrame()
+
         frame_rgb = cv2.rotate(frame_rgb, cv2.ROTATE_180)
+        frame_depth = cv2.rotate(frame_depth, cv2.ROTATE_180)
 
         if START_BLUE_FILTER:
             frame_rgb = blue_filter(frame_rgb)
@@ -386,47 +322,13 @@ class DualOakNode(Node):
         rgb_ros_msg.header.frame_id = "oakd_rgb_frame"
         self.rgb_pub.publish(rgb_ros_msg)
 
-        with self.latest_lock:
-            self.rgb_oakd_latest = frame_rgb
-
-        # Depth path is gated: it needs both mono frames, the host stereo backend,
-        # and the three frames closely aligned in time.
-        if left_msg is None or right_msg is None or self.host_stereo is None:
-            return
-
-        rgb_ts = rgb_msg.getTimestampDevice()
-        left_ts = left_msg.getTimestampDevice()
-        right_ts = right_msg.getTimestampDevice()
-
-        max_dt = max(
-            abs((rgb_ts - left_ts).total_seconds()),
-            abs((rgb_ts - right_ts).total_seconds()),
-            abs((left_ts - right_ts).total_seconds()),
-        )
-
-        if max_dt > 0.05:
-            if LOG_CAMERA_TIMING:
-                self.get_logger().warn(f"OAK-D depth sync rejected, max_dt={max_dt * 1000.0:.1f} ms")
-            return
-
-        frame_left = left_msg.getCvFrame()
-        frame_right = right_msg.getCvFrame()
-
-        # IMPORTANT: compute depth/alignment before rotation because calibration is for
-        # the camera-native orientation. Then rotate depth to match the rotated RGB.
-        frame_depth, _disparity, _depth_left = self.host_stereo.compute_depth_aligned_to_rgb(
-            frame_left,
-            frame_right,
-        )
-
-        frame_depth = cv2.rotate(frame_depth, cv2.ROTATE_180)
-
         depth_ros_msg = self.bridge.cv2_to_imgmsg(frame_depth, "16UC1")
         depth_ros_msg.header.stamp = now_stamp
         depth_ros_msg.header.frame_id = "oakd_depth_frame"
         self.depth_pub.publish(depth_ros_msg)
 
         with self.latest_lock:
+            self.rgb_oakd_latest = frame_rgb
             self.depth_latest = frame_depth
             self.pending_viz_rgb = frame_rgb
             self.pending_viz_depth = frame_depth
@@ -529,47 +431,6 @@ class DualOakNode(Node):
             time.sleep(max(0.001, period - elapsed))
 
     # =====================================================
-    # H264 WORKER
-    # =====================================================
-    def h264_worker(self):
-        """Host-side UDP stream encoder.
-
-        The OAK no longer provides H264 packets. This worker takes the latest raw
-        frame available on the Jetson and pushes it to a GStreamer x264 pipeline.
-        """
-        period = 1.0 / max(float(FPS), 1.0)
-
-        while not self.shutdown_event.is_set() and rclpy.ok():
-            try:
-                start = time.time()
-
-                with self.latest_lock:
-                    if self.active_stream == "oak1" and self.rgb_oak1_latest is not None:
-                        frame = self.rgb_oak1_latest.copy()
-                    elif self.rgb_oakd_latest is not None:
-                        frame = self.rgb_oakd_latest.copy()
-                    else:
-                        frame = None
-
-                if frame is not None:
-                    # GStreamer caps are fixed to 1280x960 BGR for low complexity.
-                    if frame.shape[1] != 1280 or frame.shape[0] != 960:
-                        frame = cv2.resize(frame, (1280, 960), interpolation=cv2.INTER_LINEAR)
-
-                    if not frame.flags["C_CONTIGUOUS"]:
-                        frame = np.ascontiguousarray(frame)
-
-                    buf = Gst.Buffer.new_wrapped(frame.tobytes())
-                    self.appsrc.emit("push-buffer", buf)
-
-                elapsed = time.time() - start
-                time.sleep(max(0.001, period - elapsed))
-
-            except Exception as exc:
-                self.get_logger().error(f"H264 worker error: {exc}")
-                time.sleep(0.05)
-
-    # =====================================================
     # VISUALIZATION TIMER
     # =====================================================
     def visualization_loop(self):
@@ -650,11 +511,6 @@ class DualOakNode(Node):
         for thread in self.worker_threads:
             if thread.is_alive():
                 thread.join(timeout=1.0)
-
-        try:
-            self.gst_pipeline.set_state(Gst.State.NULL)
-        except Exception:
-            pass
 
         if self.usb_cap is not None:
             self.usb_cap.release()
