@@ -7,6 +7,7 @@ import time
 import numpy as np
 import os
 
+from contextlib import contextmanager
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int32MultiArray
@@ -37,6 +38,91 @@ COLOR_NOT_IN_DETECTION = (255, 0, 0)
 
 PUBLISH_ANNOTATED_IMAGES = True
 ENABLE_DOWNWARD_INFERENCE = True
+
+# -------- PROFILING --------
+# When True: measure per-stage run times, publish them on /yolo/profiling
+# (consumed by yolo_profiling_viewer.py) and print them in the console.
+# When False: all instrumentation is skipped (near-zero overhead) and nothing
+# is published on /yolo/profiling.
+PROFILING_ENABLED = True
+PROFILING_CONSOLE_LOG = True
+PROFILING_TOPIC = '/yolo/profiling'
+
+# Fixed stage order shared with yolo_profiling_viewer.py. The published
+# Float32MultiArray holds one value (in milliseconds) per stage, in this order.
+# Stages not measured for a given frame are published as NaN.
+PROFILING_STAGES = [
+    "camera",            # 0.0 = forward cam, 1.0 = downward cam
+    "image_cam_interval",    # time between two received images for this camera
+    "yolo_inference",    # YOLO model forward pass
+    "detection_processing", # per-box depth extraction loop
+    "angle_computation", # gate/torpedo angle computation
+    "process_total",     # full process_forward / process_downward
+    "publish",           # detection message publishing
+    "detections_forward_interval",           # /yolo/detections_forward publish interval
+    "detections_downward_interval",          # /yolo/detections_downward publish interval
+    "image_annotated_fwd_cam_interval",      # /yolo/image_annotated_fwd_cam publish interval
+    "image_annotated_dwd_cam_interval",      # /yolo/image_annotated_dwd_cam publish interval
+    "end_2_end",       # end-to-end for the whole frame
+]
+
+
+class StageProfiler:
+    """Lightweight per-stage timing collector.
+
+    Records named time deltas (in milliseconds) for the current frame, keeps a
+    rolling history per stage for console stats, and can serialize the current
+    frame into the fixed PROFILING_STAGES order for publishing.
+    """
+
+    def __init__(self, node, stages, window=100):
+        self.node = node
+        self.stages = stages
+        self.history = {s: deque(maxlen=window) for s in stages}
+        self.frame = {}
+        self._starts = {}
+        self._last_event = {}
+
+    def reset_frame(self):
+        self.frame = {}
+
+    def record(self, name, dt_ms):
+        if dt_ms is None:
+            return
+        self.frame[name] = dt_ms
+        if name in self.history:
+            self.history[name].append(dt_ms)
+
+    @contextmanager
+    def span(self, name):
+        t = time.perf_counter()
+        try:
+            yield
+        finally:
+            self.record(name, (time.perf_counter() - t) * 1000.0)
+
+    def event_interval(self, name):
+        """Return ms elapsed since the previous call with the same name."""
+        now = time.perf_counter()
+        last = self._last_event.get(name)
+        self._last_event[name] = now
+        if last is None:
+            return None
+        return (now - last) * 1000.0
+
+    def build_msg_data(self):
+        return [float(self.frame.get(s, float('nan'))) for s in self.stages]
+
+    def log_console(self):
+        parts = []
+        for s in self.stages:
+            if s == "camera":
+                continue
+            v = self.frame.get(s)
+            if v is not None:
+                parts.append(f"{s}={v:.1f}ms")
+        if parts:
+            self.node.get_logger().info("[PROFILE] " + "  ".join(parts))
 
 
 def parse_args():
@@ -114,6 +200,15 @@ class YoloNode(Node):
         self.mean_depth_forward_cam = self.create_publisher(Int32, '/yolo/mean_depth_forward_cam', 1)
         self.edge_mask_pub = self.create_publisher(Image, '/yolo/edge_mask', 1)
 
+        # ----------- PROFILING -----------
+        self.profiler = StageProfiler(self, PROFILING_STAGES) if PROFILING_ENABLED else None
+        self.profiling_pub = (
+            self.create_publisher(Float32MultiArray, PROFILING_TOPIC, 1)
+            if PROFILING_ENABLED else None
+        )
+        self.last_forward_image_cam_interval = None
+        self.last_downward_image_cam_interval = None
+
         # ----------- SYNCHRONIZER DEPTH AND RGB -----------
         self.ts = ApproximateTimeSynchronizer(
             [self.fwd_rgb_sub, self.depth_sub],
@@ -140,6 +235,9 @@ class YoloNode(Node):
         # CALLBACK FOR FORWARD CAM (OAKD)
         now = time.time()
 
+        if self.profiler is not None:
+            self.last_forward_image_cam_interval = self.profiler.event_interval("forward_image_cam_interval")
+
         # if self.last_forward_sync_ts is not None:
         #     interval = now - self.last_forward_sync_ts
         #     self.get_logger().info(
@@ -162,6 +260,8 @@ class YoloNode(Node):
 
     def downward_callback(self, rgb_msg):
         # CALLBACK FOR FORWARD CAM (OAK1)
+        if self.profiler is not None:
+            self.last_downward_image_cam_interval = self.profiler.event_interval("downward_image_cam_interval")
         self.downward_queue.append(rgb_msg)
 
     def depth_threshold_callback(self, msg):
@@ -194,6 +294,12 @@ class YoloNode(Node):
         #PRIORITY1: FORWARD CAMERA
         if self.forward_queue and (now - self.last_forward_time > self.forward_interval):
 
+            frame_t0 = time.perf_counter()
+            if self.profiler is not None:
+                self.profiler.reset_frame()
+                self.profiler.record("camera", 0.0)
+                self.profiler.record("image_cam_interval", self.last_forward_image_cam_interval)
+
             rgb_msg, depth_msg = self.forward_queue.pop()
             self.forward_queue.clear()
 
@@ -204,10 +310,18 @@ class YoloNode(Node):
             self.last_forward_time = now
 
             t0 = time.time()
-            results = self.model(frame, conf=0.4, verbose=False)
+            if self.profiler is not None:
+                with self.profiler.span("yolo_inference"):
+                    results = self.model(frame, conf=0.4, verbose=False)
+            else:
+                results = self.model(frame, conf=0.4, verbose=False)
             t1 = time.time()
 
-            annotated_frame, edge_debug = self.process_forward(results, frame, depth)
+            if self.profiler is not None:
+                with self.profiler.span("process_total"):
+                    annotated_frame, edge_debug = self.process_forward(results, frame, depth)
+            else:
+                annotated_frame, edge_debug = self.process_forward(results, frame, depth)
             t2 = time.time()
 
             #self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
@@ -217,6 +331,9 @@ class YoloNode(Node):
                 out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
                 out_msg.header = header
                 self.fwd_image_pub.publish(out_msg)
+
+                if self.profiler is not None:
+                    self.profiler.record("image_annotated_fwd_cam_interval", self.profiler.event_interval("image_annotated_fwd_cam_interval"))
 
                 # ----------- PUBLISH IMAGE MASK DEPTH -----------
                 edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
@@ -230,10 +347,20 @@ class YoloNode(Node):
                 msg_depth.data = int(depth_global_mean)
                 self.mean_depth_forward_cam.publish(msg_depth)
 
+            if self.profiler is not None:
+                self.profiler.record("end_2_end", (time.perf_counter() - frame_t0) * 1000.0)
+                self.publish_profiling()
+
             return
 
         #PRIORITY2: DOWNWARD CAMERA
         if ENABLE_DOWNWARD_INFERENCE and self.downward_queue and (now - self.last_downward_time > self.downward_interval):
+
+            frame_t0 = time.perf_counter()
+            if self.profiler is not None:
+                self.profiler.reset_frame()
+                self.profiler.record("camera", 1.0)
+                self.profiler.record("image_cam_interval", self.last_downward_image_cam_interval)
 
             rgb_msg = self.downward_queue.pop()
             self.downward_queue.clear()
@@ -243,13 +370,44 @@ class YoloNode(Node):
 
             self.last_downward_time = now
 
-            results = self.model(frame, conf=0.4, verbose=False)
-            self.process_downward(results, frame)
+            if self.profiler is not None:
+                with self.profiler.span("yolo_inference"):
+                    results = self.model(frame, conf=0.4, verbose=False)
+                with self.profiler.span("process_total"):
+                    self.process_downward(results, frame)
+            else:
+                results = self.model(frame, conf=0.4, verbose=False)
+                self.process_downward(results, frame)
 
             # ----------- PUBLISH IMAGE ANNOTATED DOWNWARD CAM -----------
             msg = self.bridge.cv2_to_imgmsg(frame, 'bgr8')
             msg.header = header
             self.down_image_pub.publish(msg)
+
+            if self.profiler is not None:
+                self.profiler.record("image_annotated_dwd_cam_interval", self.profiler.event_interval("image_annotated_dwd_cam_interval"))
+                self.profiler.record("end_2_end", (time.perf_counter() - frame_t0) * 1000.0)
+                self.publish_profiling()
+
+    def publish_profiling(self):
+        # PUBLISH + OPTIONALLY LOG PER-STAGE RUN TIMES
+        if self.profiler is None:
+            return
+
+        if self.profiling_pub is not None:
+            msg = Float32MultiArray()
+            msg.data = self.profiler.build_msg_data()
+            msg.layout.dim = [
+                MultiArrayDimension(
+                    label='stages',
+                    size=len(PROFILING_STAGES),
+                    stride=len(PROFILING_STAGES))
+            ]
+            msg.layout.data_offset = 0
+            self.profiling_pub.publish(msg)
+
+        if PROFILING_CONSOLE_LOG:
+            self.profiler.log_console()
 
 
     def process_downward(self, results, annotated_frame):
@@ -307,6 +465,9 @@ class YoloNode(Node):
 
                 #self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
                 self.detection_downward_pub.publish(msg)
+
+                if self.profiler is not None:
+                    self.profiler.record("detections_downward_interval", self.profiler.event_interval("detections_downward_interval"))
             else:
                 self.get_logger().info(f"[EMPTY] Downward: No detections found")
 
@@ -328,6 +489,8 @@ class YoloNode(Node):
             detection = results[0].obb
         else:
             detection = results[0].boxes
+
+        depth_loop_t0 = time.perf_counter() if self.profiler is not None else None
 
         if detection is not None:
             for box in detection:
@@ -483,6 +646,9 @@ class YoloNode(Node):
                         points=points
                     )
 
+        if self.profiler is not None:
+            self.profiler.record("detection_processing", (time.perf_counter() - depth_loop_t0) * 1000.0)
+
         for object_id, obj in objects.items():
             if obj["depth"] < self.depth_threshold:
                 angle = 0.0
@@ -517,7 +683,11 @@ class YoloNode(Node):
         objects, payload = target_organizer(target_tab, objects, annotated_frame, payload, self.type_yolo)
 
         # -------- FIND ANGLE BETWEEN TWO OBJECTS --------
-        payload_angle = find_gate_angle(objects, self.mode)
+        if self.profiler is not None:
+            with self.profiler.span("angle_computation"):
+                payload_angle = find_gate_angle(objects, self.mode)
+        else:
+            payload_angle = find_gate_angle(objects, self.mode)
 
         if MOVING_MEAN_ACTIVATED:
             for i in range(0, len(payload_angle), 5):
@@ -534,6 +704,8 @@ class YoloNode(Node):
         payload.extend(payload_angle)
 
         # -------- PUBLISH DETECTION --------
+        publish_t0 = time.perf_counter() if self.profiler is not None else None
+
         msg = Float32MultiArray()
         msg.data = payload
         nb_objects = len(payload) // 5
@@ -556,6 +728,10 @@ class YoloNode(Node):
             #self.get_logger().info(f"[PUBLISHED] Forward: {nb_objects} objects detected")
 
         self.detection_forward_pub.publish(msg)
+
+        if self.profiler is not None:
+            self.profiler.record("publish", (time.perf_counter() - publish_t0) * 1000.0)
+            self.profiler.record("detections_forward_interval", self.profiler.event_interval("detections_forward_interval"))
 
         return annotated_frame, edge_debug
 
