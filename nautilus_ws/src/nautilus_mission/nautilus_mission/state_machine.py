@@ -139,11 +139,18 @@ class StateMachine:
                 self.target_reached()
                 return 
             
-            self.vision_action = VisionAction.APPROACH_TARGET
+            if self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
+                self.vision_action = VisionAction.ALIGN_TORPEDO
+            else:
+                self.vision_action = VisionAction.APPROACH_TARGET
             if self.is_target_lost_filtered():
                 self.target_lost()
             if self.is_target_approached():
-                self.target_reached()
+                if self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
+                    if self.is_target_width_aligned():
+                        self.target_reached()
+                else:  
+                    self.target_reached()
 
         elif self.state == 'EXECUTE_ACTION':
             self.vision_action = self.get_vision_action_for_current_objective()
@@ -463,6 +470,27 @@ class StateMachine:
         alignement_error = target[DetectionIndex.ANGLE_DEG]
 
         return abs(alignement_error) < self.current_objective.center.alignement_tolerance
+    
+    def is_target_width_aligned(self, ids=None):
+
+        ids = self.target_ids if ids is None else ids
+
+        target = self.detection_store.get_detection(ids)
+
+        if target is None:
+            return False
+
+        width = target[DetectionIndex.WIDTH]
+
+        expected = self.current_objective.approach.expected_width_px
+        tolerance = self.current_objective.approach.width_tolerance_px
+
+        if expected is None:
+            return False
+
+        error = abs(width - expected)
+
+        return error < tolerance
     
     
     def ekf_reset_done(self, event):

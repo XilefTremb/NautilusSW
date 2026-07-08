@@ -104,3 +104,57 @@ class VisionController:
         forward_error = -angle_deg * math.sin(angle)
         lateral_error = angle_deg * math.cos(angle)
         return forward_error, lateral_error
+    
+    def torpedo_perpendicular_error(self, target_detection):
+
+        width_px = target_detection[DetectionIndex.WIDTH]
+
+        expected_width_px = (
+            self.node.fsm.current_objective.approach.expected_width_px
+        )
+
+        if width_px <= 0 or expected_width_px is None:
+            return None
+
+        error_ratio = (width_px - expected_width_px) / expected_width_px
+
+        return error_ratio
+    
+    def align_torpedo(self, target_detection):
+        if target_detection is None:
+            return
+
+        # -------------------------
+        # Distance error
+        # -------------------------
+        current_depth = target_detection[DetectionIndex.DEPTH_MM]
+
+        desired_depth = (
+            self.node.fsm.current_objective
+            .approach
+            .approach_distance_mm
+        )
+
+        depth_error = desired_depth - current_depth
+
+        # positive = too far
+        # negative = too close
+
+        self.node.publish_forward_error(
+            float(depth_error)
+        )
+
+
+        # -------------------------
+        # Perpendicular error
+        # -------------------------
+        width_error = self.torpedo_perpendicular_error(
+            target_detection
+        )
+
+        if width_error is None:
+            return
+
+        self.node.publish_yaw_error(
+            float(width_error)
+        )
