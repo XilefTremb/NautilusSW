@@ -4,6 +4,7 @@ import argparse
 import rclpy
 import torch
 import time
+import threading
 import numpy as np
 import os
 
@@ -30,8 +31,8 @@ from enums.ObjectID import ObjectID
 # CONFIG
 # =========================================================
 MOVING_MEAN_ACTIVATED = False
-FORWARD_CAM_RATE_HZ = 10
-DOWNWARD_CAM_RATE_HZ = 10
+FORWARD_CAM_RATE_HZ = 15
+DOWNWARD_CAM_RATE_HZ = 15
 
 COLOR_IN_DETECTION = (0, 255, 0)
 COLOR_NOT_IN_DETECTION = (255, 0, 0)
@@ -50,7 +51,20 @@ USE_HALF_PRECISION = True
 WARMUP_ON_START = True
 # Rate at which the main inference loop polls the frame queues. A higher rate
 # reduces how long a ready frame waits before being picked up (less latency).
-INFERENCE_LOOP_HZ = 30
+# Only used when USE_INFERENCE_THREAD is False. Kept high (fast poll) so the
+# single-threaded timer picks up ready frames almost immediately -- this gives
+# the low-latency benefit of a dedicated thread WITHOUT the GIL contention that
+# a background inference thread + MultiThreadedExecutor introduces.
+INFERENCE_LOOP_HZ = 100
+# Run inference in a dedicated background thread instead of a polling timer.
+# WARNING: for this CPU-bound Python pipeline (cv_bridge, YOLO postprocess,
+# numpy) the GIL serialises Python work anyway, so a background thread just
+# fights the executor for the GIL and STARVES the camera callbacks -- observed
+# as growing publish intervals over time. Leave this False and rely on a fast
+# INFERENCE_LOOP_HZ instead. Only flip to True to A/B test.
+USE_INFERENCE_THREAD = False
+# Sleep applied by the inference thread when no frame is ready (seconds).
+INFERENCE_IDLE_SLEEP_S = 0.001
 
 # -------- PROFILING --------
 # When True: measure per-stage run times, publish them on /yolo/profiling
@@ -176,16 +190,12 @@ class YoloNode(Node):
 
         # -------- INFERENCE CONFIG --------
         self.use_half = USE_HALF_PRECISION and torch.cuda.is_available()
-        self.infer_imgsz = INFERENCE_IMGSZ
 
         # Warm up the model so the first real frame doesn't pay the lazy-init cost.
         if WARMUP_ON_START:
-            warmup_size = self.infer_imgsz or 640
-            dummy = np.zeros((warmup_size, warmup_size, 3), dtype=np.uint8)
+            dummy = np.zeros((640, 640, 3), dtype=np.uint8)
             self.run_inference(dummy)
-            self.get_logger().info(
-                f'Model warmed up (half={self.use_half}, imgsz={self.infer_imgsz or "native"})'
-            )
+            self.get_logger().info(f'Model warmed up (half={self.use_half})')
 
         # ----------- INIT PARAMS -----------
         self.depth_threshold = 99999
@@ -245,16 +255,29 @@ class YoloNode(Node):
 
         self.ts.registerCallback(self.forward_callback)
 
-        # -------- TIMER (MAIN INFERENCE LOOP) --------
-        self.timer = self.create_timer(1.0 / INFERENCE_LOOP_HZ, self.inference_loop)
-
         self.last_forward_time = 0
         self.last_downward_time = 0
 
         self.forward_interval = 1.0 / FORWARD_CAM_RATE_HZ
         self.downward_interval = 1.0 / DOWNWARD_CAM_RATE_HZ
 
-        self.get_logger().info(f'YOLOv8 node started, mode: {self.mode}, type: {self.type_yolo}')
+        # -------- INFERENCE DRIVER (DEDICATED THREAD OR POLLING TIMER) --------
+        self.timer = None
+        self._inference_running = False
+        self._inference_thread = None
+        if USE_INFERENCE_THREAD:
+            self._inference_running = True
+            self._inference_thread = threading.Thread(
+                target=self.inference_worker, daemon=True
+            )
+            self._inference_thread.start()
+        else:
+            self.timer = self.create_timer(1.0 / INFERENCE_LOOP_HZ, self.inference_loop)
+
+        self.get_logger().info(
+            f'YOLOv8 node started, mode: {self.mode}, type: {self.type_yolo}, '
+            f'driver: {"thread" if USE_INFERENCE_THREAD else "timer"}'
+        )
 
     # -------- CALLBACKS --------
     def forward_callback(self, rgb_msg, depth_msg):
@@ -314,9 +337,20 @@ class YoloNode(Node):
         kwargs = {"conf": INFERENCE_CONF, "verbose": False}
         if self.use_half:
             kwargs["half"] = True
-        if self.infer_imgsz:
-            kwargs["imgsz"] = self.infer_imgsz
         return self.model(frame, **kwargs)
+
+    def inference_worker(self):
+        # DEDICATED INFERENCE THREAD: process frames back-to-back with no timer
+        # quantization. Sleeps briefly only when no frame is ready.
+        while self._inference_running and rclpy.ok():
+            try:
+                did_work = self.inference_loop()
+            except Exception as exc:  # keep the thread alive on transient errors
+                self.get_logger().error(f"Inference worker error: {exc}")
+                did_work = False
+
+            if not did_work:
+                time.sleep(INFERENCE_IDLE_SLEEP_S)
 
     def inference_loop(self):
         now = time.time()
@@ -381,7 +415,7 @@ class YoloNode(Node):
                 self.profiler.record("end_2_end", (time.perf_counter() - frame_t0) * 1000.0)
                 self.publish_profiling()
 
-            return
+            return True
 
         #PRIORITY2: DOWNWARD CAMERA
         if ENABLE_DOWNWARD_INFERENCE and self.downward_queue and (now - self.last_downward_time > self.downward_interval):
@@ -418,6 +452,10 @@ class YoloNode(Node):
                 self.profiler.record("image_annotated_dwd_cam_interval", self.profiler.event_interval("image_annotated_dwd_cam_interval"))
                 self.profiler.record("end_2_end", (time.perf_counter() - frame_t0) * 1000.0)
                 self.publish_profiling()
+
+            return True
+
+        return False
 
     def publish_profiling(self):
         # PUBLISH + OPTIONALLY LOG PER-STAGE RUN TIMES
@@ -768,6 +806,11 @@ class YoloNode(Node):
     def destroy_node(self):
         self.get_logger().info("Destroying YOLO node")
 
+        # Stop the inference thread before tearing down the model.
+        self._inference_running = False
+        if self._inference_thread is not None:
+            self._inference_thread.join(timeout=2.0)
+
         if hasattr(self, "model"):
             del self.model
 
@@ -786,6 +829,9 @@ def main():
     rclpy.init()
     node = YoloNode(args)
 
+    # Single-threaded on purpose: this pipeline is CPU/GIL bound, so cooperative
+    # single-threaded scheduling (callbacks + inference taking clean turns)
+    # outperforms a MultiThreadedExecutor, which only adds GIL contention.
     try:
         rclpy.spin(node)
 
