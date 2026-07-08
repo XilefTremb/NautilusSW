@@ -25,7 +25,9 @@ def slalom_organizer(slalom_tab, objects, annotated_frame, payload, type_yolo):
             float(closest_side["dist_center_x"]),
             float(closest_side["depth"]),
             0.0,
-            float(closest_side["dist_center_y"])
+            float(closest_side["dist_center_y"]),
+            0.0,
+            0.0
         ])
 
     else:
@@ -50,14 +52,14 @@ def slalom_organizer(slalom_tab, objects, annotated_frame, payload, type_yolo):
             selected_ids[id(slalom_left)] = ObjectID.SLALOM_LEFT
 
             payload.extend(
-                [float(ObjectID.SLALOM_LEFT), float(slalom_left["dist_center_x"]), float(slalom_left["depth"]), 0.0, float(slalom_left["dist_center_y"])])
+                [float(ObjectID.SLALOM_LEFT), float(slalom_left["dist_center_x"]), float(slalom_left["depth"]), 0.0, float(slalom_left["dist_center_y"]), 0.0, 0.0])
 
         if slalom_right is not None:
             objects[ObjectID.SLALOM_RIGHT] = slalom_right
             selected_ids[id(slalom_right)] = ObjectID.SLALOM_RIGHT
 
             payload.extend(
-                [float(ObjectID.SLALOM_RIGHT), float(slalom_right["dist_center_x"]), float(slalom_right["depth"]), 0.0, float(slalom_right["dist_center_y"])])
+                [float(ObjectID.SLALOM_RIGHT), float(slalom_right["dist_center_x"]), float(slalom_right["depth"]), 0.0, float(slalom_right["dist_center_y"]), 0.0, 0.0])
 
     for slalom in slalom_tab:
         display_id = selected_ids.get(id(slalom), ObjectID.SLALOM_SIDE)
@@ -139,7 +141,8 @@ def target_organizer(target_tab, objects, annotated_frame, payload, type_yolo):
             float(target["dist_center_x"]),
             float(target["depth"]),
             0.0,
-            float(target["dist_center_y"])
+            float(target["dist_center_y"]),
+            0.0
         ])
 
     for target in target_tab:

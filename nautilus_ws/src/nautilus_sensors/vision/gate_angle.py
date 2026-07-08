@@ -33,7 +33,7 @@ def build_payload(GATE_ID, left_obj, right_obj, results_angle, mode):
     dist_center_gate_in_y = find_dist_center_gate_in_y(cy, left_obj["box_cy"], right_obj["box_cy"])
     mean_distance = (right_obj["depth"] + left_obj["depth"]) / 2
     if angle_calc is not None and abs(angle_calc) < 50 and dist_center_gate_in_x is not None:
-        results_angle.extend([float(GATE_ID), float(dist_center_gate_in_x), float(mean_distance), float(angle_calc), float(dist_center_gate_in_y) ])
+        results_angle.extend([float(GATE_ID), float(dist_center_gate_in_x), float(mean_distance), float(angle_calc), float(dist_center_gate_in_y), 0.0, 0.0])
     
 def find_gate_angle(objects, mode):
     results_angle = []

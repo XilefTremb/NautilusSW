@@ -538,7 +538,7 @@ class YoloNode(Node):
         payload_angle = find_gate_angle(objects, self.mode)
 
         if MOVING_MEAN_ACTIVATED:
-            for i in range(0, len(payload_angle), 5):
+            for i in range(0, len(payload_angle), 7):
                 group_id = int(payload_angle[i])
                 angle_index = i + 3
 
