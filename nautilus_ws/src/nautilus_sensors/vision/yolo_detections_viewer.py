@@ -29,19 +29,21 @@ class YoloDetectionViewer(Node):
     def detection_callback(self, msg: Float32MultiArray):
         detections = {}
 
-        if len(msg.data) % 5 != 0:
+        if len(msg.data) % 7 != 0:
             self.get_logger().warn(
                 f"Malformed detection array: len={len(msg.data)}, expected multiple of 5"
             )
             return
 
-        for i in range(0, len(msg.data), 5):
+        for i in range(0, len(msg.data), 7):
             object_id = int(msg.data[i])
             detections[object_id] = {
                 "x": msg.data[i + 1],
                 "depth": msg.data[i + 2],
                 "angle": msg.data[i + 3],
                 "y": msg.data[i + 4],
+                "width": msg.data[i + 5],
+                "height": msg.data[i + 6],
             }
 
         self.latest = detections
@@ -81,7 +83,7 @@ def draw(stdscr, node: YoloDetectionViewer):
 
         stdscr.addstr(1, 0, age_text[:width], age_color)
 
-        header = f"{'ID':>3}  {'NAME':<22} {'SEEN':<5} {'X(px)':>9} {'Y(px)':>9} {'DEPTH(mm)':>11} {'ANGLE':>8}"
+        header = f"{'ID':>3}  {'NAME':<22} {'SEEN':<5} {'X(px)':>9} {'Y(px)':>9} {'DEPTH(mm)':>11} {'ANGLE':>8} {'WIDTH':>9} {'HEIGHT':>9}"
         stdscr.addstr(3, 0, header[:width], curses.A_BOLD)
         stdscr.addstr(4, 0, "-" * min(width, len(header)))
 
@@ -102,6 +104,8 @@ def draw(stdscr, node: YoloDetectionViewer):
                     f"{d['y']:>9.1f} "
                     f"{d['depth']:>11.1f} "
                     f"{d['angle']:>8.1f}"
+                    f"{d['width']:>9.1f}"
+                    f"{d['height']:>9.1f}"
                 )
                 color = curses.color_pair(1)
             else:
@@ -112,6 +116,8 @@ def draw(stdscr, node: YoloDetectionViewer):
                     f"{'-':>9} "
                     f"{'-':>11} "
                     f"{'-':>8}"
+                    f"{'-':>9}"
+                    f"{'-':>9}"
                 )
                 color = curses.color_pair(5)
 
