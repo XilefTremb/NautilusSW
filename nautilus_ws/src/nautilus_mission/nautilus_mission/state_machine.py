@@ -134,7 +134,7 @@ class StateMachine:
                 return
 
             is_centered = self.is_target_centered()
-
+            # self.node.get_logger().info(f"{self.current_objective.center.full_centering}")
             if self.current_objective.center.full_centering:
                 success_condition = is_centered and self.is_target_perpendicular()
             else:
@@ -180,7 +180,7 @@ class StateMachine:
 
     def on_enter_LOAD_OBJECTIVE(self, event):
         self.vision_action = VisionAction.IDLE
-        self.node.publish_forward_cmd(1500)
+        self.node.publish_cmd("forward",1500)
         self.approach_distance_error_m = 0.0
         self.current_success_frame_count = 0
 
@@ -291,7 +291,7 @@ class StateMachine:
     def on_enter_MISSION_COMPLETE(self, event):
         self.target_ids = None
         self.vision_action = VisionAction.IDLE
-        self.node.publish_forward_cmd(1500)
+        self.node.publish_cmd("forward",1500)
         self.node.get_logger().info('Mission complete')
 
     def has_more_objectives(self, event):
@@ -315,7 +315,7 @@ class StateMachine:
 
         if self.current_objective.action.type == self.ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
-            self.node.publish_forward_ekf_error(error_ekf_fwd_position)
+            self.node.publish_error("forward_ekf",error_ekf_fwd_position)
 
         if self.current_objective.action.type == self.ActionType.SAVE_ROLE:
             self.node.get_logger().info('Saving role choice for current objective.')
@@ -464,10 +464,10 @@ class StateMachine:
         target = self.detection_store.get_detection(ids)
         if target is None:
             return False
-        
         if self.current_objective.center.align_width:
             width = target[DetectionIndex.WIDTH]
-            return abs(width - self.current_objective.center.target_width_px) > self.current_objective.center.width_tolerance_px
+            error = abs(width - self.current_objective.center.target_width_px)
+            return  error < self.current_objective.center.width_tolerance_px
 
         else:
             alignement_error = target[DetectionIndex.ANGLE_DEG]
@@ -500,8 +500,8 @@ class StateMachine:
             self.current_success_frame_count += 1
             self.node.get_logger().info(f"current success frame count {self.current_success_frame_count}")
         # else: 
-        #     self.current_success_frame_count = 0
-        #     # self.node.get_logger().info("reset success frame count to 0")success_frame_treshold=10,
+            # self.current_success_frame_count = 0
+            # self.node.get_logger().info("condition false")
 
         return self.current_success_frame_count >= self.current_objective.success_frame_treshold
        

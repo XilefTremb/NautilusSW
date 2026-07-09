@@ -23,8 +23,8 @@ def search_bottom_spiral(self):
 
     forward_cmd, lateral_cmd = dirs[self.bottom_search_leg % 4]
 
-    self.node.publish_forward_cmd(forward_cmd)
-    self.node.publish_lateral_cmd(lateral_cmd)
+    self.node.publish_cmd("forward",forward_cmd)
+    self.node.publish_cmd("lateral",lateral_cmd)
 
 def forward_search(self):
     gate_like_ids = [ObjectID.GATE_MID_RIGHT, ObjectID.GATE_LEFT_MID]
@@ -50,4 +50,4 @@ def forward_search(self):
     else:
         cmd = self.current_objective.search.spin_pwm
 
-    self.node.publish_yaw_cmd(cmd)
+    self.node.publish_cmd("yaw",cmd)

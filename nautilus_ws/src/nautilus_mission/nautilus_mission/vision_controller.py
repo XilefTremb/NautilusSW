@@ -52,15 +52,15 @@ class VisionController:
             width = target_detection[DetectionIndex.WIDTH]
             sign_angle = angle/abs(angle) if angle != 0 else 1
             width_error = float(sign_angle*(self.node.fsm.current_objective.center.target_width_px - width))
-            self.node.publish_lateral_width_error(width_error)
+            self.node.publish_error("lateral_width",width_error)
 
         else:
             forward_error, lateral_error = self.split_angle(angle)
-            self.node.publish_forward_error(forward_error)
-            self.node.publish_lateral_error(lateral_error)
+            self.node.publish_error("forward",forward_error)
+            self.node.publish_error("lateral",lateral_error)
 
-        self.node.publish_yaw_error(float(cx))
-        self.node.publish_throttle_error(float(cy))
+        self.node.publish_error("yaw",float(cx))
+        self.node.publish_error("throttle",float(cy))
 
 
     def center_bottom(self, target_detection):
@@ -70,24 +70,24 @@ class VisionController:
         px_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_X] - self.node.fsm.current_objective.center.target_offset_x
         py_error = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y] - self.node.fsm.current_objective.center.target_offset_y
 
-        self.node.publish_bottom_cam_lateral_error(float(px_error))
-        self.node.publish_bottom_cam_forward_error(float(py_error))
+        self.node.publish_error("bottom_lateral",float(px_error))
+        self.node.publish_error("bottom_forward",float(py_error))
 
     def approach_target(self, target_detection):
         if target_detection is not None:
             px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
-            self.node.publish_yaw_error(float(px))
+            self.node.publish_error("yaw",float(px))
 
-        self.node.publish_forward_cmd(1580)
+        self.node.publish_cmd("forward",1580)
 
     def circle_marker(self, target_detection):
         if target_detection is None:
             return
 
         px = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
-        self.node.publish_yaw_error(float(px) - self.circle_marker_pixel_offset)
-        self.node.publish_forward_cmd(1540)
-        self.node.publish_lateral_cmd(1375)
+        self.node.publish_error("yaw",float(px) - self.circle_marker_pixel_offset)
+        self.node.publish_cmd("forward",1540)
+        self.node.publish_cmd("lateral",1375)
 
         if self.circle_marker_pixel_offset < 280.0:
             self.circle_marker_pixel_offset += 1.0
@@ -98,8 +98,8 @@ class VisionController:
         
         cx = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
         cy = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y]
-        self.node.publish_yaw_error(float(cx))
-        self.node.publish_throttle_error(float(cy))
+        self.node.publish_error("yaw",float(cx))
+        self.node.publish_error("throttle",float(cy))
 
     def split_angle(self, angle_deg):
         angle = math.radians(angle_deg)

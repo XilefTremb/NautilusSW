@@ -104,75 +104,49 @@ class MasterNode(Node):
         target_detection = self.detection_store.get_detection(self.fsm.target_ids)
         self.vision_controller.process(self.fsm.vision_action, target_detection)
 
+    def _publish_float32(self, pub, value: float):
+        msg = Float32()
+        msg.data = float(value)
+        pub.publish(msg)
+    
+    def _publish_int16(self, pub, value: int):
+        msg = Int16()
+        msg.data = int(value)
+        pub.publish(msg)
+
+    def publish_error(self, name: str, error: float):
+        pubs = {
+            "yaw": self.yaw_error_pub,
+            "throttle": self.throttle_error_pub,
+            "forward": self.forward_error_pub,
+            "forward_ekf": self.forward_ekf_error_pub,
+            "lateral": self.lateral_error_pub,
+            "lateral_width": self.lateral_width_error_pub,
+            "bottom_lateral": self.bottom_cam_lateral_error_pub,
+            "bottom_forward": self.bottom_cam_forward_error_pub,
+        }
+
+        self._publish_float32(pubs[name], error)
+
+    def publish_cmd(self, name: str, pwm: int):
+        pubs = {
+            "forward": self.forward_cmd_pub,
+            "lateral": self.lateral_cmd_pub,
+            "throttle": self.throttle_cmd_pub,
+            "yaw": self.yaw_cmd_pub,
+        }
+
+        self._publish_int16(pubs[name], pwm)
+
     def publish_detections_depth_filter_mm(self, threshold: int):
         msg = Int16()
         msg.data = int(threshold)
         self.detections_depth_filter_mm_pub.publish(msg)
 
-    def publish_yaw_error(self, error: float):
-        msg = Float32()
-        msg.data = float(error)
-        self.yaw_error_pub.publish(msg)
-
-    def publish_throttle_error(self, error: float):
-        msg = Float32()
-        msg.data = float(error)
-        self.throttle_error_pub.publish(msg)
-
-    def publish_forward_error(self, error: float):
-        msg = Float32()
-        msg.data = float(error)
-        self.forward_error_pub.publish(msg)
-
-    def publish_forward_ekf_error(self, error: float):
-        msg = Float32()
-        msg.data = float(error)
-        self.forward_ekf_error_pub.publish(msg)
-
-    def publish_lateral_error(self, error: float):
-        msg = Float32()
-        msg.data = float(error)
-        self.lateral_error_pub.publish(msg)
-
-    def publish_lateral_width_error(self, error: float):
-        msg = Float32()
-        msg.data=float(error)
-        self.lateral_width_error_pub.publish(msg)
-
-    def publish_forward_cmd(self, pwm: int):
-        msg = Int16()
-        msg.data = int(pwm)
-        self.forward_cmd_pub.publish(msg)
-
-    def publish_lateral_cmd(self, pwm: int):
-        msg = Int16()
-        msg.data = int(pwm)
-        self.lateral_cmd_pub.publish(msg)
-
-    def publish_throttle_cmd(self, cmd: float):
-        msg = Int16()
-        msg.data = int(cmd)
-        self.throttle_cmd_pub.publish(msg)
-
-    def publish_yaw_cmd(self, pwm: int):
-        msg = Int16()
-        msg.data = int(pwm)
-        self.yaw_cmd_pub.publish(msg)
-
     def publish_servo_cmd(self, servo: int, pwm: int):
         msg = Int16MultiArray()
         msg.data = [servo, pwm]
         self.servo_cmd_pub.publish(msg)
-
-    def publish_bottom_cam_lateral_error(self, error: float):
-        msg = Float32()
-        msg.data = float(error)
-        self.bottom_cam_lateral_error_pub.publish(msg)
-
-    def publish_bottom_cam_forward_error(self, error: float):
-        msg = Float32()
-        msg.data = float(error)
-        self.bottom_cam_forward_error_pub.publish(msg)
 
 def main(args=None):
 
