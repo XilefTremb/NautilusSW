@@ -13,8 +13,7 @@ from enums.DetectionIndex import DetectionIndex
 from enums.ServoEnum import ServoEnum
 
 from .detection_store import DetectionStore
-from .ekf_reset import reset_ekf_pose
-from nautilus_services import request_depth_change, reset_pids
+from nautilus_services import request_depth_change, reset_pids, reset_ekf_pose
 from nautilus_mission.search_patterns import search_bottom_spiral, forward_search
 
 class StateMachine:
@@ -118,6 +117,7 @@ class StateMachine:
         elif self.state == 'SEARCH_TARGET':
             self.search()
             self.vision_action = VisionAction.IDLE
+            # self.node.get_logger().info(f"{self.is_target_present()}")
             if self.is_target_present():
                 self.target_found()
 
@@ -400,6 +400,7 @@ class StateMachine:
 
     def is_target_present(self, ids=None) -> bool:
         ids = self.target_ids if ids is None else ids
+        # self.node.get_logger().info(f"{ids}")
         return self.detection_store.get_detection(ids) is not None
 
 
@@ -463,31 +464,14 @@ class StateMachine:
         target = self.detection_store.get_detection(ids)
         if target is None:
             return False
+        
+        if self.current_objective.center.align_width:
+            width = target[DetectionIndex.WIDTH]
+            return abs(width - self.current_objective.center.target_width_px) > self.current_objective.center.width_tolerance_px
 
-        alignement_error = target[DetectionIndex.ANGLE_DEG]
-
-        return abs(alignement_error) < self.current_objective.center.alignement_tolerance
-    
-    def is_target_width_aligned(self, ids=None):
-
-        ids = self.target_ids if ids is None else ids
-
-        target = self.detection_store.get_detection(ids)
-
-        if target is None:
-            return False
-
-        width = target[DetectionIndex.WIDTH]
-
-        expected = self.current_objective.approach.expected_width_px
-        tolerance = self.current_objective.approach.width_tolerance_px
-
-        if expected is None or width <= 0:
-            return False
-
-        error = abs(width - expected)
-
-        return abs(width - expected) < tolerance 
+        else:
+            alignement_error = target[DetectionIndex.ANGLE_DEG]
+            return abs(alignement_error) < self.current_objective.center.alignement_tolerance
     
     
     def ekf_reset_done(self, event):

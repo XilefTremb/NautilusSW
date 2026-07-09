@@ -41,6 +41,7 @@ class MasterNode(Node):
         self.yaw_error_pub = self.create_publisher(Float32, '/control/vision_errors/yaw', 10)
         self.forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward', 10)
         self.lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral', 10)
+        self.lateral_width_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral_width', 10)
         self.throttle_error_pub = self.create_publisher(Float32, '/control/vision_errors/throttle', 10)
         self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
 
@@ -58,10 +59,14 @@ class MasterNode(Node):
         # Services
         self.depth_client = self.create_client(SetTargetDepth,'/mission/set_target_depth')
         self.set_pose_client = self.create_client(SetPose,'/set_pose')
-        self.yaw_reset_client = self.create_client(Trigger, '/pid_forward_cam_yaw/reset_pid')
-        self.forward_reset_client = self.create_client(Trigger, '/pid_forward_cam_forward/reset_pid')
-        self.lateral_reset_client = self.create_client(Trigger, '/pid_forward_cam_lateral/reset_pid')
-        self.forward_ekf_reset_client = self.create_client(Trigger, '/pid_forward_ekf/reset_pid')
+
+        self.pid_reset_clients = {
+            "yaw": self.create_client(Trigger, "/pid_forward_cam_yaw/reset_pid"),
+            "forward": self.create_client(Trigger, "/pid_forward_cam_forward/reset_pid"),
+            "lateral": self.create_client(Trigger, "/pid_forward_cam_lateral/reset_pid"),
+            "forward_ekf": self.create_client(Trigger, "/pid_forward_ekf/reset_pid"),
+            "lateral_width": self.create_client(Trigger, "/pid_width_lateral/reset_pid"),
+        }
 
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
@@ -128,6 +133,11 @@ class MasterNode(Node):
         msg = Float32()
         msg.data = float(error)
         self.lateral_error_pub.publish(msg)
+
+    def publish_lateral_width_error(self, error: float):
+        msg = Float32()
+        msg.data=float(error)
+        self.lateral_width_error_pub.publish(msg)
 
     def publish_forward_cmd(self, pwm: int):
         msg = Int16()

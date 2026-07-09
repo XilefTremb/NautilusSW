@@ -48,9 +48,17 @@ class VisionController:
         cy = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y]
         angle = target_detection[DetectionIndex.ANGLE_DEG]
 
-        forward_error, lateral_error = self.split_angle(angle)
-        self.node.publish_forward_error(forward_error)
-        self.node.publish_lateral_error(lateral_error)
+        if self.node.fsm.current_objective.center.align_width:
+            width = target_detection[DetectionIndex.WIDTH]
+            sign_angle = angle/abs(angle) if angle != 0 else 1
+            width_error = float(sign_angle*(self.node.fsm.current_objective.center.target_width_px - width))
+            self.node.publish_lateral_width_error(width_error)
+
+        else:
+            forward_error, lateral_error = self.split_angle(angle)
+            self.node.publish_forward_error(forward_error)
+            self.node.publish_lateral_error(lateral_error)
+
         self.node.publish_yaw_error(float(cx))
         self.node.publish_throttle_error(float(cy))
 
@@ -98,46 +106,3 @@ class VisionController:
         forward_error = -angle_deg * math.sin(angle)
         lateral_error = angle_deg * math.cos(angle)
         return forward_error, lateral_error
-    
-    def torpedo_perpendicular_error(self, target_detection):
-
-        width_px = target_detection[DetectionIndex.WIDTH]
-
-        expected_width_px = (
-            self.node.fsm.current_objective.approach.expected_width_px
-        )
-
-        if width_px <= 0 or expected_width_px is None:
-            return None
-
-        error_ratio = (width_px - expected_width_px) / expected_width_px
-
-        return error_ratio
-    
-    def align_torpedo(self, target_detection):
-        if target_detection is None:
-            return
-        
-        cx = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
-        cy = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y]
-
-        self.node.publish_yaw_error(float(cx))
-        self.node.publish_throttle_error(float(cy))
-
-        current_depth = target_detection[DetectionIndex.DEPTH_MM]
-
-        desired_depth = (
-            self.node.fsm.current_objective
-            .approach
-            .approach_distance_mm
-        )
-
-        depth_error = desired_depth - current_depth
-
-        self.node.publish_forward_error(float(depth_error))
-
-        angle = target_detection[DetectionIndex.ANGLE_DEG]
-
-        if angle is not None:
-            lateral_error = float(angle) / 45.0
-            self.node.publish_lateral_error(lateral_error)

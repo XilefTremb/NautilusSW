@@ -25,18 +25,18 @@ class CenterConfig:
     x_center_tolerance_fov: float = 0.05 # fraction of the fov. 1 being the full width of the camera
     y_center_tolerance_fov: float = 1.0 
     angle_tolerance_deg: float = 15.0
-    alignement_tolerance: float = 50.0 #mm for torpedo and degrees for gate or slalom
+
     center_bottom: bool = False
     target_offset_x: float = 0.2 # fraction of the fov. 1 being the full width of the camera
     target_offset_y: float = 0.1 # fraction of the fov. 
 
+    align_width: bool = False
+    target_width_px: int = 100 #use width of bbox to estiamte perpendicularness with torpedo
+    width_tolerance_px: int = 10
+
 @dataclass
 class ApproachConfig:
     approach_distance_mm: Optional[float] = None
-
-    expected_width_px: Optional[float] = None
-    width_tolerance_px: Optional[float] = None
-    yaw_kp: Optional[float] = None
     
 @dataclass
 class NoAction:
@@ -276,29 +276,30 @@ fine_approach_torpedo = Objective(
          success_frame_treshold=10,
          target_ids=[ObjectID.TORPEDO],
          center=CenterConfig(
-             full_centering=False,
-             x_center_tolerance_fov=0.1,
-             alignement_tolerance=150.0,
+            full_centering=True,
+            x_center_tolerance_fov=0.1,
+            align_width=True,
+            target_width_px=180,
+            width_tolerance_px=10,
          ),
          approach=ApproachConfig(
              approach_distance_mm=1500.0,
          ),
+         action=NoAction()
      )
     
 torpedo_firing_positioning_1 = Objective(
     name='torpedoFiringPositioning1',
     success_frame_treshold=10,
-    target_ids=None,
+    target_ids=[ObjectID.TORPEDO],
     center=CenterConfig(
-        full_centering=False,
+        full_centering=True,
         x_center_tolerance_fov=0.02,
-        alignement_tolerance=20.0,
+        
+       
     ),
     approach=ApproachConfig(
         approach_distance_mm=1000.0,
-        width_tolerance_px=20.0, #A tuner
-        expected_width_px=100, #A tuner
-        yaw_kp=0.005, #A tuner
     ),
     action=FireTorpedoAction(
         min_lifespan_s=1.0,
@@ -312,13 +313,9 @@ torpedo_firing_positioning_2 = Objective(
     center=CenterConfig(
         full_centering=False,
         x_center_tolerance_fov=0.02,
-        alignement_tolerance=20.0,
     ),
     approach=ApproachConfig(
         approach_distance_mm=1000.0,
-        width_tolerance_px=20.0, #A tuner
-        expected_width_px=100, #A tuner
-        yaw_kp=0.005, #A tuner
     ),
     action=FireTorpedoAction(
         min_lifespan_s=1.0,
@@ -329,5 +326,5 @@ torpedo_firing_positioning_2 = Objective(
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
 # mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
-mission_list = [coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
-
+# mission_list = [coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
+mission_list = [fine_approach_torpedo]

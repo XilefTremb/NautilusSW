@@ -98,5 +98,18 @@ def generate_launch_description():
                 'ki': 0.0,
                 'kd': 1.0
             }]
+        ),
+
+        Node(
+            package='nautilus_controls',
+            executable='pid_node',
+            name='pid_width_lateral',
+            parameters=[{
+                'input_topic': '/control/vision_errors/lateral_width',
+                'output_topic': '/control/cmd/lateral',
+                'kp': 5.0,
+                'ki': 0.0,
+                'kd': 1.0
+            }]
         )
     ])
