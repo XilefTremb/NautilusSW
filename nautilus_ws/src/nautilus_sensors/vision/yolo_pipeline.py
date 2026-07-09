@@ -499,10 +499,15 @@ class YoloNode(Node):
             
             w = obj["width"]
             h = obj["height"]
+
             if obj["depth"] < self.depth_threshold:
                 angle = 0.0
-            
-                payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"]), float(w), float(h)])
+                if object_id == ObjectID.TORPEDO:
+                    angle = find_angle_torpedo(objects)
+                    #self.get_logger().info(f"angle_torpedo={angle}")
+                    payload.extend([float(object_id), float(obj["dist_center_x"]), float(obj["depth"]), angle, float(obj["dist_center_y"]), float(w), float(h)])
+                else:
+                    payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"]), float(w), float(h)])
 
 
                 draw_detection(
