@@ -94,11 +94,13 @@ class Objective:
 approach_gate = Objective(
     name='approachGate',
     target_ids=[ObjectID.GATE_LEG_CENTER],
-    # target_auv_depth_m = 0.9, #1.45
+    target_auv_depth_m = 1.3,
+    success_frame_treshold = 50,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
+        full_centering = False,
         x_center_tolerance_fov=0.2,
-        y_center_tolerance_fov=0.0,
+        angle_tolerance_deg=5.0,
     ),
     approach=ApproachConfig(
         approach_distance_mm=4000.0,
@@ -109,15 +111,16 @@ approach_gate = Objective(
 
 choose_gate_side = Objective(
     name='chooseGateSide',
-    success_frame_treshold=3,
+    success_frame_treshold=50,
     search=SearchConfig(spin_pwm=1540),
     approach=ApproachConfig(
         approach_distance_mm=3000.0,
     ),
     center=CenterConfig(
-        full_centering=True,
+        full_centering = False,
         x_center_tolerance_fov=0.05,
         angle_tolerance_deg=5.0,
+        
     ),
     action=ChooseGateSideAction(
     ),
@@ -125,10 +128,10 @@ choose_gate_side = Objective(
 
 traverse_gate = Objective(
     name='traverseGate',
-    success_frame_treshold=20,
+    success_frame_treshold=50,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
-        full_centering=True,
+        full_centering = False,
         x_center_tolerance_fov=0.05,
         angle_tolerance_deg=5.0,
     ),
@@ -142,12 +145,11 @@ traverse_gate = Objective(
 
 slalom1 = Objective(
     name='slalom1',
-    success_frame_treshold=2,
+    success_frame_treshold=10,
     detections_depth_filter_mm = 2000,
-    # target_auv_depth_m = 2.6,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
-        full_centering=True,
+        full_centering = False,
         x_center_tolerance_fov=0.05,
         y_center_tolerance_fov=1.0,
         angle_tolerance_deg=5.0,
@@ -162,7 +164,7 @@ slalom1 = Objective(
 
 slalom2 = Objective(
     name='slalom2',
-    success_frame_treshold=1,
+    success_frame_treshold=10,
     detections_depth_filter_mm = 1500,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
@@ -179,7 +181,7 @@ slalom2 = Objective(
 
 slalom3 = Objective(
     name='slalom3',
-    success_frame_treshold=1,
+    success_frame_treshold=10,
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
@@ -197,8 +199,7 @@ slalom3 = Objective(
 approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
-    # target_auv_depth_m = 0.75,
-    success_frame_treshold= 2,
+    success_frame_treshold= 10,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering=False,
@@ -215,9 +216,9 @@ approach_dropper = Objective(
 
 launch_dropper = Objective(
     name='launchDropperObjective',
-    success_frame_treshold=1,
+    success_frame_treshold=10,
     search=SearchConfig(spin_pwm=1400),
-    # target_auv_depth_m = 0.25,
+    target_auv_depth_m = 0.25,
     center=CenterConfig(
         full_centering=False,
         x_center_tolerance_fov=0.05,
@@ -232,8 +233,8 @@ launch_dropper = Objective(
 
 launch_second_dropper = Objective(
     name='launchSecondDropperObjective',
+    success_frame_treshold=10,
     search=SearchConfig(spin_pwm=1460),
-    # target_auv_depth_m = 0.25,
     center=CenterConfig(
         full_centering=False,
         x_center_tolerance_fov=0.05,
@@ -249,6 +250,7 @@ launch_second_dropper = Objective(
 
 coarse_approach_torpedo = Objective(
          name='coarseApproachTorpedo',
+         success_frame_treshold=10,
          target_ids=[ObjectID.TORPEDO],
          detections_depth_filter_mm = 10000,
          search=SearchConfig(spin_pwm=1540),
@@ -270,6 +272,7 @@ torpedo_depth_change = Objective(
 
 fine_approach_torpedo = Objective(
          name='fineApproachTorpedo',
+         success_frame_treshold=10,
          target_ids=[ObjectID.TORPEDO],
          center=CenterConfig(
              full_centering=False,
@@ -277,15 +280,16 @@ fine_approach_torpedo = Objective(
              alignement_tolerance=150.0,
          ),
          approach=ApproachConfig(
-             approach_distance_mm=2000.0,
+             approach_distance_mm=1000.0,
          ),
      )
     
 torpedo_firing_positioning_1 = Objective(
     name='torpedoFiringPositioning1',
+    success_frame_treshold=10,
     target_ids=None,
     center=CenterConfig(
-        full_centering=True,
+        full_centering=False,
         x_center_tolerance_fov=0.02,
         alignement_tolerance=20.0,
     ),
@@ -302,9 +306,10 @@ torpedo_firing_positioning_1 = Objective(
 
 torpedo_firing_positioning_2 = Objective(
     name='torpedoFiringPositioning2',
+    success_frame_treshold=10,
     target_ids=None,
     center=CenterConfig(
-        full_centering=True,
+        full_centering=False,
         x_center_tolerance_fov=0.02,
         alignement_tolerance=20.0,
     ),
@@ -319,8 +324,24 @@ torpedo_firing_positioning_2 = Objective(
     ),
 )
 
-mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
+test_objective = Objective(
+    name='testObjective',
+    success_frame_treshold=10,
+    target_ids=[ObjectID.TORPEDO],
+    center=CenterConfig(
+        full_centering=False,
+        x_center_tolerance_fov=0.1,
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=1000.0,
+    ),
+    action=NoAction()
+)
+
+# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
 # mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
+# mission_list = [coarse_approach_torpedo, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
+mission_list = [test_objective]
 

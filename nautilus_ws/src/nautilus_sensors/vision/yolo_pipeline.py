@@ -572,8 +572,6 @@ class YoloNode(Node):
                     pass
             self.last_forward_publish_ts = now
             #self.get_logger().info(f"[PUBLISHED] Forward: {nb_objects} objects detected")
-        else:
-            self.get_logger().info(f"[EMPTY] Forward: No valid detections after filtering")
 
         self.detection_forward_pub.publish(msg)
 
