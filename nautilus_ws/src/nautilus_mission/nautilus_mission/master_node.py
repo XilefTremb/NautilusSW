@@ -28,7 +28,7 @@ class MasterNode(Node):
         )
 
         self.detection_store = DetectionStore(self.get_logger())
-        self.fsm = StateMachine(self, self.detection_store, use_sim=args.use_sim)
+        self.fsm = StateMachine(self, self.detection_store, use_sim=args.sim)
         self.vision_controller = VisionController(self)
 
         # Subscribers
@@ -48,7 +48,6 @@ class MasterNode(Node):
         self.bottom_cam_lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/bottom_cam/lateral', 10)
 
         self.yaw_cmd_pub = self.create_publisher(Int16, '/control/cmd/yaw', 10)
-        self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
         self.forward_cmd_pub = self.create_publisher(Int16, '/control/cmd/forward', 10)
         self.lateral_cmd_pub = self.create_publisher(Int16, '/control/cmd/lateral', 10)
         self.throttle_cmd_pub = self.create_publisher(Int16, '/control/cmd/throttle', 10)
@@ -130,11 +129,6 @@ class MasterNode(Node):
         msg.data = float(error)
         self.lateral_error_pub.publish(msg)
 
-    def publish_servo_cmd(self, servo: int, pwm: int):
-        msg = Int16MultiArray()
-        msg.data = [servo, pwm]
-        self.servo_cmd_pub.publish(msg)
-
     def publish_forward_cmd(self, pwm: int):
         msg = Int16()
         msg.data = int(pwm)
@@ -175,7 +169,7 @@ def main(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--sim", action="store_true")
     parser.add_argument("--timer", type=float, default=0.0)
-    parsed_args, ros_args = parser.parse_known_args(args)
+    parsed_args, ros_args = parser.parse_known_args()
 
     rclpy.init(args=ros_args)
 

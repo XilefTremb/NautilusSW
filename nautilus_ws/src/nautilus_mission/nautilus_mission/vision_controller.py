@@ -37,6 +37,8 @@ class VisionController:
             self.center_fov(target_detection)
         elif vision_action == VisionAction.CENTER_BOTTOM:
             self.center_bottom(target_detection)
+        elif vision_action == VisionAction.ALIGN_TORPEDO:
+            self.align_torpedo(target_detection)
 
     def center_target(self, target_detection):
         if target_detection is None:
@@ -123,10 +125,13 @@ class VisionController:
     def align_torpedo(self, target_detection):
         if target_detection is None:
             return
+        
+        cx = target_detection[DetectionIndex.CENTER_FOV_RATIO_X]
+        cy = target_detection[DetectionIndex.CENTER_FOV_RATIO_Y]
 
-        # -------------------------
-        # Distance error
-        # -------------------------
+        self.node.publish_yaw_error(float(cx))
+        self.node.publish_throttle_error(float(cy))
+
         current_depth = target_detection[DetectionIndex.DEPTH_MM]
 
         desired_depth = (
@@ -137,24 +142,10 @@ class VisionController:
 
         depth_error = desired_depth - current_depth
 
-        # positive = too far
-        # negative = too close
+        self.node.publish_forward_error(float(depth_error))
 
-        self.node.publish_forward_error(
-            float(depth_error)
-        )
+        angle = target_detection[DetectionIndex.ANGLE_DEG]
 
-
-        # -------------------------
-        # Perpendicular error
-        # -------------------------
-        width_error = self.torpedo_perpendicular_error(
-            target_detection
-        )
-
-        if width_error is None:
-            return
-
-        self.node.publish_yaw_error(
-            float(width_error)
-        )
+        if angle is not None:
+            lateral_error = float(angle) / 45.0
+            self.node.publish_lateral_error(lateral_error)

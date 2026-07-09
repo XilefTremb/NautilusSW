@@ -485,12 +485,12 @@ class StateMachine:
         expected = self.current_objective.approach.expected_width_px
         tolerance = self.current_objective.approach.width_tolerance_px
 
-        if expected is None:
+        if expected is None or width <= 0:
             return False
 
         error = abs(width - expected)
 
-        return error < tolerance
+        return abs(width - expected) < tolerance 
     
     
     def ekf_reset_done(self, event):

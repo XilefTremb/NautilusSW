@@ -32,6 +32,10 @@ class CenterConfig:
 @dataclass
 class ApproachConfig:
     approach_distance_mm: Optional[float] = None
+
+    expected_width_px: Optional[float] = None
+    width_tolerance_px: Optional[float] = None
+    yaw_kp: Optional[float] = None
     
 @dataclass
 class NoAction:
@@ -281,6 +285,9 @@ torpedo_firing_positioning_1 = Objective(
     ),
     approach=ApproachConfig(
         approach_distance_mm=1000.0,
+        width_tolerance_px=20.0, #A tuner
+        expected_width_px=100, #A tuner
+        yaw_kp=0.005, #A tuner
     ),
     action=FireTorpedoAction(
         min_lifespan_s=1.0,
@@ -297,6 +304,9 @@ torpedo_firing_positioning_2 = Objective(
     ),
     approach=ApproachConfig(
         approach_distance_mm=1000.0,
+        width_tolerance_px=20.0, #A tuner
+        expected_width_px=100, #A tuner
+        yaw_kp=0.005, #A tuner
     ),
     action=FireTorpedoAction(
         min_lifespan_s=1.0,
@@ -306,5 +316,6 @@ torpedo_firing_positioning_2 = Objective(
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
+# mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
+mission_list = [coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
 
