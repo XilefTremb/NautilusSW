@@ -596,7 +596,7 @@ class DualOakNode(Node):
             self.get_logger().info(f"Saved synchronized OAK-D frame set: {timestamp}")
 
         if rgb_oak1 is not None:
-            cv2.imwrite(os.path.join(RGB_OAK1_DIR, f"{timestamp}.jpg"), rgb_oak1)
+            cv2.imwrite(os.path.join(RGB_OAK1_DIR, f"{timestamp}_down.jpg"), rgb_oak1)
             self.get_logger().info(f"Saved downward frame: {timestamp}")
 
         self.last_save_time = now
