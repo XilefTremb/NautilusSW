@@ -142,6 +142,7 @@ def target_organizer(target_tab, objects, annotated_frame, payload, type_yolo):
             float(target["depth"]),
             0.0,
             float(target["dist_center_y"]),
+            0.0,
             0.0
         ])
 
