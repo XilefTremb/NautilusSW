@@ -161,6 +161,33 @@ def find_depth_from_edge_detector(depth_frame, x1, y1, x2, y2, annotated_frame, 
     
     return depth_value, filled_mask
 
+def find_torpedo_depth(objects, fallback_depth=None):
+    pictogram_ids = [
+        ObjectID.FIRE_TRUCK,
+        ObjectID.AMBULANCE,
+        ObjectID.BLOOD,
+        ObjectID.FIRE
+    ]
+
+    valid_depths = []
+
+    for pictogram_id in pictogram_ids:
+        if pictogram_id not in objects:
+            continue
+
+        depth = objects[pictogram_id].get("depth")
+
+        if depth is not None and depth > 0:
+            valid_depths.append(float(depth))
+
+    if valid_depths:
+        return float(np.mean(valid_depths))
+
+    if fallback_depth is not None:
+        return float(fallback_depth)
+
+    return 0.0
+
 def params_cams(mode, cam):
 
     if mode == "sim":
