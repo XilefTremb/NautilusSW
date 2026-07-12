@@ -34,13 +34,6 @@ install(
 
 install(
   PROGRAMS
-    vision/stream.py
-  DESTINATION lib/${PROJECT_NAME}
-  RENAME stream
-)
-
-install(
-  PROGRAMS
     vision/stream_threaded.py
   DESTINATION lib/${PROJECT_NAME}
   RENAME stream_threaded
