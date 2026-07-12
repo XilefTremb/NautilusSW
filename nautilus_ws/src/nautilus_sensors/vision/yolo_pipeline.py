@@ -17,7 +17,7 @@ from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
 
-from vision.object_depth import find_depth, find_dist_from_center_in_x, find_dist_from_center_in_y, global_median_forward_cam, find_depth_from_edge_detector
+from vision.object_depth import find_depth, find_dist_from_center_in_x, find_dist_from_center_in_y, global_median_forward_cam, find_depth_from_edge_detector, find_torpedo_depth
 from vision.gate_angle import find_gate_angle, find_angle_torpedo
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
@@ -586,7 +586,6 @@ class YoloNode(Node):
                          object_id == ObjectID.GATE_LEG_CENTER or
                          object_id == ObjectID.GATE_LEG_R or
                          object_id == ObjectID.SLALOM_SIDE or
-                         object_id == ObjectID.TORPEDO or
                          object_id == ObjectID.SLALOM_CENTER or
                          object_id == ObjectID.DROPPER)):
 
@@ -722,8 +721,12 @@ class YoloNode(Node):
                 angle = 0.0
                 if object_id == ObjectID.TORPEDO:
                     angle = find_angle_torpedo(objects)
-                    #self.get_logger().info(f"angle_torpedo={angle}")
-                    payload.extend([float(object_id), float(obj["dist_center_x"]), float(obj["depth"]), angle, float(obj["dist_center_y"])])
+
+                    torpedo_depth = find_torpedo_depth(
+                        objects=objects,
+                        fallback_depth=obj["depth"])
+
+                    payload.extend([float(object_id), float(obj["dist_center_x"]), float(torpedo_depth), float(angle), float(obj["dist_center_y"])])
                 else:
                     payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"])])
 
