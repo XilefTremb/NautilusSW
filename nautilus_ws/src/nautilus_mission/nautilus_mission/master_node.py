@@ -175,8 +175,8 @@ def main(args=None):
 
     node = MasterNode(parsed_args)
 
-    # recorder = RosbagRecorder(node)
-    # recorder.start()
+    recorder = RosbagRecorder(node)
+    recorder.start()
 
     try:
         rclpy.spin(node)
@@ -184,12 +184,12 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
 
-    # finally:
-    #     recorder.stop()
-    #     recorder.ask_keep_or_delete()
+    finally:
+        recorder.stop()
+        recorder.ask_keep_or_delete()
 
-    #     node.destroy_node()
-    #     rclpy.shutdown()
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
