@@ -48,6 +48,7 @@ class ForwardAction:
     type: ActionType = ActionType.FORWARD
     duration_s: float = 0.0
     forward_distance_m: float = 0.0
+    lateral_distance_m: float = 0.0
     dropper_search: bool = False
 
 @dataclass
@@ -97,12 +98,12 @@ class Objective:
 approach_gate = Objective(
     name='approachGate',
     target_ids=[ObjectID.GATE_LEG_CENTER],
-    target_auv_depth_m = 1.3,
-    success_frame_treshold = 50,
+    target_auv_depth_m = 0.7,
+    success_frame_treshold = 10,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
         full_centering = False,
-        x_center_tolerance_fov=0.2,
+        x_center_tolerance_fov=0.3,
         angle_tolerance_deg=5.0,
     ),
     approach=ApproachConfig(
@@ -114,7 +115,7 @@ approach_gate = Objective(
 
 choose_gate_side = Objective(
     name='chooseGateSide',
-    success_frame_treshold=50,
+    success_frame_treshold=10,
     search=SearchConfig(spin_pwm=1540),
     approach=ApproachConfig(
         approach_distance_mm=3000.0,
@@ -131,7 +132,7 @@ choose_gate_side = Objective(
 
 traverse_gate = Objective(
     name='traverseGate',
-    success_frame_treshold=50,
+    success_frame_treshold=10,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering = False,
@@ -152,6 +153,7 @@ slalom1 = Objective(
     success_frame_treshold=10,
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1540),
+    target_auv_depth_m = 0.9,
     center=CenterConfig(
         full_centering = False,
         x_center_tolerance_fov=0.05,
@@ -168,37 +170,19 @@ slalom1 = Objective(
 
 slalom2 = Objective(
     name='slalom2',
-    target_ids=[ObjectID.SLALOM_LEFT_MID],
-    success_frame_treshold=10,
     detections_depth_filter_mm = 1500,
-    search=SearchConfig(spin_pwm=1540),
-    center=CenterConfig(
-        x_center_tolerance_fov=0.1,
-        y_center_tolerance_fov=1.0,
-    ),
-    approach=ApproachConfig(
-        approach_distance_mm=1500.0
-    ),
     action=ForwardAction(
         forward_distance_m=1.0,
+        lateral_distance_m = -1.0
     ),
 )
 
 slalom3 = Objective(
     name='slalom3',
-    target_ids=[ObjectID.SLALOM_LEFT_MID],
-    success_frame_treshold=10,
     detections_depth_filter_mm = 2000,
-    search=SearchConfig(spin_pwm=1460),
-    center=CenterConfig(
-        x_center_tolerance_fov=0.1,
-        y_center_tolerance_fov=1.0,
-    ),
-    approach=ApproachConfig(
-        approach_distance_mm=1500.0
-    ),
     action=ForwardAction(
         forward_distance_m=2.2,
+        lateral_distance_m=1.0,
     ),
 )
 
@@ -353,9 +337,9 @@ test_objective = Objective(
 )
 
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
-# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
+# mission_list = [approach_gate, choose_gate_side, traverse_gate, approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-mission_list = [approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
+# mission_list = [approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [coarse_approach_torpedo, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
 # mission_list = [slalom1, slalom2, slalom3]
-
+mission_list = [slalom2]

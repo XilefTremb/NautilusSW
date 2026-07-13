@@ -44,6 +44,7 @@ class RosbagRecorder:
             "/control/vision_errors/forward",
             "/control/vision_errors/lateral",
             "/control/vision_errors/forward_ekf",
+            "/control/vision_errors/lateral_ekf",
             "/control/cmd/yaw",
             "/control/cmd/forward",
             "/control/cmd/lateral",

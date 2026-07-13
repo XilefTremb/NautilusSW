@@ -46,6 +46,7 @@ class MasterNode(Node):
         self.lateral_width_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral_width', 10)
         self.throttle_error_pub = self.create_publisher(Float32, '/control/vision_errors/throttle', 10)
         self.forward_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/forward_ekf', 10)
+        self.lateral_ekf_error_pub = self.create_publisher(Float32, '/control/vision_errors/lateral_ekf', 10)
 
         self.bottom_cam_forward_error_pub = self.create_publisher(Float32, '/control/vision_errors/bottom_cam/forward', 10)
         self.bottom_cam_lateral_error_pub = self.create_publisher(Float32, '/control/vision_errors/bottom_cam/lateral', 10)
@@ -71,7 +72,8 @@ class MasterNode(Node):
             "forward": self.create_client(Trigger, "/pid_forward_cam_forward/reset_pid"),
             "lateral": self.create_client(Trigger, "/pid_forward_cam_lateral/reset_pid"),
             "forward_ekf": self.create_client(Trigger, "/pid_forward_ekf/reset_pid"),
-            "lateral_width": self.create_client(Trigger, "/pid_width_lateral/reset_pid"),
+            "lateral_ekf": self.create_client(Trigger, "/pid_lateral_ekf/reset_pid"),
+            # "lateral_width": self.create_client(Trigger, "/pid_width_lateral/reset_pid"),
         }
 
         # Timer
@@ -130,6 +132,7 @@ class MasterNode(Node):
             "throttle": self.throttle_error_pub,
             "forward": self.forward_error_pub,
             "forward_ekf": self.forward_ekf_error_pub,
+            "lateral_ekf": self.lateral_ekf_error_pub,
             "lateral": self.lateral_error_pub,
             "lateral_width": self.lateral_width_error_pub,
             "bottom_lateral": self.bottom_cam_lateral_error_pub,

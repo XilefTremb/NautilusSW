@@ -322,7 +322,10 @@ class StateMachine:
 
         if self.current_objective.action.type == self.ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
+            error_ekf_lat_position = self.current_objective.action.lateral_distance_m - self.lateral_position
+
             self.node.publish_error("forward_ekf",error_ekf_fwd_position)
+            self.node.publish_error("lateral_ekf",error_ekf_lat_position)
 
         if self.current_objective.action.type == self.ActionType.SAVE_ROLE:
             self.node.get_logger().info('Saving role choice for current objective.')
@@ -370,8 +373,10 @@ class StateMachine:
                 
             if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
                 return True
-                
-            return self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
+            
+            arrived_forward = self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
+            arrived_lateral = self.lateral_position >= self.current_objective.action.lateral_distance_m - 0.3 - self.approach_distance_error_m
+            return arrived_forward and arrived_lateral
             
             
         if action == self.ActionType.CIRCLE_MARKER:
