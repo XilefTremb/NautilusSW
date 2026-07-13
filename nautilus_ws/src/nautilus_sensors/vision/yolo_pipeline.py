@@ -562,9 +562,9 @@ class YoloNode(Node):
                     None
                 )
 
-            if payload:
-                msg = Float32MultiArray()
-                msg.data = payload
+    
+            msg = Float32MultiArray()
+            msg.data = payload
 
                 nb_objects = len(payload) // 7
 
@@ -574,13 +574,12 @@ class YoloNode(Node):
                 ]
                 msg.layout.data_offset = 0
 
-                #self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
-                self.detection_downward_pub.publish(msg)
+            #self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
+            self.detection_downward_pub.publish(msg)
 
-                if self.profiler is not None:
-                    self.profiler.record("detections_downward_interval", self.profiler.event_interval("detections_downward_interval"))
-            else:
-                self.get_logger().info(f"[EMPTY] Downward: No detections found")
+            if self.profiler is not None:
+                self.profiler.record("detections_downward_interval", self.profiler.event_interval("detections_downward_interval"))
+            
 
 
     def process_forward(self, results, annotated_frame, depth):
