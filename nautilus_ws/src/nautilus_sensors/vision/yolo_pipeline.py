@@ -512,8 +512,8 @@ class YoloNode(Node):
                 ]
                 msg.layout.data_offset = 0
 
-            #self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
-            self.detection_downward_pub.publish(msg)
+                #self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
+                self.detection_downward_pub.publish(msg)
 
             if self.profiler is not None:
                 self.profiler.record("detections_downward_interval", self.profiler.event_interval("detections_downward_interval"))

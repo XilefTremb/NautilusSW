@@ -90,7 +90,7 @@ class StateMachine:
             {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
             {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
             {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION', 'conditions': 'ekf_reset_done'},
-            {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
+            {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION', 'conditions': 'ekf_reset_done'},
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
             {'trigger': 'finish_mission', 'source': '*', 'dest': 'MISSION_COMPLETE'},
             {'trigger': 'skip_to_next_objective', 'source': '*', 'dest': 'LOAD_OBJECTIVE', 'after': 'increment_objective_index'},
@@ -181,6 +181,7 @@ class StateMachine:
         self.node.publish_cmd("forward",1500)
         self.approach_distance_error_m = 0.0
         self.current_success_frame_count = 0
+        self.ekf_resetted = False
 
     def on_enter_SEARCH_TARGET(self, event):
         self.bottom_search_leg = 0
@@ -200,10 +201,12 @@ class StateMachine:
                 self.target_ids = None
             else:
                 
-                if positions[0] == self.role_choice :
-                    self.target_ids = [ObjectID.GATE_LEFT_MID]
-                else :
-                    self.target_ids = [ObjectID.GATE_MID_RIGHT]
+                # if positions[0] == self.role_choice :
+                #     self.target_ids = [ObjectID.GATE_LEFT_MID]
+                # else :
+                #     self.target_ids = [ObjectID.GATE_MID_RIGHT]
+
+                self.target_ids = [self.role_choice]
 
         # elif 'slalom' in self.current_objective.name:
         #     positions = self.detection_store.role_positions
