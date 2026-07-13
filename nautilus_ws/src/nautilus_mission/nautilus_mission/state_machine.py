@@ -26,16 +26,15 @@ class StateMachine:
         self.mission_offset_timer = mission_offset_timer
 
         if use_sim:
-            from .mission_objectives_sim import mission_list, Objective, ActionType
+            from .mission_objectives_sim import mission_list, Objective, ActionType, role_choice
         else:
-            from .mission_objectives import mission_list, Objective, ActionType
+            from .mission_objectives import mission_list, Objective, ActionType, role_choice
 
         self.ActionType = ActionType
         self.Objective = Objective
-        self.objectives: list[Objective] = mission_list
 
         self.objectives : list[Objective] = mission_list
-        self.role_choice = ObjectID.COMPASS_HAMMER
+        self.role_choice = role_choice
 
         if self.role_choice == ObjectID.SOS_SAFETY:
             self.dropper_choice = ObjectID.BLOOD

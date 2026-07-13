@@ -317,6 +317,40 @@ torpedo_firing_positioning_2 = Objective(
     ),
 )
 
+approach_table = Objective(
+    name='approach_table',
+    inference_mode=InferenceMode.FORWARD_ONLY,
+    target_ids=[ObjectID.TABLE],
+    target_auv_depth_m = 1.3,
+    success_frame_treshold= 10,
+    search=SearchConfig(spin_pwm=1540),
+    center=CenterConfig(
+        full_centering=False,
+        x_center_tolerance_fov=0.05
+    ),
+    approach=ApproachConfig(
+        approach_distance_mm=3000.0
+    ),
+    action=NoAction()
+    )
+)
+
+center_over_table = Objective(
+    name='center_over_table',
+    target_ids=None,
+    target_auv_depth_m = 0.6,
+    action=ForwardAction(
+        forward_distance_m=3.0,
+    )
+)
+
+surface_octagon = Objective(
+    name='surface_octagon',
+    target_ids=None,
+    target_auv_depth_m = 0.2,
+    action=NoAction()
+)
+
 test_objective = Objective(
     name='testObjective',
     inference_mode=InferenceMode.FORWARD_ONLY,
@@ -333,6 +367,9 @@ test_objective = Objective(
     action=NoAction()
 )
 
+# role_choice = ObjectID.SOS_SAFETY
+role_choice = ObjectID.COMPASS_HAMMER
+
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  torpedo_depth_change, coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
@@ -341,4 +378,5 @@ test_objective = Objective(
 # mission_list = [slalom1, slalom2, slalom3]
 # mission_list = [slalom2]
 # mission_list = [torpedo_depth_change, coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper, launch_second_dropper]
-mission_list = [test_objective]
+# mission_list = [test_objective]
+mission_list = [approach_table, center_over_table, surface_octagon]

@@ -325,6 +325,9 @@ torpedo_firing_positioning_2 = Objective(
     ),
 )
 
+# role_choice = ObjectID.SOS_SAFETY
+role_choice = ObjectID.COMPASS_HAMMER
+
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
