@@ -6,7 +6,7 @@ import time
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 
-from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray
+from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray, UInt8
 from nav_msgs.msg import Odometry
 
 from nautilus_mission.detection_store import DetectionStore
@@ -16,6 +16,8 @@ from nautilus_interfaces.srv import SetTargetDepth
 from nautilus_mission.rosbag_recorder import RosbagRecorder
 from robot_localization.srv import SetPose
 from std_srvs.srv import Trigger
+
+from enums.InferenceMode import InferenceMode
 
 class MasterNode(Node):
     def __init__(self, args):
@@ -55,6 +57,10 @@ class MasterNode(Node):
 
         self.detections_depth_filter_mm_pub = self.create_publisher(Int16, '/yolo/detections_depth_filter_mm', 10)
         self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
+
+        # Inference mode is republished at a fixed rate (see inference_mode_timer)
+        # so a late-joining / restarted YOLO node keeps getting the current value.
+        self.inference_mode_pub = self.create_publisher(UInt8, '/yolo/inference_mode', 10)
    
         # Services
         self.depth_client = self.create_client(SetTargetDepth,'/mission/set_target_depth')
@@ -70,6 +76,10 @@ class MasterNode(Node):
 
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
+
+        # Current inference mode, republished at a fixed rate for robustness.
+        self.current_inference_mode = int(InferenceMode.BOTH)
+        self.inference_mode_timer = self.create_timer(0.5, self._republish_inference_mode)
 
         self.get_logger().info(f'Mission will start in {args.timer} seconds.')
         time.sleep(args.timer) 
@@ -142,6 +152,16 @@ class MasterNode(Node):
         msg = Int16()
         msg.data = int(threshold)
         self.detections_depth_filter_mm_pub.publish(msg)
+
+    def publish_inference_mode(self, mode: int):
+        # Store the requested mode; it is (re)published at a fixed rate.
+        self.current_inference_mode = int(mode)
+        self._republish_inference_mode()
+
+    def _republish_inference_mode(self):
+        msg = UInt8()
+        msg.data = int(self.current_inference_mode)
+        self.inference_mode_pub.publish(msg)
 
     def publish_servo_cmd(self, servo: int, pwm: int):
         msg = Int16MultiArray()

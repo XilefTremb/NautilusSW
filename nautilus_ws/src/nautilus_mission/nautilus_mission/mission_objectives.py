@@ -5,8 +5,9 @@ from dataclasses import dataclass, field
 from typing import Optional, Union
 
 from enums.ObjectID import ObjectID
+from enums.InferenceMode import InferenceMode
 
-class ActionType(Enum):
+class ActionType(Enum):    
     NONE = auto()
     FORWARD = auto()
     CIRCLE_MARKER = auto()
@@ -90,6 +91,8 @@ class Objective:
     approach: ApproachConfig = field(default_factory=ApproachConfig)
     action: ActionConfig = field(default_factory=NoAction)
     success_frame_treshold: int = 1
+    # Inference mode requested while this objective is active (see InferenceMode).
+    inference_mode: InferenceMode = InferenceMode.FORWARD_ONLY
 
 approach_gate = Objective(
     name='approachGate',
@@ -199,6 +202,7 @@ slalom3 = Objective(
 approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
+    inference_mode=InferenceMode.BOTH,
     success_frame_treshold= 10,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
@@ -217,6 +221,7 @@ approach_dropper = Objective(
 launch_dropper = Objective(
     name='launchDropperObjective',
     success_frame_treshold=10,
+    inference_mode=InferenceMode.BOTH,
     search=SearchConfig(spin_pwm=1400),
     target_auv_depth_m = 0.25,
     center=CenterConfig(
@@ -234,6 +239,7 @@ launch_dropper = Objective(
 launch_second_dropper = Objective(
     name='launchSecondDropperObjective',
     success_frame_treshold=10,
+    inference_mode=InferenceMode.BOTH,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
@@ -326,6 +332,7 @@ torpedo_firing_positioning_2 = Objective(
 
 test_objective = Objective(
     name='testObjective',
+    inference_mode=InferenceMode.DOWNWARD_ONLY,
     success_frame_treshold=10,
     target_ids=[ObjectID.TORPEDO],
     center=CenterConfig(

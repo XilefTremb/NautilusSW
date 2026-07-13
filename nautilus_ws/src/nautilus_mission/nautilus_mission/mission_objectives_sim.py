@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Union
 
 from enums.ObjectID import ObjectID
+from enums.InferenceMode import InferenceMode
 
 class ActionType(Enum):
     NONE = auto()
@@ -90,6 +91,8 @@ class Objective:
     approach: ApproachConfig = field(default_factory=ApproachConfig)
     action: ActionConfig = field(default_factory=NoAction)
     success_frame_treshold: int = 1
+    # Inference mode requested while this objective is active (see InferenceMode).
+    inference_mode: InferenceMode = InferenceMode.FORWARD_ONLY
 
 approach_gate = Objective(
     name='approachGate',

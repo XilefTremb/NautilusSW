@@ -11,6 +11,7 @@ from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
 from enums.ServoEnum import ServoEnum
+from enums.InferenceMode import InferenceMode
 
 from .detection_store import DetectionStore
 from nautilus_services import request_depth_change, reset_pids, reset_ekf_pose
@@ -68,6 +69,9 @@ class StateMachine:
         self.bottom_search_leg = 0
         self.bottom_search_leg_start = 0.0
 
+        # Last inference mode published to /yolo/inference_mode. Kept so we only
+        # republish when the active objective actually requests a different mode.
+        self.last_inference_mode: Optional[InferenceMode] = None
         states = [
             'IDLE',
             'LOAD_OBJECTIVE',
@@ -254,6 +258,15 @@ class StateMachine:
 
         if self.current_objective.detections_depth_filter_mm is not None:
             self.node.publish_detections_depth_filter_mm(self.current_objective.detections_depth_filter_mm)
+
+        # Publish the requested inference mode only when it changes between
+        # objectives. The publisher is latched (transient local) so a late or
+        # restarted YOLO node still gets the last value without periodic spam.
+        objective_inference_mode = self.current_objective.inference_mode
+        if objective_inference_mode != self.last_inference_mode:
+            self.node.publish_inference_mode(objective_inference_mode)
+            self.last_inference_mode = objective_inference_mode
+            self.node.get_logger().info(f'Inference mode set to {InferenceMode(objective_inference_mode).name} for objective {self.current_objective.name}')
 
         if self.current_objective.target_auv_depth_m is not None:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
