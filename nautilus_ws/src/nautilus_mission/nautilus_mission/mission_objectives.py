@@ -215,16 +215,24 @@ approach_dropper = Objective(
     approach=ApproachConfig(
         approach_distance_mm=3000.0
     ),
+    action=NoAction()
+)
+
+set_depth_for_dropper = Objective(
+    name='setDepthForDropper',
+    target_ids=None,
+    inference_mode=InferenceMode.DOWNWARD_ONLY,
+    target_auv_depth_m = 0.3,
     action=ForwardAction(
         forward_distance_m=3.0,
         dropper_search=True,
-    ),
+    )
 )
 
 launch_dropper = Objective(
     name='launchDropperObjective',
     success_frame_treshold=10,
-    inference_mode=InferenceMode.BOTH,
+    inference_mode=InferenceMode.DOWNWARD_ONLY,
     search=SearchConfig(spin_pwm=1400),
     target_auv_depth_m = 0.25,
     center=CenterConfig(
@@ -242,7 +250,7 @@ launch_dropper = Objective(
 launch_second_dropper = Objective(
     name='launchSecondDropperObjective',
     success_frame_treshold=10,
-    inference_mode=InferenceMode.BOTH,
+    inference_mode=InferenceMode.DOWNWARD_ONLY,
     search=SearchConfig(spin_pwm=1460),
     center=CenterConfig(
         full_centering=False,
@@ -351,7 +359,7 @@ test_objective = Objective(
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  coarse_approach_torpedo, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-# mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
+mission_list = [approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [coarse_approach_torpedo, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
-mission_list = [slalom1, slalom2, slalom3]
+# mission_list = [slalom1, slalom2, slalom3]
 
