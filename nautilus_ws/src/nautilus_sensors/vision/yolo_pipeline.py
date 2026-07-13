@@ -11,7 +11,7 @@ import os
 from contextlib import contextmanager
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int32MultiArray, UInt8
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int16, Int32MultiArray, UInt8
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
@@ -125,7 +125,7 @@ class YoloNode(Node):
             model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_sim_640_16_juin.pt')
         else:
             self.mode = 'real'
-            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_12juillet_competition.pt')
+            model_path = os.path.expanduser('~/NautilusSW/nautilus_ws/src/nautilus_sensors/vision/yolo_models/bbox_13_juillet_competition.pt')
 
         # -------- MODEL TYPE --------
         self.type_yolo = 'obb' if args.obb else 'bbox'
@@ -174,7 +174,7 @@ class YoloNode(Node):
         self.depth_sub = Subscriber(self, Image, 'oakd/camera/depth/image_raw')
         self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,10)
         self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback, 1)
-        self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback, 1)
+        self.depth_threshold_sub = self.create_subscription(Int16,'/yolo/detections_depth_filter_mm',self.depth_threshold_callback, 1)
         self.inference_mode_sub = self.create_subscription(UInt8, '/yolo/inference_mode', self.inference_mode_callback, 1)
 
         # ----------- PUBLISHER -----------

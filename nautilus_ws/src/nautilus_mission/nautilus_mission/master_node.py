@@ -83,6 +83,9 @@ class MasterNode(Node):
         self.current_inference_mode = int(InferenceMode.BOTH)
         self.inference_mode_timer = self.create_timer(0.5, self._republish_inference_mode)
 
+        # Depth threshold timer
+        self.depth_threshold = self.create_timer(0.5, self.depth_threshold_timer)
+
         self.get_logger().info(f'Mission will start in {args.timer} seconds.')
         time.sleep(args.timer) 
         self.fsm.start_mission()
@@ -155,6 +158,11 @@ class MasterNode(Node):
         msg = Int16()
         msg.data = int(threshold)
         self.detections_depth_filter_mm_pub.publish(msg)
+
+    def depth_threshold_timer(self):
+        depth = self.fsm.current_objective.detections_depth_filter_mm
+        if depth is not None:
+            self.publish_detections_depth_filter_mm(depth)
 
     def publish_inference_mode(self, mode: int):
         # Store the requested mode; it is (re)published at a fixed rate.
