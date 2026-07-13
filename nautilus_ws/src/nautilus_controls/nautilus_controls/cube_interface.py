@@ -87,9 +87,9 @@ class CubeInterface(Node):
         self.auv.apply_param_profile(profile)
         self.auv.start_receiver()
 
-        self.auv.change_mode("ALT_HOLD")
-        self.auv.arm()
-        
+        # self.auv.change_mode("ALT_HOLD")
+        # self.auv.arm()
+    
         self.auv.set_servo(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
         self.auv.set_servo(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
 

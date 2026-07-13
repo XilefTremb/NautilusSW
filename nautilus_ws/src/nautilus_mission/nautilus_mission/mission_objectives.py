@@ -148,6 +148,7 @@ traverse_gate = Objective(
 
 slalom1 = Objective(
     name='slalom1',
+    target_ids=[ObjectID.SLALOM_LEFT_MID],
     success_frame_treshold=10,
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1540),
@@ -161,12 +162,13 @@ slalom1 = Objective(
         approach_distance_mm=2000.0
     ),
     action=ForwardAction(
-        forward_distance_m=2.2,
+        forward_distance_m=1.7,
     ),
 )
 
 slalom2 = Objective(
     name='slalom2',
+    target_ids=[ObjectID.SLALOM_LEFT_MID],
     success_frame_treshold=10,
     detections_depth_filter_mm = 1500,
     search=SearchConfig(spin_pwm=1540),
@@ -178,12 +180,13 @@ slalom2 = Objective(
         approach_distance_mm=1500.0
     ),
     action=ForwardAction(
-        forward_distance_m=1.3,
+        forward_distance_m=1.0,
     ),
 )
 
 slalom3 = Objective(
     name='slalom3',
+    target_ids=[ObjectID.SLALOM_LEFT_MID],
     success_frame_treshold=10,
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1460),
@@ -350,5 +353,5 @@ test_objective = Objective(
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
 # mission_list = [approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [coarse_approach_torpedo, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
-mission_list = [test_objective]
+mission_list = [slalom1, slalom2, slalom3]
 

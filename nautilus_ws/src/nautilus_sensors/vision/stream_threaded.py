@@ -2,15 +2,12 @@
 
 import contextlib
 import os
-import select
-import sys
 import threading
 import time
 from datetime import timedelta
 
 import cv2
 import depthai as dai
-import gi
 import numpy as np
 import rclpy
 from cv_bridge import CvBridge
@@ -21,15 +18,11 @@ from sensor_msgs.msg import Image, Imu
 
 from vision.blue_filter import blue_filter
 
-gi.require_version("Gst", "1.0")
-from gi.repository import Gst
 
 
 # =========================================================
 # CONFIG
 # =========================================================
-UDP_IP = "192.168.1.10"
-UDP_PORT = 5600
 FPS = 15
 SAVE_INTERVAL = 2.0
 
@@ -74,7 +67,6 @@ class DualOakNode(Node):
         self.save_images = self.get_parameter("save_images").value
         self.get_logger().info(f"save_images: {self.save_images}")
 
-        self.active_stream = "oakd"
         self.bridge = CvBridge()
 
         # ROS Publishers
@@ -101,10 +93,6 @@ class DualOakNode(Node):
         self.shutdown_event = threading.Event()
         self.worker_threads = []
 
-        # GStreamer init
-        Gst.init(None)
-        self.setup_gstreamer()
-
         # Devices
         self.stack = contextlib.ExitStack()
         self.devices_data = []
@@ -114,11 +102,8 @@ class DualOakNode(Node):
         self.setup_devices()
 
         # Start workers
-        self.start_thread(self.keyboard_listener, "keyboard_listener")
-
         if self.oakd_dev is not None:
             self.start_thread(self.oakd_worker, "oakd_worker")
-            self.start_thread(self.h264_worker, "h264_worker")
 
         if self.downward_dev is not None:
             self.start_thread(self.downward_worker, "downward_worker")
@@ -134,50 +119,6 @@ class DualOakNode(Node):
         thread = threading.Thread(target=target, name=name, daemon=True)
         thread.start()
         self.worker_threads.append(thread)
-
-    # =====================================================
-    # KEYBOARD CONTROL
-    # =====================================================
-    def keyboard_listener(self):
-        self.get_logger().info("Press 's' to switch camera stream")
-
-        while not self.shutdown_event.is_set():
-            try:
-                if select.select([sys.stdin], [], [], 0.1)[0]:
-                    key = sys.stdin.read(1)
-
-                    if key == "s":
-                        self.active_stream = "oak1" if self.active_stream == "oakd" else "oakd"
-                        self.get_logger().info(f"Switched UDP stream to: {self.active_stream}")
-            except Exception as exc:
-                self.get_logger().warn(f"Keyboard listener stopped: {exc}")
-                return
-
-    # =====================================================
-    # GSTREAMER
-    # =====================================================
-    def setup_gstreamer(self):
-        pipeline_str = (
-            "appsrc name=src is-live=true do-timestamp=true format=time "
-            "block=false max-buffers=4 ! "
-            "queue leaky=downstream max-size-buffers=4 ! "
-            "h264parse config-interval=1 ! "
-            "rtph264pay config-interval=1 pt=96 ! "
-            f"udpsink host={UDP_IP} port={UDP_PORT} sync=false async=false"
-        )
-
-        self.gst_pipeline = Gst.parse_launch(pipeline_str)
-        self.appsrc = self.gst_pipeline.get_by_name("src")
-
-        self.appsrc.set_property(
-            "caps",
-            Gst.Caps.from_string(
-                f"video/x-h264,stream-format=(string)byte-stream,"
-                f"alignment=(string)au,framerate={FPS}/1"
-            ),
-        )
-
-        self.gst_pipeline.set_state(Gst.State.PLAYING)
 
     # =====================================================
     # QUEUE HELPERS
@@ -246,7 +187,7 @@ class DualOakNode(Node):
         stereo.setLeftRightCheck(True)
         stereo.setRectification(True)
 
-        sync.setSyncThreshold(timedelta(seconds=1 / (2 * FPS)))
+        sync.setSyncThreshold(timedelta(seconds=0.05))
 
         rgb_out = camRgb.requestOutput(
             size=RGB_SIZE,
@@ -272,22 +213,8 @@ class DualOakNode(Node):
             stereo.depth.link(sync.inputs["depth_aligned"])
             rgb_out.link(stereo.inputAlignTo)
 
-        # H264 UDP stream path, kept separate from ROS RGB/depth path.
-        manip = pipeline.create(dai.node.ImageManip)
-        manip.setMaxOutputFrameSize(2_000_000)
-        manip.initialConfig.addRotateDeg(180)
-        manip.initialConfig.setFrameType(dai.ImgFrame.Type.NV12)
-        rgb_out.link(manip.inputImage)
-
-        enc = pipeline.create(dai.node.VideoEncoder)
-        enc.setDefaultProfilePreset(FPS, dai.VideoEncoderProperties.Profile.H264_MAIN)
-        enc.setBitrate(7_000_000)
-        enc.setKeyframeFrequency(FPS)
-        manip.out.link(enc.input)
-
         sync_queue = sync.out.createOutputQueue(maxSize=4, blocking=False)
         raw_depth_queue = stereo.depth.createOutputQueue(maxSize=4, blocking=False)
-        h264_queue = enc.bitstream.createOutputQueue(maxSize=4, blocking=False)
 
         # IMU Data OAKD
         imu = pipeline.create(dai.node.IMU)
@@ -298,7 +225,7 @@ class DualOakNode(Node):
         imu.setMaxBatchReports(10)
         imu_queue = imu.out.createOutputQueue(maxSize=20, blocking=False)
 
-        return sync_queue, raw_depth_queue, h264_queue, imu_queue
+        return sync_queue, raw_depth_queue, imu_queue
 
     # =====================================================
     # DEVICE SETUP
@@ -329,14 +256,13 @@ class DualOakNode(Node):
             cameras = device.getConnectedCameras()
 
             if len(cameras) > 1:
-                sync_q, depth_q, h264_q, imu_q = self.create_oakd_pipeline(pipeline)
+                sync_q, depth_q, imu_q = self.create_oakd_pipeline(pipeline)
                 pipeline.start()
 
                 self.oakd_dev = {
                     "type": "oakd",
                     "sync": sync_q,
                     "raw_depth": depth_q,
-                    "h264": h264_q,
                     "imu": imu_q,
                 }
                 self.devices_data.append(self.oakd_dev)
@@ -505,32 +431,6 @@ class DualOakNode(Node):
             time.sleep(max(0.001, period - elapsed))
 
     # =====================================================
-    # H264 WORKER
-    # =====================================================
-    def h264_worker(self):
-        dev = self.oakd_dev
-
-        while not self.shutdown_event.is_set() and rclpy.ok():
-            try:
-                if self.active_stream == "oakd":
-                    h264_pkt = self.get_latest(dev["h264"])
-
-                    if h264_pkt is not None:
-                        data = h264_pkt.getData()
-
-                        if data is not None and data.size > 0:
-                            buf = Gst.Buffer.new_wrapped(data.tobytes())
-                            self.appsrc.emit("push-buffer", buf)
-
-                # Note: the original code only had H264 for oakd.
-                # Switching to oak1 is preserved as state, but there is no oak1 encoder path here.
-                time.sleep(0.001)
-
-            except Exception as exc:
-                self.get_logger().error(f"H264 worker error: {exc}")
-                time.sleep(0.05)
-
-    # =====================================================
     # VISUALIZATION TIMER
     # =====================================================
     def visualization_loop(self):
@@ -596,7 +496,7 @@ class DualOakNode(Node):
             self.get_logger().info(f"Saved synchronized OAK-D frame set: {timestamp}")
 
         if rgb_oak1 is not None:
-            cv2.imwrite(os.path.join(RGB_OAK1_DIR, f"{timestamp}.jpg"), rgb_oak1)
+            cv2.imwrite(os.path.join(RGB_OAK1_DIR, f"{timestamp}_down.jpg"), rgb_oak1)
             self.get_logger().info(f"Saved downward frame: {timestamp}")
 
         self.last_save_time = now
@@ -611,11 +511,6 @@ class DualOakNode(Node):
         for thread in self.worker_threads:
             if thread.is_alive():
                 thread.join(timeout=1.0)
-
-        try:
-            self.gst_pipeline.set_state(Gst.State.NULL)
-        except Exception:
-            pass
 
         if self.usb_cap is not None:
             self.usb_cap.release()
