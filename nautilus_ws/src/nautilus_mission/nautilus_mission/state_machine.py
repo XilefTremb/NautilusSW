@@ -337,8 +337,7 @@ class StateMachine:
         if self.current_objective.action.type == self.ActionType.LAUNCH_DROPPER:
             self.node.get_logger().info('Launching dropper no 1!')
             self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_2_PWM)  
-            self.node.get_logger().info('Dropper launched :) !')
-            self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)  
+     
         
     def search(self):
         if self.current_objective.center.center_bottom:

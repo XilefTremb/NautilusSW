@@ -191,6 +191,7 @@ approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
     inference_mode=InferenceMode.BOTH,
+    target_auv_depth_m = 1.3,
     success_frame_treshold= 10,
     search=SearchConfig(spin_pwm=1540),
     center=CenterConfig(
@@ -207,7 +208,7 @@ set_depth_for_dropper = Objective(
     name='setDepthForDropper',
     target_ids=None,
     inference_mode=InferenceMode.DOWNWARD_ONLY,
-    target_auv_depth_m = 0.3,
+    target_auv_depth_m = 0.5,
     action=ForwardAction(
         forward_distance_m=3.0,
         dropper_search=True,
@@ -337,11 +338,11 @@ test_objective = Objective(
     action=NoAction()
 )
 
-mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  torpedo_depth_change, coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper, launch_second_dropper]
+# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  torpedo_depth_change, coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [approach_gate, choose_gate_side, traverse_gate, approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-# mission_list = [approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
+mission_list = [approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
 # mission_list = [coarse_approach_torpedo, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
 # mission_list = [slalom1, slalom2, slalom3]
 # mission_list = [slalom2]
-mission_list = [torpedo_depth_change, coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper, launch_second_dropper]
+# mission_list = [torpedo_depth_change, coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper, launch_second_dropper]
