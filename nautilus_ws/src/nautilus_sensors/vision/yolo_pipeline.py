@@ -604,14 +604,30 @@ class YoloNode(Node):
                             bbox_cx=box_cx,
                             mode=self.mode)
 
-                if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
-                    #self.get_logger().info(f"[FILTERED] Object {object_id} depth={depth_value} outside range (400-{self.depth_threshold})")
-                    continue
-
                 # ----------- DIST / ANGLE -----------
                 dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "forward")
                 dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "forward")
 
+
+                if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
+                    #self.get_logger().info(f"[FILTERED] Object {object_id} depth={depth_value} outside range (400-{self.depth_threshold})")
+                    draw_detection(
+                        annotated_frame,
+                        self.type_yolo,
+                        object_id,
+                        confidence,
+                        depth_value if depth_value is not None else 0,
+                        dist_center_x,
+                        box_cx,
+                        box_cy,
+                        x1,
+                        y1,
+                        x2,
+                        y2,
+                        color=(0, 0, 255),
+                        points=points
+                    )
+                    continue
                 # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id == ObjectID.SLALOM_SIDE:
                     slalom_tab.append({
