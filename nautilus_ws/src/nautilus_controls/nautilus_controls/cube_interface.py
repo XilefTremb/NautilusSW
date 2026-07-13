@@ -93,6 +93,7 @@ class CubeInterface(Node):
         self.auv.set_servo(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
         self.auv.set_servo(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
 
+
     def servo_cmd_callback(self, msg):
         if len(msg.data) < 2:
             return

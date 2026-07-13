@@ -44,6 +44,7 @@ class RosbagRecorder:
             "/control/vision_errors/forward",
             "/control/vision_errors/lateral",
             "/control/vision_errors/forward_ekf",
+            "/control/vision_errors/lateral_ekf",
             "/control/cmd/yaw",
             "/control/cmd/forward",
             "/control/cmd/lateral",
@@ -55,7 +56,7 @@ class RosbagRecorder:
         mount_point.mkdir(parents=True, exist_ok=True)
 
         if mount_point.is_mount():
-            print(f"[ROSBAG] USB already mounted at {mount_point}")
+            # print(f"[ROSBAG] USB already mounted at {mount_point}")
             return True
 
         try:
@@ -63,7 +64,7 @@ class RosbagRecorder:
                 ["sudo", "mount", USB_DEVICE, str(mount_point)],
                 check=True
             )
-            print(f"[ROSBAG] USB mounted: {USB_DEVICE} -> {mount_point}")
+            # print(f"[ROSBAG] USB mounted: {USB_DEVICE} -> {mount_point}")
             return True
 
         except Exception as e:

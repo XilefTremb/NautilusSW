@@ -11,10 +11,10 @@ from enums.ObjectID import ObjectID
 from enums.VisionAction import VisionAction
 from enums.DetectionIndex import DetectionIndex
 from enums.ServoEnum import ServoEnum
+from enums.InferenceMode import InferenceMode
 
 from .detection_store import DetectionStore
-from .ekf_reset import reset_ekf_pose
-from nautilus_services import request_depth_change, reset_pids
+from nautilus_services import request_depth_change, reset_pids, reset_ekf_pose
 from nautilus_mission.search_patterns import search_bottom_spiral, forward_search
 
 class StateMachine:
@@ -69,6 +69,9 @@ class StateMachine:
         self.bottom_search_leg = 0
         self.bottom_search_leg_start = 0.0
 
+        # Last inference mode published to /yolo/inference_mode. Kept so we only
+        # republish when the active objective actually requests a different mode.
+        self.last_inference_mode: Optional[InferenceMode] = None
         states = [
             'IDLE',
             'LOAD_OBJECTIVE',
@@ -87,7 +90,7 @@ class StateMachine:
             {'trigger': 'target_lost', 'source': ['CENTER_TARGET', 'APPROACH_TARGET'], 'dest': 'SEARCH_TARGET'},
             {'trigger': 'target_centered_event', 'source': 'CENTER_TARGET', 'dest': 'APPROACH_TARGET'},
             {'trigger': 'target_reached', 'source': 'APPROACH_TARGET', 'dest': 'EXECUTE_ACTION', 'conditions': 'ekf_reset_done'},
-            {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION'},
+            {'trigger': 'no_target_to_be_reached', 'source': '*', 'dest': 'EXECUTE_ACTION', 'conditions': 'ekf_reset_done'},
             {'trigger': 'action_done', 'source': 'EXECUTE_ACTION', 'dest': 'LOAD_OBJECTIVE'},
             {'trigger': 'finish_mission', 'source': '*', 'dest': 'MISSION_COMPLETE'},
             {'trigger': 'skip_to_next_objective', 'source': '*', 'dest': 'LOAD_OBJECTIVE', 'after': 'increment_objective_index'},
@@ -118,6 +121,7 @@ class StateMachine:
         elif self.state == 'SEARCH_TARGET':
             self.search()
             self.vision_action = VisionAction.IDLE
+            # self.node.get_logger().info(f"{self.is_target_present()}")
             if self.is_target_present():
                 self.target_found()
 
@@ -134,7 +138,7 @@ class StateMachine:
                 return
 
             is_centered = self.is_target_centered()
-
+            # self.node.get_logger().info(f"{self.current_objective.center.full_centering}")
             if self.current_objective.center.full_centering:
                 success_condition = is_centered and self.is_target_perpendicular()
             else:
@@ -151,8 +155,9 @@ class StateMachine:
             if self.current_objective.approach.approach_distance_mm is None:
                 self.target_reached()
                 return 
-            
-            self.vision_action = VisionAction.APPROACH_TARGET
+            else:
+                self.vision_action = VisionAction.APPROACH_TARGET
+
             if self.is_target_lost_filtered():
                 self.target_lost()
             if self.is_target_approached():
@@ -173,9 +178,10 @@ class StateMachine:
 
     def on_enter_LOAD_OBJECTIVE(self, event):
         self.vision_action = VisionAction.IDLE
-        self.node.publish_forward_cmd(1500)
+        self.node.publish_cmd("forward",1500)
         self.approach_distance_error_m = 0.0
         self.current_success_frame_count = 0
+        self.ekf_resetted = False
 
     def on_enter_SEARCH_TARGET(self, event):
         self.bottom_search_leg = 0
@@ -195,10 +201,12 @@ class StateMachine:
                 self.target_ids = None
             else:
                 
-                if positions[0] == self.role_choice :
-                    self.target_ids = [ObjectID.GATE_LEFT_MID]
-                else :
-                    self.target_ids = [ObjectID.GATE_MID_RIGHT]
+                # if positions[0] == self.role_choice :
+                #     self.target_ids = [ObjectID.GATE_LEFT_MID]
+                # else :
+                #     self.target_ids = [ObjectID.GATE_MID_RIGHT]
+
+                self.target_ids = [self.role_choice]
 
         # elif 'slalom' in self.current_objective.name:
         #     positions = self.detection_store.role_positions
@@ -248,6 +256,15 @@ class StateMachine:
         if self.current_objective.detections_depth_filter_mm is not None:
             self.node.publish_detections_depth_filter_mm(self.current_objective.detections_depth_filter_mm)
 
+        # Publish the requested inference mode only when it changes between
+        # objectives. The publisher is latched (transient local) so a late or
+        # restarted YOLO node still gets the last value without periodic spam.
+        objective_inference_mode = self.current_objective.inference_mode
+        if objective_inference_mode != self.last_inference_mode:
+            self.node.publish_inference_mode(objective_inference_mode)
+            self.last_inference_mode = objective_inference_mode
+            self.node.get_logger().info(f'Inference mode set to {InferenceMode(objective_inference_mode).name} for objective {self.current_objective.name}')
+
         if self.current_objective.target_auv_depth_m is not None:
             request_depth_change(self.node, self.current_objective.target_auv_depth_m)
 
@@ -284,7 +301,7 @@ class StateMachine:
     def on_enter_MISSION_COMPLETE(self, event):
         self.target_ids = None
         self.vision_action = VisionAction.IDLE
-        self.node.publish_forward_cmd(1500)
+        self.node.publish_cmd("forward",1500)
         self.node.get_logger().info('Mission complete')
 
     def has_more_objectives(self, event):
@@ -308,7 +325,10 @@ class StateMachine:
 
         if self.current_objective.action.type == self.ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
-            self.node.publish_forward_ekf_error(error_ekf_fwd_position)
+            error_ekf_lat_position = self.current_objective.action.lateral_distance_m - self.lateral_position
+
+            self.node.publish_error("forward_ekf",error_ekf_fwd_position)
+            self.node.publish_error("lateral_ekf",error_ekf_lat_position)
 
         if self.current_objective.action.type == self.ActionType.SAVE_ROLE:
             self.node.get_logger().info('Saving role choice for current objective.')
@@ -317,8 +337,7 @@ class StateMachine:
         if self.current_objective.action.type == self.ActionType.LAUNCH_DROPPER:
             self.node.get_logger().info('Launching dropper no 1!')
             self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_2_PWM)  
-            self.node.get_logger().info('Dropper launched :) !')
-            self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)  
+     
         
     def search(self):
         if self.current_objective.center.center_bottom:
@@ -356,8 +375,10 @@ class StateMachine:
                 
             if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
                 return True
-                
-            return self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
+            
+            arrived_forward = self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
+            arrived_lateral = self.lateral_position >= self.current_objective.action.lateral_distance_m - 0.3 - self.approach_distance_error_m
+            return arrived_forward and arrived_lateral
             
             
         if action == self.ActionType.CIRCLE_MARKER:
@@ -393,6 +414,7 @@ class StateMachine:
 
     def is_target_present(self, ids=None) -> bool:
         ids = self.target_ids if ids is None else ids
+        # self.node.get_logger().info(f"{ids}")
         return self.detection_store.get_detection(ids) is not None
 
 
@@ -456,10 +478,14 @@ class StateMachine:
         target = self.detection_store.get_detection(ids)
         if target is None:
             return False
+        if self.current_objective.center.align_width:
+            width = target[DetectionIndex.WIDTH]
+            error = abs(width - self.current_objective.center.target_width_px)
+            return  error < self.current_objective.center.width_tolerance_px
 
-        alignement_error = target[DetectionIndex.ANGLE_DEG]
-
-        return abs(alignement_error) < self.current_objective.center.alignement_tolerance
+        else:
+            alignement_error = target[DetectionIndex.ANGLE_DEG]
+            return abs(alignement_error) < self.current_objective.center.alignement_tolerance
     
     
     def ekf_reset_done(self, event):
@@ -488,8 +514,8 @@ class StateMachine:
             self.current_success_frame_count += 1
             self.node.get_logger().info(f"current success frame count {self.current_success_frame_count}")
         # else: 
-        #     self.current_success_frame_count = 0
-        #     # self.node.get_logger().info("reset success frame count to 0")success_frame_treshold=10,
+            # self.current_success_frame_count = 0
+            # self.node.get_logger().info("condition false")
 
         return self.current_success_frame_count >= self.current_objective.success_frame_treshold
        

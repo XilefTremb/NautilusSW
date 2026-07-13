@@ -4,33 +4,42 @@ import argparse
 import rclpy
 import torch
 import time
+import threading
 import numpy as np
 import os
 
+from contextlib import contextmanager
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int32MultiArray
+from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Int32, Int32MultiArray, UInt8
 from ultralytics import YOLO
 from cv_bridge import CvBridge
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 from collections import deque
 
-from vision.object_depth import find_depth, find_dist_from_center_in_x, find_dist_from_center_in_y, global_median_forward_cam, find_depth_from_edge_detector
+from vision.object_depth import find_depth, find_dist_from_center_in_x, find_dist_from_center_in_y, global_median_forward_cam, find_depth_from_edge_detector, find_torpedo_depth
 from vision.gate_angle import find_gate_angle, find_angle_torpedo
 from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
 from vision.slider_edge_detector import load_params_edge_detector_json
 from vision.item_organizer import slalom_organizer, target_organizer
+from vision.yolo_profiling_viewer import StageProfiler
 
 from enums.ObjectID import ObjectID
+from enums.InferenceMode import InferenceMode
 
 
 # =========================================================
 # CONFIG
 # =========================================================
 MOVING_MEAN_ACTIVATED = False
-FORWARD_CAM_RATE_HZ = 10
-DOWNWARD_CAM_RATE_HZ = 10
+FORWARD_CAM_RATE_HZ = 13
+DOWNWARD_CAM_RATE_HZ = 7
+
+# Rate used when a single camera pipeline runs alone (InferenceMode.FORWARD_ONLY
+# or DOWNWARD_ONLY). The distributed rates above were tuned for running BOTH
+# pipelines together; when only one runs it can afford a higher rate.
+SINGLE_CAM_RATE_HZ = 15
 
 COLOR_IN_DETECTION = (0, 255, 0)
 COLOR_NOT_IN_DETECTION = (255, 0, 0)
@@ -38,6 +47,58 @@ COLOR_NOT_IN_DETECTION = (255, 0, 0)
 PUBLISH_ANNOTATED_IMAGES = True
 ENABLE_DOWNWARD_INFERENCE = True
 
+# -------- INFERENCE TUNING --------
+# Detection confidence threshold passed to the model.
+INFERENCE_CONF = 0.4
+# Run the model in FP16 when a CUDA device is available. Big speedup on GPU with
+# negligible accuracy impact for detection. Ignored on CPU. Easy to A/B with the
+# profiler by toggling this flag.
+USE_HALF_PRECISION = True
+# Run one dummy inference at startup so the first real frame isn't slow.
+WARMUP_ON_START = True
+# Rate at which the main inference loop polls the frame queues. A higher rate
+# reduces how long a ready frame waits before being picked up (less latency).
+# Only used when USE_INFERENCE_THREAD is False. Kept high (fast poll) so the
+# single-threaded timer picks up ready frames almost immediately -- this gives
+# the low-latency benefit of a dedicated thread WITHOUT the GIL contention that
+# a background inference thread + MultiThreadedExecutor introduces.
+INFERENCE_LOOP_HZ = 100
+# Run inference in a dedicated background thread instead of a polling timer.
+# WARNING: for this CPU-bound Python pipeline (cv_bridge, YOLO postprocess,
+# numpy) the GIL serialises Python work anyway, so a background thread just
+# fights the executor for the GIL and STARVES the camera callbacks -- observed
+# as growing publish intervals over time. Leave this False and rely on a fast
+# INFERENCE_LOOP_HZ instead. Only flip to True to A/B test.
+USE_INFERENCE_THREAD = False
+# Sleep applied by the inference thread when no frame is ready (seconds).
+INFERENCE_IDLE_SLEEP_S = 0.001
+
+# -------- PROFILING --------
+# When True: measure per-stage run times, publish them on /yolo/profiling
+# (consumed by yolo_profiling_viewer.py) and print them in the console.
+# When False: all instrumentation is skipped (near-zero overhead) and nothing
+# is published on /yolo/profiling.
+PROFILING_ENABLED = True
+PROFILING_CONSOLE_LOG = False
+PROFILING_TOPIC = '/yolo/profiling'
+
+# Fixed stage order shared with yolo_profiling_viewer.py. The published
+# Float32MultiArray holds one value (in milliseconds) per stage, in this order.
+# Stages not measured for a given frame are published as NaN.
+PROFILING_STAGES = [
+    "camera",            # 0.0 = forward cam, 1.0 = downward cam
+    "image_cam_interval",    # time between two received images for this camera
+    "yolo_inference",    # YOLO model forward pass
+    "detection_processing", # per-box depth extraction loop
+    "angle_computation", # gate/torpedo angle computation
+    "process_total",     # full process_forward / process_downward
+    "publish",           # detection message publishing
+    "detections_forward_interval",           # /yolo/detections_forward publish interval
+    "detections_downward_interval",          # /yolo/detections_downward publish interval
+    "image_annotated_fwd_cam_interval",      # /yolo/image_annotated_fwd_cam publish interval
+    "image_annotated_dwd_cam_interval",      # /yolo/image_annotated_dwd_cam publish interval
+    "end_2_end",       # end-to-end for the whole frame
+]
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -75,6 +136,15 @@ class YoloNode(Node):
         if torch.cuda.is_available():
             self.model.to('cuda')
 
+        # -------- INFERENCE CONFIG --------
+        self.use_half = USE_HALF_PRECISION and torch.cuda.is_available()
+
+        # Warm up the model so the first real frame doesn't pay the lazy-init cost.
+        if WARMUP_ON_START:
+            dummy = np.zeros((640, 640, 3), dtype=np.uint8)
+            self.run_inference(dummy)
+            self.get_logger().info(f'Model warmed up (half={self.use_half})')
+
         # ----------- INIT PARAMS -----------
         self.depth_threshold = 99999
         self.bridge = CvBridge()
@@ -105,6 +175,7 @@ class YoloNode(Node):
         self.edge_params_sub = self.create_subscription(Int32MultiArray, "/yolo/edge_params", self.edge_params_callback,10)
         self.down_rgb_sub = self.create_subscription(Image,'oak1/camera/image_raw',self.downward_callback, 1)
         self.depth_threshold_sub = self.create_subscription(Int32,'/yolo/depth_threshold',self.depth_threshold_callback, 1)
+        self.inference_mode_sub = self.create_subscription(UInt8, '/yolo/inference_mode', self.inference_mode_callback, 1)
 
         # ----------- PUBLISHER -----------
         self.detection_forward_pub = self.create_publisher(Float32MultiArray, '/yolo/detections_forward', 1)
@@ -113,6 +184,15 @@ class YoloNode(Node):
         self.fwd_image_pub = self.create_publisher(Image, '/yolo/image_annotated_fwd_cam', 1)
         self.mean_depth_forward_cam = self.create_publisher(Int32, '/yolo/mean_depth_forward_cam', 1)
         self.edge_mask_pub = self.create_publisher(Image, '/yolo/edge_mask', 1)
+
+        # ----------- PROFILING -----------
+        self.profiler = StageProfiler(self, PROFILING_STAGES) if PROFILING_ENABLED else None
+        self.profiling_pub = (
+            self.create_publisher(Float32MultiArray, PROFILING_TOPIC, 1)
+            if PROFILING_ENABLED else None
+        )
+        self.last_forward_image_cam_interval = None
+        self.last_downward_image_cam_interval = None
 
         # ----------- SYNCHRONIZER DEPTH AND RGB -----------
         self.ts = ApproximateTimeSynchronizer(
@@ -124,21 +204,41 @@ class YoloNode(Node):
 
         self.ts.registerCallback(self.forward_callback)
 
-        # -------- TIMER (MAIN INFERENCE LOOP) --------
-        self.timer = self.create_timer(0.05, self.inference_loop)
-
         self.last_forward_time = 0
         self.last_downward_time = 0
 
         self.forward_interval = 1.0 / FORWARD_CAM_RATE_HZ
         self.downward_interval = 1.0 / DOWNWARD_CAM_RATE_HZ
+        self.single_cam_interval = 1.0 / SINGLE_CAM_RATE_HZ
 
-        self.get_logger().info(f'YOLOv8 node started, mode: {self.mode}, type: {self.type_yolo}')
+        # -------- INFERENCE MODE (which pipelines are active) --------
+        self.inference_mode = InferenceMode.FORWARD_ONLY
+
+        # -------- INFERENCE DRIVER (DEDICATED THREAD OR POLLING TIMER) --------
+        self.timer = None
+        self._inference_running = False
+        self._inference_thread = None
+        if USE_INFERENCE_THREAD:
+            self._inference_running = True
+            self._inference_thread = threading.Thread(
+                target=self.inference_worker, daemon=True
+            )
+            self._inference_thread.start()
+        else:
+            self.timer = self.create_timer(1.0 / INFERENCE_LOOP_HZ, self.inference_loop)
+
+        self.get_logger().info(
+            f'YOLOv8 node started, mode: {self.mode}, type: {self.type_yolo}, '
+            f'driver: {"thread" if USE_INFERENCE_THREAD else "timer"}'
+        )
 
     # -------- CALLBACKS --------
     def forward_callback(self, rgb_msg, depth_msg):
         # CALLBACK FOR FORWARD CAM (OAKD)
         now = time.time()
+
+        if self.profiler is not None:
+            self.last_forward_image_cam_interval = self.profiler.event_interval("forward_image_cam_interval")
 
         # if self.last_forward_sync_ts is not None:
         #     interval = now - self.last_forward_sync_ts
@@ -162,12 +262,27 @@ class YoloNode(Node):
 
     def downward_callback(self, rgb_msg):
         # CALLBACK FOR FORWARD CAM (OAK1)
+        if self.profiler is not None:
+            self.last_downward_image_cam_interval = self.profiler.event_interval("downward_image_cam_interval")
         self.downward_queue.append(rgb_msg)
 
     def depth_threshold_callback(self, msg):
         # CALLBACK FOR DEPTH THRESHOLD
         self.depth_threshold = msg.data
         self.get_logger().info(f'Updated depth threshold: {self.depth_threshold}')
+
+    def inference_mode_callback(self, msg):
+        # CALLBACK FOR INFERENCE MODE (0=forward only, 1=downward only, 2=both)
+        value = msg.data
+        try:
+            new_mode = InferenceMode(value)
+        except ValueError:
+            self.get_logger().warning(f'Ignoring invalid inference mode {value} (expected 0, 1 or 2). Keeping current mode: {InferenceMode(self.inference_mode).name}')
+            return
+
+        if new_mode != self.inference_mode:
+            self.inference_mode = new_mode
+            self.get_logger().info(f'Inference mode set to: {new_mode.name}')
 
     def edge_params_callback(self, msg):
         if len(msg.data) < 6:
@@ -183,16 +298,52 @@ class YoloNode(Node):
         self.get_logger().info(f'EDGE PARAMS UPDATED: {self.edge_params}')
         #print("EDGE PARAMS UPDATED", self.edge_params)
 
+    def run_inference(self, frame):
+        # CENTRALIZED MODEL CALL (applies inference tuning config)
+        kwargs = {"conf": INFERENCE_CONF, "verbose": False}
+        if self.use_half:
+            kwargs["half"] = True
+        return self.model(frame, **kwargs)
+
+    def inference_worker(self):
+        # DEDICATED INFERENCE THREAD: process frames back-to-back with no timer
+        # quantization. Sleeps briefly only when no frame is ready.
+        while self._inference_running and rclpy.ok():
+            try:
+                did_work = self.inference_loop()
+            except Exception as exc:  # keep the thread alive on transient errors
+                self.get_logger().error(f"Inference worker error: {exc}")
+                did_work = False
+
+            if not did_work:
+                time.sleep(INFERENCE_IDLE_SLEEP_S)
+
     def inference_loop(self):
         now = time.time()
 
-        # if hasattr(self, "_last_timer"):
-        #     self.get_logger().info(f"TIMER_DT={now - self._last_timer:.3f}")
+        mode = self.inference_mode
+        run_forward = mode in (InferenceMode.FORWARD_ONLY, InferenceMode.BOTH)
+        run_downward = mode in (InferenceMode.DOWNWARD_ONLY, InferenceMode.BOTH)
 
-        # self._last_timer = now
+        # When a single pipeline runs alone it uses the faster SINGLE_CAM_RATE_HZ;
+        # in BOTH mode each camera keeps its tuned distributed rate.
+        forward_interval = (
+            self.forward_interval if mode == InferenceMode.BOTH
+            else self.single_cam_interval
+        )
+        downward_interval = (
+            self.downward_interval if mode == InferenceMode.BOTH
+            else self.single_cam_interval
+        )
 
         #PRIORITY1: FORWARD CAMERA
-        if self.forward_queue and (now - self.last_forward_time > self.forward_interval):
+        if run_forward and self.forward_queue and (now - self.last_forward_time > forward_interval):
+
+            frame_t0 = time.perf_counter()
+            if self.profiler is not None:
+                self.profiler.reset_frame()
+                self.profiler.record("camera", 0.0)
+                self.profiler.record("image_cam_interval", self.last_forward_image_cam_interval)
 
             rgb_msg, depth_msg = self.forward_queue.pop()
             self.forward_queue.clear()
@@ -204,10 +355,18 @@ class YoloNode(Node):
             self.last_forward_time = now
 
             t0 = time.time()
-            results = self.model(frame, conf=0.4, verbose=False)
+            if self.profiler is not None:
+                with self.profiler.span("yolo_inference"):
+                    results = self.run_inference(frame)
+            else:
+                results = self.run_inference(frame)
             t1 = time.time()
 
-            annotated_frame, edge_debug = self.process_forward(results, frame, depth)
+            if self.profiler is not None:
+                with self.profiler.span("process_total"):
+                    annotated_frame, edge_debug = self.process_forward(results, frame, depth)
+            else:
+                annotated_frame, edge_debug = self.process_forward(results, frame, depth)
             t2 = time.time()
 
             #self.get_logger().info(f"YOLO={t1-t0:.3f}s PROCESS={t2-t1:.3f}s TOTAL={t2-t0:.3f}s")
@@ -217,6 +376,9 @@ class YoloNode(Node):
                 out_msg = self.bridge.cv2_to_imgmsg(annotated_frame, encoding='bgr8')
                 out_msg.header = header
                 self.fwd_image_pub.publish(out_msg)
+
+                if self.profiler is not None:
+                    self.profiler.record("image_annotated_fwd_cam_interval", self.profiler.event_interval("image_annotated_fwd_cam_interval"))
 
                 # ----------- PUBLISH IMAGE MASK DEPTH -----------
                 edge_msg = self.bridge.cv2_to_imgmsg(edge_debug, encoding='mono8')
@@ -230,10 +392,20 @@ class YoloNode(Node):
                 msg_depth.data = int(depth_global_mean)
                 self.mean_depth_forward_cam.publish(msg_depth)
 
-            return
+            if self.profiler is not None:
+                self.profiler.record("end_2_end", (time.perf_counter() - frame_t0) * 1000.0)
+                self.publish_profiling()
+
+            
 
         #PRIORITY2: DOWNWARD CAMERA
-        if ENABLE_DOWNWARD_INFERENCE and self.downward_queue and (now - self.last_downward_time > self.downward_interval):
+        if ENABLE_DOWNWARD_INFERENCE and run_downward and self.downward_queue and (now - self.last_downward_time > downward_interval):
+
+            frame_t0 = time.perf_counter()
+            if self.profiler is not None:
+                self.profiler.reset_frame()
+                self.profiler.record("camera", 1.0)
+                self.profiler.record("image_cam_interval", self.last_downward_image_cam_interval)
 
             rgb_msg = self.downward_queue.pop()
             self.downward_queue.clear()
@@ -243,13 +415,46 @@ class YoloNode(Node):
 
             self.last_downward_time = now
 
-            results = self.model(frame, conf=0.4, verbose=False)
-            self.process_downward(results, frame)
+            if self.profiler is not None:
+                with self.profiler.span("yolo_inference"):
+                    results = self.run_inference(frame)
+                with self.profiler.span("process_total"):
+                    self.process_downward(results, frame)
+            else:
+                results = self.run_inference(frame)
+                self.process_downward(results, frame)
 
             # ----------- PUBLISH IMAGE ANNOTATED DOWNWARD CAM -----------
             msg = self.bridge.cv2_to_imgmsg(frame, 'bgr8')
             msg.header = header
             self.down_image_pub.publish(msg)
+
+            if self.profiler is not None:
+                self.profiler.record("image_annotated_dwd_cam_interval", self.profiler.event_interval("image_annotated_dwd_cam_interval"))
+                self.profiler.record("end_2_end", (time.perf_counter() - frame_t0) * 1000.0)
+                self.publish_profiling()
+
+        return True
+
+    def publish_profiling(self):
+        # PUBLISH + OPTIONALLY LOG PER-STAGE RUN TIMES
+        if self.profiler is None:
+            return
+
+        if self.profiling_pub is not None:
+            msg = Float32MultiArray()
+            msg.data = self.profiler.build_msg_data()
+            msg.layout.dim = [
+                MultiArrayDimension(
+                    label='stages',
+                    size=len(PROFILING_STAGES),
+                    stride=len(PROFILING_STAGES))
+            ]
+            msg.layout.data_offset = 0
+            self.profiling_pub.publish(msg)
+
+        if PROFILING_CONSOLE_LOG:
+            self.profiler.log_console()
 
 
     def process_downward(self, results, annotated_frame):
@@ -279,7 +484,10 @@ class YoloNode(Node):
                 dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "downward")
                 dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "downward")
 
-                payload.extend([float(object_id), float(dist_center_x), -1.0, 0.0, float(dist_center_y)])
+                width = float(x2 - x1)
+                height = float(y2 - y1)
+
+                payload.extend([float(object_id), float(dist_center_x), -1.0, 0.0, float(dist_center_y), width, height])
 
                 # -------- PAYLOAD + DRAW --------
                 draw_detection(
@@ -293,22 +501,23 @@ class YoloNode(Node):
                     None
                 )
 
-            if payload:
                 msg = Float32MultiArray()
                 msg.data = payload
 
-                nb_objects = len(payload) // 5
+                nb_objects = len(payload) // 7
 
                 msg.layout.dim = [
                     MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-                    MultiArrayDimension(label='fields', size=5, stride=5)
+                    MultiArrayDimension(label='fields', size=7, stride=7)
                 ]
                 msg.layout.data_offset = 0
 
                 #self.get_logger().info(f"[PUBLISHED] Downward: {nb_objects} objects detected")
                 self.detection_downward_pub.publish(msg)
-            else:
-                self.get_logger().info(f"[EMPTY] Downward: No detections found")
+
+            if self.profiler is not None:
+                self.profiler.record("detections_downward_interval", self.profiler.event_interval("detections_downward_interval"))
+            
 
 
     def process_forward(self, results, annotated_frame, depth):
@@ -329,6 +538,8 @@ class YoloNode(Node):
         else:
             detection = results[0].boxes
 
+        depth_loop_t0 = time.perf_counter() if self.profiler is not None else None
+
         if detection is not None:
             for box in detection:
 
@@ -346,6 +557,9 @@ class YoloNode(Node):
                 y1 = int(np.clip(y1, 0, w - 1))
                 y2 = int(np.clip(y2, 0, w - 1))
 
+                width = float(x2 - x1)
+                height = float(y2 - y1)
+
                 # ----------- CLASS / CONF -----------
                 object_id = int(box.cls[0])
                 confidence = float(box.conf[0])
@@ -355,7 +569,6 @@ class YoloNode(Node):
                          object_id == ObjectID.GATE_LEG_CENTER or
                          object_id == ObjectID.GATE_LEG_R or
                          object_id == ObjectID.SLALOM_SIDE or
-                         object_id == ObjectID.TORPEDO or
                          object_id == ObjectID.SLALOM_CENTER or
                          object_id == ObjectID.DROPPER)):
 
@@ -391,14 +604,30 @@ class YoloNode(Node):
                             bbox_cx=box_cx,
                             mode=self.mode)
 
-                if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
-                    #self.get_logger().info(f"[FILTERED] Object {object_id} depth={depth_value} outside range (400-{self.depth_threshold})")
-                    continue
-
                 # ----------- DIST / ANGLE -----------
                 dist_center_x = find_dist_from_center_in_x(box_cx, self.mode, "forward")
                 dist_center_y = find_dist_from_center_in_y(box_cy, self.mode, "forward")
 
+
+                if depth_value is None or not (400.0 < depth_value < self.depth_threshold):
+                    #self.get_logger().info(f"[FILTERED] Object {object_id} depth={depth_value} outside range (400-{self.depth_threshold})")
+                    draw_detection(
+                        annotated_frame,
+                        self.type_yolo,
+                        object_id,
+                        confidence,
+                        depth_value if depth_value is not None else 0,
+                        dist_center_x,
+                        box_cx,
+                        box_cy,
+                        x1,
+                        y1,
+                        x2,
+                        y2,
+                        color=(0, 0, 255),
+                        points=points
+                    )
+                    continue
                 # ----------- DICT FOR ANGLE BETWEEN -----------
                 if object_id == ObjectID.SLALOM_SIDE:
                     slalom_tab.append({
@@ -412,6 +641,8 @@ class YoloNode(Node):
                         "y1": y1,
                         "x2": x2,
                         "y2": y2,
+                        "width": width,
+                        "height": height,
                         "points": points
                     })
                     continue
@@ -428,6 +659,8 @@ class YoloNode(Node):
                         "y1": y1,
                         "x2": x2,
                         "y2": y2,
+                        "width": width,
+                        "height": height,
                         "points": points
                     })
                     continue
@@ -467,6 +700,8 @@ class YoloNode(Node):
                         "y1": y1,
                         "x2": x2,
                         "y2": y2,
+                        "width": width,
+                        "height": height,
                         "points": points}
 
                 else:
@@ -483,15 +718,26 @@ class YoloNode(Node):
                         points=points
                     )
 
+        if self.profiler is not None:
+            self.profiler.record("detection_processing", (time.perf_counter() - depth_loop_t0) * 1000.0)
+
         for object_id, obj in objects.items():
+            
+            w = obj["width"]
+            h = obj["height"]
+
             if obj["depth"] < self.depth_threshold:
                 angle = 0.0
                 if object_id == ObjectID.TORPEDO:
                     angle = find_angle_torpedo(objects)
-                    #self.get_logger().info(f"angle_torpedo={angle}")
-                    payload.extend([float(object_id), float(obj["dist_center_x"]), float(obj["depth"]), angle, float(obj["dist_center_y"])])
+
+                    torpedo_depth = find_torpedo_depth(
+                        objects=objects,
+                        fallback_depth=obj["depth"])
+
+                    payload.extend([float(object_id), float(obj["dist_center_x"]), float(torpedo_depth), float(angle), float(obj["dist_center_y"]), float(w), float(h)])
                 else:
-                    payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"])])
+                    payload.extend([float(object_id),float(obj["dist_center_x"]),float(obj["depth"]),angle, float(obj["dist_center_y"]), float(w), float(h)])
 
 
                 draw_detection(
@@ -517,10 +763,14 @@ class YoloNode(Node):
         objects, payload = target_organizer(target_tab, objects, annotated_frame, payload, self.type_yolo)
 
         # -------- FIND ANGLE BETWEEN TWO OBJECTS --------
-        payload_angle = find_gate_angle(objects, self.mode)
+        if self.profiler is not None:
+            with self.profiler.span("angle_computation"):
+                payload_angle = find_gate_angle(objects, self.mode)
+        else:
+            payload_angle = find_gate_angle(objects, self.mode)
 
         if MOVING_MEAN_ACTIVATED:
-            for i in range(0, len(payload_angle), 5):
+            for i in range(0, len(payload_angle), 7):
                 group_id = int(payload_angle[i])
                 angle_index = i + 3
 
@@ -534,13 +784,15 @@ class YoloNode(Node):
         payload.extend(payload_angle)
 
         # -------- PUBLISH DETECTION --------
+        publish_t0 = time.perf_counter() if self.profiler is not None else None
+
         msg = Float32MultiArray()
         msg.data = payload
-        nb_objects = len(payload) // 5
+        nb_objects = len(payload) // 7
 
         msg.layout.dim = [
             MultiArrayDimension(label='objects', size=nb_objects, stride=max(len(payload), 1)),
-            MultiArrayDimension(label='fields', size=5, stride=5)]
+            MultiArrayDimension(label='fields', size=7, stride=7)]
         msg.layout.data_offset = 0
 
         if payload:
@@ -557,10 +809,19 @@ class YoloNode(Node):
 
         self.detection_forward_pub.publish(msg)
 
+        if self.profiler is not None:
+            self.profiler.record("publish", (time.perf_counter() - publish_t0) * 1000.0)
+            self.profiler.record("detections_forward_interval", self.profiler.event_interval("detections_forward_interval"))
+
         return annotated_frame, edge_debug
 
     def destroy_node(self):
         self.get_logger().info("Destroying YOLO node")
+
+        # Stop the inference thread before tearing down the model.
+        self._inference_running = False
+        if self._inference_thread is not None:
+            self._inference_thread.join(timeout=2.0)
 
         if hasattr(self, "model"):
             del self.model
@@ -580,6 +841,9 @@ def main():
     rclpy.init()
     node = YoloNode(args)
 
+    # Single-threaded on purpose: this pipeline is CPU/GIL bound, so cooperative
+    # single-threaded scheduling (callbacks + inference taking clean turns)
+    # outperforms a MultiThreadedExecutor, which only adds GIL contention.
     try:
         rclpy.spin(node)
 

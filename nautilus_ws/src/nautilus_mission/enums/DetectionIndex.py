@@ -6,3 +6,5 @@ class DetectionIndex(IntEnum):
     DEPTH_MM = 2
     ANGLE_DEG = 3
     CENTER_FOV_RATIO_Y = 4
+    WIDTH = 5
+    HEIGHT = 6

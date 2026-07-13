@@ -24,6 +24,13 @@ install(
   RENAME yolo_detections_viewer
 )
 
+install(
+  PROGRAMS
+    vision/yolo_profiling_viewer.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME yolo_profiling_viewer
+)
+
 
 install(
   PROGRAMS
