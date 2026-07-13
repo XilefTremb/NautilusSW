@@ -7,7 +7,5 @@ class VisionAction(IntEnum):
     CIRCLE_MARKER = 3
     CENTER_FOV = 4
     CENTER_BOTTOM = 5
-    ALIGN_TORPEDO = 6
-
     
     

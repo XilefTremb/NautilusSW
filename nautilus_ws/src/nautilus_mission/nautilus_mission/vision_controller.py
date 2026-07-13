@@ -37,8 +37,6 @@ class VisionController:
             self.center_fov(target_detection)
         elif vision_action == VisionAction.CENTER_BOTTOM:
             self.center_bottom(target_detection)
-        elif vision_action == VisionAction.ALIGN_TORPEDO:
-            self.align_torpedo(target_detection)
 
     def center_target(self, target_detection):
         if target_detection is None:

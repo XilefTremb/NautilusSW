@@ -7,6 +7,7 @@ from collections import deque
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray
+from contextlib import contextmanager
 
 
 # Must stay in sync with PROFILING_STAGES in yolo_pipeline.py.
@@ -54,6 +55,63 @@ STAGE_WIDTH = max(len(s) for s in DISPLAY_STAGES) + 2
 CAMERA_LABELS = {0: "FORWARD CAM", 1: "DOWNWARD CAM"}
 
 WINDOW = 100
+
+class StageProfiler:
+    """Lightweight per-stage timing collector.
+
+    Records named time deltas (in milliseconds) for the current frame, keeps a
+    rolling history per stage for console stats, and can serialize the current
+    frame into the fixed PROFILING_STAGES order for publishing.
+    """
+
+    def __init__(self, node, stages, window=100):
+        self.node = node
+        self.stages = stages
+        self.history = {s: deque(maxlen=window) for s in stages}
+        self.frame = {}
+        self._starts = {}
+        self._last_event = {}
+
+    def reset_frame(self):
+        self.frame = {}
+
+    def record(self, name, dt_ms):
+        if dt_ms is None:
+            return
+        self.frame[name] = dt_ms
+        if name in self.history:
+            self.history[name].append(dt_ms)
+
+    @contextmanager
+    def span(self, name):
+        t = time.perf_counter()
+        try:
+            yield
+        finally:
+            self.record(name, (time.perf_counter() - t) * 1000.0)
+
+    def event_interval(self, name):
+        """Return ms elapsed since the previous call with the same name."""
+        now = time.perf_counter()
+        last = self._last_event.get(name)
+        self._last_event[name] = now
+        if last is None:
+            return None
+        return (now - last) * 1000.0
+
+    def build_msg_data(self):
+        return [float(self.frame.get(s, float('nan'))) for s in self.stages]
+
+    def log_console(self):
+        parts = []
+        for s in self.stages:
+            if s == "camera":
+                continue
+            v = self.frame.get(s)
+            if v is not None:
+                parts.append(f"{s}={v:.1f}ms")
+        if parts:
+            self.node.get_logger().info("[PROFILE] " + "  ".join(parts))
 
 
 class YoloProfilingViewer(Node):

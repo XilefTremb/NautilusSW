@@ -23,6 +23,7 @@ from vision.filters import TemporalFilter
 from vision.display_model_boxes import draw_detection, obb_model_coordinates, bbox_model_coordinates
 from vision.slider_edge_detector import load_params_edge_detector_json
 from vision.item_organizer import slalom_organizer, target_organizer
+from vision.yolo_profiling_viewer import StageProfiler
 
 from enums.ObjectID import ObjectID
 from enums.InferenceMode import InferenceMode
@@ -98,65 +99,6 @@ PROFILING_STAGES = [
     "image_annotated_dwd_cam_interval",      # /yolo/image_annotated_dwd_cam publish interval
     "end_2_end",       # end-to-end for the whole frame
 ]
-
-
-class StageProfiler:
-    """Lightweight per-stage timing collector.
-
-    Records named time deltas (in milliseconds) for the current frame, keeps a
-    rolling history per stage for console stats, and can serialize the current
-    frame into the fixed PROFILING_STAGES order for publishing.
-    """
-
-    def __init__(self, node, stages, window=100):
-        self.node = node
-        self.stages = stages
-        self.history = {s: deque(maxlen=window) for s in stages}
-        self.frame = {}
-        self._starts = {}
-        self._last_event = {}
-
-    def reset_frame(self):
-        self.frame = {}
-
-    def record(self, name, dt_ms):
-        if dt_ms is None:
-            return
-        self.frame[name] = dt_ms
-        if name in self.history:
-            self.history[name].append(dt_ms)
-
-    @contextmanager
-    def span(self, name):
-        t = time.perf_counter()
-        try:
-            yield
-        finally:
-            self.record(name, (time.perf_counter() - t) * 1000.0)
-
-    def event_interval(self, name):
-        """Return ms elapsed since the previous call with the same name."""
-        now = time.perf_counter()
-        last = self._last_event.get(name)
-        self._last_event[name] = now
-        if last is None:
-            return None
-        return (now - last) * 1000.0
-
-    def build_msg_data(self):
-        return [float(self.frame.get(s, float('nan'))) for s in self.stages]
-
-    def log_console(self):
-        parts = []
-        for s in self.stages:
-            if s == "camera":
-                continue
-            v = self.frame.get(s)
-            if v is not None:
-                parts.append(f"{s}={v:.1f}ms")
-        if parts:
-            self.node.get_logger().info("[PROFILE] " + "  ".join(parts))
-
 
 def parse_args():
     p = argparse.ArgumentParser()
@@ -382,7 +324,6 @@ class YoloNode(Node):
         mode = self.inference_mode
         run_forward = mode in (InferenceMode.FORWARD_ONLY, InferenceMode.BOTH)
         run_downward = mode in (InferenceMode.DOWNWARD_ONLY, InferenceMode.BOTH)
-        print(run_forward, run_downward, mode)
 
         # When a single pipeline runs alone it uses the faster SINGLE_CAM_RATE_HZ;
         # in BOTH mode each camera keeps its tuned distributed rate.
@@ -493,8 +434,6 @@ class YoloNode(Node):
                 self.profiler.record("end_2_end", (time.perf_counter() - frame_t0) * 1000.0)
                 self.publish_profiling()
 
-
-
         return True
 
     def publish_profiling(self):
@@ -562,9 +501,8 @@ class YoloNode(Node):
                     None
                 )
 
-    
-            msg = Float32MultiArray()
-            msg.data = payload
+                msg = Float32MultiArray()
+                msg.data = payload
 
                 nb_objects = len(payload) // 7
 

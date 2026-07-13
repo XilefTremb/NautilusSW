@@ -155,19 +155,13 @@ class StateMachine:
             if self.current_objective.approach.approach_distance_mm is None:
                 self.target_reached()
                 return 
-            
-            if self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
-                self.vision_action = VisionAction.ALIGN_TORPEDO
             else:
                 self.vision_action = VisionAction.APPROACH_TARGET
+
             if self.is_target_lost_filtered():
                 self.target_lost()
             if self.is_target_approached():
-                if self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
-                    if self.is_target_width_aligned():
-                        self.target_reached()
-                else:  
-                    self.target_reached()
+                self.target_reached()
 
         elif self.state == 'EXECUTE_ACTION':
             self.vision_action = self.get_vision_action_for_current_objective()
