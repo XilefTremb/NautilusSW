@@ -63,7 +63,7 @@ class StateMachine:
 
         self.current_objective_lifetime_s = 0.0
         self.current_objective_start_time_s = time.monotonic()
-        self.objective_timeout_s = 5 * 60
+        self.objective_timeout_s = 2.5 * 60
 
         self.bottom_search_leg = 0
         self.bottom_search_leg_start = 0.0
@@ -218,9 +218,9 @@ class StateMachine:
             else:
                 
                 if positions[0] == self.role_choice :
-                    self.target_ids = [ObjectID.SLALOM_MID_RIGHT]
-                else :
                     self.target_ids = [ObjectID.SLALOM_LEFT_MID]
+                else :
+                    self.target_ids = [ObjectID.SLALOM_MID_RIGHT]
 
         elif self.current_objective.action.type is self.ActionType.LAUNCH_DROPPER :
             if self.current_objective.action.launch_second_dropper:

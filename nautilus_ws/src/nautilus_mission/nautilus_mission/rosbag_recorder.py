@@ -49,6 +49,7 @@ class RosbagRecorder:
             "/control/cmd/forward",
             "/control/cmd/lateral",
             "/dvl/twist",
+            "/rosout"
         ]
 
     def mount_usb(self):
@@ -130,11 +131,7 @@ class RosbagRecorder:
         if self.bag_path is None:
             return
 
-        try:
-            answer = input(f"\nDo you want to keep this rosbag? {self.bag_path} [y/N]: ").strip().lower()
-        except EOFError:
-            print("[ROSBAG] No stdin available. Keeping rosbag by default.")
-            return
+        answer = "y"
 
         if answer not in ["y", "yes", "o", "oui"]:
             print("[ROSBAG] Deleting rosbag...")
