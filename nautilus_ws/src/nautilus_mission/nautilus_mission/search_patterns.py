@@ -5,8 +5,8 @@ def search_bottom_spiral(self):
 
     elapsed = (now - self.bottom_search_leg_start).nanoseconds / 1e9
 
-    base_time = 0.5
-    step_time = 0.1
+    base_time = 2.0
+    step_time = 0.2
 
     leg_time = base_time + step_time * (self.bottom_search_leg // 2)
 
@@ -15,10 +15,10 @@ def search_bottom_spiral(self):
         self.bottom_search_leg_start = now
 
     dirs = [
-        (1520, 1500),  # forward
-        (1500, 1520),  # strafe right
-        (1480, 1500),  # backward
-        (1500, 1480),  # strafe left
+        (1550, 1500),  # forward
+        (1500, 1550),  # strafe right
+        (1450, 1500),  # backward
+        (1500, 1450),  # strafe left
     ]
 
     forward_cmd, lateral_cmd = dirs[self.bottom_search_leg % 4]

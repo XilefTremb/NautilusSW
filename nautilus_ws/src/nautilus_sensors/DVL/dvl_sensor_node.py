@@ -12,7 +12,7 @@ import time
 # ===== CONFIGURATION =====
 DVL_IP = "192.168.1.3"      # DVL IP
 DVL_PORT = 50000             # DVL port to send commands to
-VM_IP = "192.168.2.10"     # VM IP on DVL subnet
+VM_IP = "192.168.2.11"     # VM IP on DVL subnet
 LOCAL_PORT = 27000           # Port to listen for UDP packets
 PUBLISH_HZ = 20              # Publishing frequency (Hz)
 

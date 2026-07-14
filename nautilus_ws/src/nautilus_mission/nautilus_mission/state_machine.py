@@ -374,9 +374,17 @@ class StateMachine:
                 
             if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
                 return True
-            
-            arrived_forward = self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
-            arrived_lateral = self.lateral_position >= self.current_objective.action.lateral_distance_m - 0.3 - self.approach_distance_error_m
+
+            if self.current_objective.action.forward_distance_m >= 0:
+                arrived_forward = self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
+            else: 
+                arrived_forward = self.forward_position <= self.current_objective.action.forward_distance_m + 0.3
+
+            if self.current_objective.action.lateral_distance_m >= 0:
+                arrived_lateral = self.lateral_position >= self.current_objective.action.lateral_distance_m - 0.3
+            else:
+                arrived_lateral = self.lateral_position <= self.current_objective.action.lateral_distance_m + 0.3 
+
             return arrived_forward and arrived_lateral
             
             
