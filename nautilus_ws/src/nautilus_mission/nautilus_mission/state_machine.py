@@ -191,6 +191,9 @@ class StateMachine:
         self.current_objective_start_time_s = time.monotonic()
         self.current_objective_lifetime_s = 0.0
 
+        self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM) 
+        self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
+
         if self.current_objective.action.type == self.ActionType.CHOOSE_GATE_SIDE:
             self.detection_store.save_role = False
             positions = self.detection_store.role_positions
@@ -334,7 +337,7 @@ class StateMachine:
             self.detection_store.save_role = True 
 
         if self.current_objective.action.type == self.ActionType.LAUNCH_DROPPER:
-            self.node.get_logger().info('Launching dropper no 1!')
+            self.node.get_logger().info('Launching droppers!')
             self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_2_PWM)  
      
         
