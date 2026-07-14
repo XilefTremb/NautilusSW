@@ -327,10 +327,11 @@ class StateMachine:
 
         if self.current_objective.action.type == self.ActionType.FORWARD:
             error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
-            error_ekf_lat_position = self.current_objective.action.lateral_distance_m - self.lateral_position
-
             self.node.publish_error("forward_ekf",error_ekf_fwd_position)
-            self.node.publish_error("lateral_ekf",error_ekf_lat_position)
+
+            if self.current_objective.action.lateral_distance_m is not None:
+                error_ekf_lat_position = self.current_objective.action.lateral_distance_m - self.lateral_position
+                self.node.publish_error("lateral_ekf",error_ekf_lat_position)
 
         if self.current_objective.action.type == self.ActionType.SAVE_ROLE:
             self.node.get_logger().info('Saving role choice for current objective.')
@@ -383,7 +384,9 @@ class StateMachine:
             else: 
                 arrived_forward = self.forward_position <= self.current_objective.action.forward_distance_m + 0.3
 
-            if self.current_objective.action.lateral_distance_m >= 0:
+            if self.current_objective.action.lateral_distance_m is None:
+                arrived_lateral = True
+            elif self.current_objective.action.lateral_distance_m >= 0:
                 arrived_lateral = self.lateral_position >= self.current_objective.action.lateral_distance_m - 0.3
             else:
                 arrived_lateral = self.lateral_position <= self.current_objective.action.lateral_distance_m + 0.3 

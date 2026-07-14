@@ -49,6 +49,8 @@ class RosbagRecorder:
             "/control/cmd/forward",
             "/control/cmd/lateral",
             "/dvl/twist",
+            "/yolo/detections_depth_filter_mm",
+            "/yolo/inference_mode"
             "/rosout"
         ]
 

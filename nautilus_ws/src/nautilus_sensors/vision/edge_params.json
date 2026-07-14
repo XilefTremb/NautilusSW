@@ -1,8 +1,8 @@
 {
-    "dark_threshold": 115,
-    "light_min_brightness": 130,
-    "light_bright_percentile": 60,
-    "light_min_brightness_torpedo": 57,
+    "dark_threshold": 85,
+    "light_min_brightness": 155,
+    "light_bright_percentile": 61,
+    "light_min_brightness_torpedo": 105,
     "light_bright_percentile_torpedo": 50,
     "min_pixel_count": 177
 }

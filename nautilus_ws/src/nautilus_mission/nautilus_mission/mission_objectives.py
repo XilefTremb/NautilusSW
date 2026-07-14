@@ -48,7 +48,7 @@ class ForwardAction:
     type: ActionType = ActionType.FORWARD
     duration_s: float = 0.0
     forward_distance_m: float = 0.0
-    lateral_distance_m: float = 0.0
+    lateral_distance_m: Optional[float] = None
     dropper_search: bool = False
 
 @dataclass
@@ -142,7 +142,7 @@ traverse_gate = Objective(
         angle_tolerance_deg=5.0,
     ),
     approach=ApproachConfig(
-        approach_distance_mm=2000.0,
+        approach_distance_mm=1500.0,
     ),
     action=ForwardAction(
         forward_distance_m=2.7,
@@ -398,8 +398,8 @@ skip_slalom_objective = Objective(
     )
 )
 
-# role_choice = ObjectID.SOS_SAFETY
-role_choice = ObjectID.COMPASS_HAMMER
+role_choice = ObjectID.SOS_SAFETY
+# role_choice = ObjectID.COMPASS_HAMMER
 
 
 gate_list = [approach_gate, choose_gate_side, traverse_gate]
@@ -407,6 +407,6 @@ slalom_list = [slalom1, slalom2, slalom3]
 dropper_list = [approach_dropper, set_first_depth_for_dropper, set_second_depth_for_dropper, launch_dropper, dropper_octogon_transition]
 torpedo_list = [coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
 octogon_list = [approach_table, center_over_table, surface_octagon]
-hail_mary = [HM_slalo1, slalo2, slalo3]
+hail_mary = [skip_slalom_objective, slalom2, slalom3]
 
 mission_list = gate_list + slalom_list + torpedo_list + dropper_list + octogon_list
