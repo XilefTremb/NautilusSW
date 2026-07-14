@@ -150,7 +150,7 @@ traverse_gate = Objective(
 
 slalom1 = Objective(
     name='slalom1',
-    target_ids=[ObjectID.SLALOM_LEFT_MID],
+    # target_ids=[ObjectID.SLALOM_LEFT_MID],
     success_frame_treshold=10,
     detections_depth_filter_mm = 2000,
     search=SearchConfig(spin_pwm=1540),
@@ -208,7 +208,7 @@ set_depth_for_dropper = Objective(
     name='setDepthForDropper',
     target_ids=None,
     inference_mode=InferenceMode.DOWNWARD_ONLY,
-    target_auv_depth_m = 0.5,
+    target_auv_depth_m = 0.6,
     action=ForwardAction(
         forward_distance_m=3.0,
         dropper_search=True,
@@ -242,8 +242,8 @@ launch_second_dropper = Objective(
         full_centering=False,
         x_center_tolerance_fov=0.05,
         center_bottom=True,
-        target_offset_x=-0.25,
-        target_offset_y=0.25,
+        target_offset_x=-0.17,
+        target_offset_y=0.15,
     ),
     action=LaunchDropperAction(
         duration_s=2.0,
@@ -332,7 +332,6 @@ approach_table = Objective(
         approach_distance_mm=3000.0
     ),
     action=NoAction()
-    )
 )
 
 center_over_table = Objective(
@@ -347,7 +346,7 @@ center_over_table = Objective(
 surface_octagon = Objective(
     name='surface_octagon',
     target_ids=None,
-    target_auv_depth_m = 0.2,
+    target_auv_depth_m = 0.1,
     action=NoAction()
 )
 
@@ -370,13 +369,11 @@ test_objective = Objective(
 # role_choice = ObjectID.SOS_SAFETY
 role_choice = ObjectID.COMPASS_HAMMER
 
-# mission_list = [approach_gate, choose_gate_side, traverse_gate, slalom1, slalom2, slalom3,  torpedo_depth_change, coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper, launch_second_dropper]
-# mission_list = [approach_gate, choose_gate_side, traverse_gate, approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
-# mission_list = [slalom1, slalom2, slalom3, coarse_approach_torpedo, torpedo_depth_change, fine_approach_torpedo, torpedo_firing_positioning, approach_dropper, launch_dropper]
-# mission_list = [approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
-# mission_list = [coarse_approach_torpedo, fine_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
-# mission_list = [slalom1, slalom2, slalom3]
-# mission_list = [slalom2]
-# mission_list = [torpedo_depth_change, coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2, approach_dropper, launch_dropper, launch_second_dropper]
-# mission_list = [test_objective]
-mission_list = [approach_table, center_over_table, surface_octagon]
+
+gate_list = [approach_gate, choose_gate_side, traverse_gate]
+slalom_list = [slalom1, slalom2, slalom3]
+dropper_list = [approach_dropper, set_depth_for_dropper, launch_dropper, launch_second_dropper]
+torpedo_list = [coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
+octogon_list = [approach_table, center_over_table, surface_octagon]
+
+mission_list = dropper_list

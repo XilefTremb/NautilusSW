@@ -207,17 +207,17 @@ class StateMachine:
 
                 self.target_ids = [self.role_choice]
 
-        # elif 'slalom' in self.current_objective.name:
-        #     positions = self.detection_store.role_positions
-        #     if positions is None:
-        #         self.node.get_logger().warn('Role choice unavailable for slalom')
-        #         self.target_ids = None
-        #     else:
+        elif 'slalom' in self.current_objective.name:
+            positions = self.detection_store.role_positions
+            if positions is None:
+                self.node.get_logger().warn('Role choice unavailable for slalom')
+                self.target_ids = None
+            else:
                 
-        #         if positions[0] == self.role_choice :
-        #             self.target_ids = [ObjectID.SLALOM_MID_RIGHT]
-        #         else :
-        #             self.target_ids = [ObjectID.SLALOM_LEFT_MID]
+                if positions[0] == self.role_choice :
+                    self.target_ids = [ObjectID.SLALOM_MID_RIGHT]
+                else :
+                    self.target_ids = [ObjectID.SLALOM_LEFT_MID]
 
         elif self.current_objective.action.type is self.ActionType.LAUNCH_DROPPER :
             if self.current_objective.action.launch_second_dropper:
@@ -446,7 +446,7 @@ class StateMachine:
             error_x = abs(px - self.current_objective.center.target_offset_x) < self.current_objective.center.x_center_tolerance_fov
             error_y = abs(py - self.current_objective.center.target_offset_y) < self.current_objective.center.y_center_tolerance_fov
             
-            return error_x and error_y
+            return self.update_success_frame_count(error_x and error_y)
                
         else :
             return abs(px) < self.current_objective.center.x_center_tolerance_fov
