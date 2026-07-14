@@ -385,6 +385,13 @@ test_objective = Objective(
     action=NoAction()
 )
 
+skip_slalom_objective(
+    name='operationHailMary',
+    action=ForwardAction(
+        forward_distance_m=6.0,
+    )
+)
+
 # role_choice = ObjectID.SOS_SAFETY
 role_choice = ObjectID.COMPASS_HAMMER
 
