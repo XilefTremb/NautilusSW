@@ -326,8 +326,9 @@ class StateMachine:
                 self.current_objective.action.fired = True
 
         if self.current_objective.action.type == self.ActionType.FORWARD:
-            error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
-            self.node.publish_error("forward_ekf",error_ekf_fwd_position)
+            if self.current_objective.action.forward_distance_m is not None:
+                error_ekf_fwd_position = self.current_objective.action.forward_distance_m - self.forward_position
+                self.node.publish_error("forward_ekf",error_ekf_fwd_position)
 
             if self.current_objective.action.lateral_distance_m is not None:
                 error_ekf_lat_position = self.current_objective.action.lateral_distance_m - self.lateral_position
@@ -379,7 +380,9 @@ class StateMachine:
             if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
                 return True
 
-            if self.current_objective.action.forward_distance_m >= 0:
+            if self.current_objective.action.forward_distance_m is None:
+                arrived_forward = True
+            elif self.current_objective.action.forward_distance_m >= 0:
                 arrived_forward = self.forward_position >= self.current_objective.action.forward_distance_m - 0.3 - self.approach_distance_error_m
             else: 
                 arrived_forward = self.forward_position <= self.current_objective.action.forward_distance_m + 0.3

@@ -47,7 +47,7 @@ class NoAction:
 class ForwardAction:
     type: ActionType = ActionType.FORWARD
     duration_s: float = 0.0
-    forward_distance_m: float = 0.0
+    forward_distance_m: Optional[float] = None
     lateral_distance_m: Optional[float] = None
     dropper_search: bool = False
 
@@ -189,6 +189,14 @@ slalom3 = Objective(
     ),
 )
 
+lateral_after_gate = Objective(
+    name='lateral_after_gate',
+    detections_depth_filter_mm = 30000,
+    action=ForwardAction(
+        lateral_distance_m = -1.5
+    ),
+)
+
 approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
@@ -199,7 +207,7 @@ approach_dropper = Objective(
     search=SearchConfig(spin_pwm=1560),
     center=CenterConfig(
         full_centering=False,
-        x_center_tolerance_fov=0.03
+        x_center_tolerance_fov=0.05
     ),
     approach=ApproachConfig(
         approach_distance_mm=2000.0
@@ -233,8 +241,8 @@ launch_dropper = Objective(
     search=SearchConfig(spin_pwm=1400),
     center=CenterConfig(
         full_centering=False,
-        x_center_tolerance_fov=0.03,
-        y_center_tolerance_fov=0.03,
+        x_center_tolerance_fov=0.05,
+        y_center_tolerance_fov=0.05,
         center_bottom=True,
         target_offset_x=-0.25,
         target_offset_y=0.25,
@@ -398,11 +406,11 @@ skip_slalom_objective = Objective(
     )
 )
 
-role_choice = ObjectID.SOS_SAFETY
-# role_choice = ObjectID.COMPASS_HAMMER
+# role_choice = ObjectID.SOS_SAFETY
+role_choice = ObjectID.COMPASS_HAMMER
 
 
-gate_list = [approach_gate, choose_gate_side, traverse_gate]
+gate_list = [approach_gate, choose_gate_side, traverse_gate, lateral_after_gate]
 slalom_list = [slalom1, slalom2, slalom3]
 dropper_list = [approach_dropper, set_first_depth_for_dropper, set_second_depth_for_dropper, launch_dropper, dropper_octogon_transition]
 torpedo_list = [coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
@@ -410,4 +418,4 @@ octogon_list = [approach_table, center_over_table, surface_octagon]
 hail_mary = [skip_slalom_objective, slalom2, slalom3]
 
 # mission_list = gate_list + slalom_list + torpedo_list + dropper_list + octogon_list
-mission_list = gate_list + slalom_list + dropper_list
+mission_list = dropper_list

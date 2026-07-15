@@ -568,7 +568,6 @@ class YoloNode(Node):
                 if ((object_id == ObjectID.GATE_LEG_L or
                          object_id == ObjectID.GATE_LEG_CENTER or
                          object_id == ObjectID.GATE_LEG_R or
-                         object_id == ObjectID.SLALOM_SIDE or
                          object_id == ObjectID.SLALOM_CENTER or
                          object_id == ObjectID.DROPPER or
                          object_id == ObjectID.TABLE)):

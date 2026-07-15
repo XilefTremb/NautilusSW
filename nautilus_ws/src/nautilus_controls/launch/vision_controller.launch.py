@@ -95,7 +95,7 @@ def generate_launch_description():
                 'input_topic': '/control/vision_errors/bottom_cam/forward',
                 'output_topic': '/control/cmd/forward',
                 'kp': 140.0,
-                'ki': 0.5,
+                'ki': 0.8,
                 'kd': 2.5,
                 'flip_output': True
             }]
@@ -109,7 +109,7 @@ def generate_launch_description():
                 'input_topic': '/control/vision_errors/bottom_cam/lateral',
                 'output_topic': '/control/cmd/lateral',
                 'kp': 140.0,
-                'ki': 0.5,
+                'ki': 0.8,
                 'kd': 2.5,
             }]
         )
