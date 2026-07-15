@@ -204,7 +204,7 @@ approach_dropper = Objective(
     detections_depth_filter_mm=30000,
     target_auv_depth_m = 1.3,
     success_frame_treshold= 10,
-    search=SearchConfig(spin_pwm=1560),
+    search=SearchConfig(spin_pwm=1440),
     center=CenterConfig(
         full_centering=False,
         x_center_tolerance_fov=0.05
@@ -241,8 +241,8 @@ launch_dropper = Objective(
     search=SearchConfig(spin_pwm=1400),
     center=CenterConfig(
         full_centering=False,
-        x_center_tolerance_fov=0.05,
-        y_center_tolerance_fov=0.05,
+        x_center_tolerance_fov=0.08,
+        y_center_tolerance_fov=0.08,
         center_bottom=True,
         target_offset_x=-0.25,
         target_offset_y=0.25,
@@ -356,7 +356,7 @@ approach_table = Objective(
     detections_depth_filter_mm=30000,
     target_auv_depth_m = 1.3,
     success_frame_treshold= 10,
-    search=SearchConfig(spin_pwm=1560),
+    search=SearchConfig(spin_pwm=1440),
     center=CenterConfig(
         full_centering=False,
         x_center_tolerance_fov=0.05
@@ -418,4 +418,4 @@ octogon_list = [approach_table, center_over_table, surface_octagon]
 hail_mary = [skip_slalom_objective, slalom2, slalom3]
 
 # mission_list = gate_list + slalom_list + torpedo_list + dropper_list + octogon_list
-mission_list = dropper_list
+mission_list = dropper_list + octogon_list
