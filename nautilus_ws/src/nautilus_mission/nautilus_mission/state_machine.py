@@ -231,12 +231,12 @@ class StateMachine:
         elif self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
 
             if self.current_objective.name == "torpedoFiringPositioning1":
-                self.target_ids = ([ObjectID.TARGET_BLOOD] if self.role_choice == ObjectID.SOS_SAFETY
-                    else [ObjectID.TARGET_FIRE] )
+                self.target_ids = ([ObjectID.BLOOD] if self.role_choice == ObjectID.SOS_SAFETY
+                    else [ObjectID.FIRE] )
 
             elif self.current_objective.name == "torpedoFiringPositioning2":
-                self.target_ids = ([ObjectID.TARGET_AMBULANCE] if self.role_choice == ObjectID.SOS_SAFETY
-                    else [ObjectID.TARGET_TRUCK])
+                self.target_ids = ([ObjectID.AMBULANCE] if self.role_choice == ObjectID.SOS_SAFETY
+                    else [ObjectID.FIRE_TRUCK])
 
             self.current_objective.action.fired = False
 

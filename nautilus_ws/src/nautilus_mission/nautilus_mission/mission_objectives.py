@@ -409,4 +409,5 @@ torpedo_list = [coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_f
 octogon_list = [approach_table, center_over_table, surface_octagon]
 hail_mary = [skip_slalom_objective, slalom2, slalom3]
 
-mission_list = gate_list + slalom_list + torpedo_list + dropper_list + octogon_list
+# mission_list = gate_list + slalom_list + torpedo_list + dropper_list + octogon_list
+mission_list = gate_list + slalom_list + dropper_list
