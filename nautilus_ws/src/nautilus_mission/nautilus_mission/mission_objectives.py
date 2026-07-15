@@ -155,7 +155,7 @@ slalom1 = Objective(
     # target_ids=[ObjectID.SLALOM_LEFT_MID],
     inference_mode=InferenceMode.FORWARD_ONLY,
     success_frame_treshold=10,
-    detections_depth_filter_mm = 4000,
+    detections_depth_filter_mm = 7000,
     search=SearchConfig(spin_pwm=1560),
     target_auv_depth_m = 0.9,
     center=CenterConfig(
@@ -177,7 +177,7 @@ slalom2 = Objective(
     detections_depth_filter_mm = 30000,
     action=ForwardAction(
         forward_distance_m=2.0,
-        lateral_distance_m = -1.0
+        lateral_distance_m = 1.0
     ),
 )
 
@@ -186,7 +186,7 @@ slalom3 = Objective(
     detections_depth_filter_mm = 30000,
     action=ForwardAction(
         forward_distance_m=2.0,
-        lateral_distance_m=1.0,
+        lateral_distance_m=-1.0,
     ),
 )
 
@@ -194,7 +194,15 @@ lateral_after_gate = Objective(
     name='lateral_after_gate',
     detections_depth_filter_mm = 30000,
     action=ForwardAction(
-        lateral_distance_m = -1.5
+        lateral_distance_m = -3.0,
+    ),
+)
+
+backward_after_gate = Objective(
+    name='lateral_after_gate',
+    detections_depth_filter_mm = 30000,
+    action=ForwardAction(
+        forward_distance_m = -1.0,
     ),
 )
 
@@ -202,10 +210,10 @@ approach_dropper = Objective(
     name='approachDropperObjective',
     target_ids=[ObjectID.DROPPER],
     inference_mode=InferenceMode.BOTH,
-    detections_depth_filter_mm=30000,
+    detections_depth_filter_mm=7000,
     target_auv_depth_m = 1.3,
     success_frame_treshold= 10,
-    search=SearchConfig(spin_pwm=1440),
+    search=SearchConfig(spin_pwm=1560),
     center=CenterConfig(
         full_centering=False,
         x_center_tolerance_fov=0.05
@@ -279,7 +287,7 @@ coarse_approach_torpedo = Objective(
          inference_mode=InferenceMode.FORWARD_ONLY,
          target_ids=[ObjectID.TORPEDO, ObjectID.FIRE, ObjectID.BLOOD, ObjectID.FIRE_TRUCK, ObjectID.AMBULANCE],
          detections_depth_filter_mm = 30000,
-         search=SearchConfig(spin_pwm=1560),
+         search=SearchConfig(spin_pwm=1440),
          center=CenterConfig(
              full_centering=False,
              x_center_tolerance_fov=0.2,
@@ -414,12 +422,12 @@ skip_slalom_objective = Objective(
 role_choice = ObjectID.COMPASS_HAMMER
 
 
-gate_list = [approach_gate, choose_gate_side, traverse_gate, lateral_after_gate]
+gate_list = [approach_gate, choose_gate_side, traverse_gate, lateral_after_gate, backward_after_gate]
 slalom_list = [slalom1, slalom2, slalom3]
 dropper_list = [approach_dropper, set_first_depth_for_dropper, set_second_depth_for_dropper, launch_dropper, dropper_octogon_transition]
 torpedo_list = [coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_firing_positioning_2]
 octogon_list = [approach_table, center_over_table, surface_octagon]
 hail_mary = [skip_slalom_objective, slalom2, slalom3]
 
-# mission_list = gate_list + slalom_list + torpedo_list + dropper_list + octogon_list
-mission_list = [torpedo_firing_positioning_1,torpedo_firing_positioning_2, launch_dropper]
+mission_list = gate_list + dropper_list
+# mission_list = [torpedo_firing_positioning_1,torpedo_firing_positioning_2, launch_dropper]

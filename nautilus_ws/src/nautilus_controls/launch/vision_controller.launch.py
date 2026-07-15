@@ -13,7 +13,7 @@ def generate_launch_description():
                 'output_topic': '/control/cmd/yaw',
                 'kp': 130.0,
                 'ki': 2.0,
-                'kd': 50.0,
+                'kd': 80.0,
             }]
         ),
 
