@@ -397,18 +397,13 @@ surface_octagon = Objective(
 
 test_objective = Objective(
     name='testObjective',
-    inference_mode=InferenceMode.FORWARD_ONLY,
+    inference_mode=InferenceMode.DOWNWARD_ONLY,
     success_frame_treshold=10,
-    detections_depth_filter_mm = 500,
-    target_ids=[ObjectID.TORPEDO],
-    center=CenterConfig(
-        full_centering=False,
-        x_center_tolerance_fov=0.1,
-    ),
-    approach=ApproachConfig(
-        approach_distance_mm=1000.0,
-    ),
-    action=NoAction()
+    
+    action=ForwardAction(
+        forward_distance_m = 2.0,
+        dropper_search = True,
+    )
 )
 
 skip_slalom_objective = Objective(
@@ -429,5 +424,6 @@ torpedo_list = [coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_f
 octogon_list = [approach_table, center_over_table, surface_octagon]
 hail_mary = [skip_slalom_objective, slalom2, slalom3]
 
-mission_list = gate_list + dropper_list
+# mission_list = gate_list + dropper_list
 # mission_list = [torpedo_firing_positioning_1,torpedo_firing_positioning_2, launch_dropper]
+mission_list = [test_objective]

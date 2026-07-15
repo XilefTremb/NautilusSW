@@ -66,6 +66,7 @@ class StateMachine:
 
         self.bottom_search_leg = 0
         self.bottom_search_leg_start = 0.0
+        self.bin_frames = 0
 
         # Last inference mode published to /yolo/inference_mode. Kept so we only
         # republish when the active objective actually requests a different mode.
@@ -406,7 +407,9 @@ class StateMachine:
                     return False
                 
             if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
-                return True
+                self.bin_frames += 1
+                if self.bin_frames > 5:
+                    return True
 
             if self.current_objective.action.forward_distance_m is None:
                 arrived_forward = True
