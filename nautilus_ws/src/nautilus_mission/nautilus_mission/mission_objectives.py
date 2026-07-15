@@ -86,6 +86,7 @@ class Objective:
     target_ids: Optional[list[ObjectID]] = None
     detections_depth_filter_mm: Optional[int] = None
     target_auv_depth_m: Optional[float] = None #positive down
+    objective_timeout_s: float = 2.0 * 60 
 
     search: SearchConfig = field(default_factory=SearchConfig)
     center: CenterConfig = field(default_factory=CenterConfig)
@@ -236,6 +237,7 @@ set_second_depth_for_dropper = Objective(
 
 launch_dropper = Objective(
     name='launchDropperObjective',
+    objective_timeout_s = 30.0,
     success_frame_treshold=10,
     inference_mode=InferenceMode.DOWNWARD_ONLY,
     search=SearchConfig(spin_pwm=1400),
@@ -314,6 +316,7 @@ coarse_approach_torpedo = Objective(
     
 torpedo_firing_positioning_1 = Objective(
     name='torpedoFiringPositioning1',
+    objective_timeout_s= 30.0,
     success_frame_treshold=10,
     inference_mode=InferenceMode.FORWARD_ONLY,
     target_ids=None,
@@ -328,6 +331,7 @@ torpedo_firing_positioning_1 = Objective(
 
 torpedo_firing_positioning_2 = Objective(
     name='torpedoFiringPositioning2',
+    objective_timeout_s = 30.0,
     success_frame_treshold=10,
     inference_mode=InferenceMode.FORWARD_ONLY,
     target_ids=None,
@@ -418,4 +422,4 @@ octogon_list = [approach_table, center_over_table, surface_octagon]
 hail_mary = [skip_slalom_objective, slalom2, slalom3]
 
 # mission_list = gate_list + slalom_list + torpedo_list + dropper_list + octogon_list
-mission_list = dropper_list + octogon_list
+mission_list = [torpedo_firing_positioning_1,torpedo_firing_positioning_2, launch_dropper]

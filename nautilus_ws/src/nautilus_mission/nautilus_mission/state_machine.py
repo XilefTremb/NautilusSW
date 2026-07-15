@@ -63,7 +63,6 @@ class StateMachine:
 
         self.current_objective_lifetime_s = 0.0
         self.current_objective_start_time_s = time.monotonic()
-        self.objective_timeout_s = 2.5 * 60
 
         self.bottom_search_leg = 0
         self.bottom_search_leg_start = 0.0
@@ -95,6 +94,7 @@ class StateMachine:
             {'trigger': 'skip_to_next_objective', 'source': '*', 'dest': 'LOAD_OBJECTIVE', 'after': 'increment_objective_index'},
         ]
 
+        
         self.machine = Machine(
             model=self,
             states=states,
@@ -110,8 +110,29 @@ class StateMachine:
             self.load_next_objective()
 
         self.current_objective_lifetime_s = time.monotonic() - self.current_objective_start_time_s
-        if self.current_objective_lifetime_s > self.objective_timeout_s and self.state != 'MISSION_COMPLETE':
+        if self.current_objective_lifetime_s > self.current_objective.objective_timeout_s and self.state != 'MISSION_COMPLETE':
             self.node.get_logger().warn(f"Objective {self.current_objective.name} timed out after {self.current_objective_lifetime_s:.1f}s. Skipping to next objective.")
+            if self.current_objective.name == 'torpedoFiringPositioning1':
+                start_fire_timer = time.monotonic()
+                while time.monotonic() - start_fire_timer < 1.5:
+                    self.node.get_logger().info('Launching torpedo no 1!')
+                    self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_L_PWM)
+                    time.sleep(0.1)
+
+            if self.current_objective.name == 'torpedoFiringPositioning2':
+                start_fire_timer = time.monotonic()
+                while time.monotonic() - start_fire_timer < 1.5:
+                    self.node.get_logger().info('Launching torpedo no 2!')
+                    self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_R_PWM)
+                    time.sleep(0.1)
+                
+            if self.current_objective.action.type == self.ActionType.LAUNCH_DROPPER:
+                start_fire_timer = time.monotonic()
+                while time.monotonic() - start_fire_timer < 1.5:
+                    self.node.get_logger().info('Launching droppers!')
+                    self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_2_PWM)  
+                    time.sleep(0.1)
+            
             self.skip_to_next_objective()
 
         elif self.target_ids is None and self.state == 'SEARCH_TARGET':
@@ -190,9 +211,8 @@ class StateMachine:
         self.current_objective = self.objectives[self.objective_index]
         self.current_objective_start_time_s = time.monotonic()
         self.current_objective_lifetime_s = 0.0
-
-        self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM) 
-        self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
+        
+        
 
         if self.current_objective.action.type == self.ActionType.CHOOSE_GATE_SIDE:
             self.detection_store.save_role = False
@@ -301,6 +321,14 @@ class StateMachine:
         )
 
     def on_enter_MISSION_COMPLETE(self, event):
+        start_init_servo_timer = time.monotonic()
+        while time.monotonic() - start_init_servo_timer < 0.5:
+            self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
+            time.sleep(0.1) 
+        start_init_servo_timer = time.monotonic()
+        while time.monotonic() - start_init_servo_timer < 0.5:
+            self.node.publish_servo_cmd(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
+            time.sleep(0.1)
         self.target_ids = None
         self.vision_action = VisionAction.IDLE
         self.node.publish_cmd("forward",1500)
