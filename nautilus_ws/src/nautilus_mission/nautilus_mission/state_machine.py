@@ -147,9 +147,9 @@ class StateMachine:
                 self.target_centered_event()
 
         elif self.state == 'APPROACH_TARGET':
-            if self.current_objective.action.type is self.ActionType.FORWARD:
-                if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
-                    self.skip_to_next_objective()
+            # if self.current_objective.action.type is self.ActionType.FORWARD:
+            #     if self.current_objective.action.dropper_search and self.is_target_present(self.dropper_choice):
+            #         self.skip_to_next_objective()
 
             if self.current_objective.approach.approach_distance_mm is None:
                 self.target_reached()
