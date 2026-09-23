@@ -29,15 +29,13 @@ from PyQt5.QtCore import QThread, pyqtSignal, Qt
 # ============================================================
 
 JETSON_IP = "192.168.0.10"       # À MODIFIER
-DVL_IP = "192.168.0.20"          # À MODIFIER
-
-DVL_TOPIC = "/dvl/data"           # À MODIFIER
+DVL_IP = "192.168.1.3"           # DVL IP
+DVL_TOPIC = "/dvl/twist"           
 FRONT_CAM_TOPIC = "/oakd/camera/image_raw"
-REAR_CAM_TOPIC = "/oak1/camera/image_raw"
+BOTTOM_CAM_TOPIC = "/oak1/camera/image_raw"
 IMU_TOPIC = "/imu/data"
 
 PIXHAWK_TOPIC = "/mavros/state"   # À MODIFIER selon votre setup
-
 
 # ============================================================
 # THREAD QUI EXÉCUTE LES TESTS
@@ -56,7 +54,7 @@ class TestWorker(QThread):
             self.test_ping_dvl,
             self.test_dvl_data,
             self.test_front_camera,
-            self.test_rear_camera,
+            self.test_bottom_camera,
             self.test_imu,
             self.test_pixhawk,
         ]
@@ -77,6 +75,21 @@ class TestWorker(QThread):
             time.sleep(0.3)
 
         self.all_finished.emit()
+
+    def start_ros_node(self, executable):
+
+        process = subprocess.Popen(
+            [
+                "ros2",
+                "run",
+                "nautilus_sensors",
+                executable
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+        return process
 
     # --------------------------------------------------------
     # PING
@@ -114,44 +127,60 @@ class TestWorker(QThread):
     # ROS 2
     # --------------------------------------------------------
 
-    def ros_topic_test(self, topic):
+    def ros_topic_test(self, topic, timeout=10):
 
-        try:
+        start_time = time.time()
 
-            result = subprocess.run(
-                [
-                    "ros2",
-                    "topic",
-                    "echo",
-                    topic,
-                    "--once"
-                ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                timeout=5
-            )
+        while time.time() - start_time < timeout:
 
-            if result.returncode == 0 and result.stdout.strip():
-                return True
+            try:
+                result = subprocess.run(
+                    [
+                        "ros2",
+                        "topic",
+                        "echo",
+                        topic,
+                        "--once"
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    timeout=2
+                )
 
-            return False
+                # Si un message ROS est reçu → succès immédiat
+                if result.returncode == 0 and result.stdout.strip():
+                    return True
 
-        except subprocess.TimeoutExpired:
-            return False
+            except subprocess.TimeoutExpired:
+                # Pas de message, on continue d'essayer
+                pass
 
+            # Attend 0.5 s avant de réessayer
+            time.sleep(0.5)
+
+        # Le timeout global est atteint
+        return False
     # --------------------------------------------------------
     # DVL
     # --------------------------------------------------------
 
     def test_dvl_data(self):
 
-        success = self.ros_topic_test(DVL_TOPIC)
+        self.dvl_process = self.start_ros_node(
+            "dvl_sensor_node"
+        )
+
+        # Attend jusqu'à 10 secondes qu'un message arrive
+        success = self.ros_topic_test(
+            DVL_TOPIC,
+            timeout=10
+        )
 
         if success:
-            return True, "Données DVL reçues"
+            return True, "DVL lancé - Données reçues"
 
-        return False, "Aucune donnée DVL reçue"
+        return False, "Aucune donnée DVL après 10 s"
 
     # --------------------------------------------------------
     # CAMÉRA AVANT
@@ -159,25 +188,35 @@ class TestWorker(QThread):
 
     def test_front_camera(self):
 
-        success = self.ros_topic_test(FRONT_CAM_TOPIC)
+        self.camera_process = self.start_ros_node(
+            "stream_threaded"
+        )
+
+        success = self.ros_topic_test(
+            FRONT_CAM_TOPIC,
+            timeout=15
+        )
 
         if success:
-            return True, "Image caméra avant reçue"
+            return True, "Caméra avant - Image reçue"
 
-        return False, "Aucune image caméra avant"
+        return False, "Aucune image après 15 s"
 
     # --------------------------------------------------------
-    # CAMÉRA ARRIÈRE
+    # CAMÉRA DESSOUS
     # --------------------------------------------------------
 
-    def test_rear_camera(self):
+    def test_bottom_camera(self):
 
-        success = self.ros_topic_test(REAR_CAM_TOPIC)
+        success = self.ros_topic_test(
+            BOTTOM_CAM_TOPIC,
+            timeout=5
+        )
 
         if success:
-            return True, "Image caméra arrière reçue"
+            return True, "Caméra dessous - Image reçue"
 
-        return False, "Aucune image caméra arrière"
+        return False, "Aucune image après 5 s"
 
     # --------------------------------------------------------
     # IMU
@@ -224,7 +263,7 @@ class PreDiveHMI(QWidget):
             "Ping DVL",
             "Data DVL",
             "Data caméra avant",
-            "Data caméra arrière",
+            "Data caméra dessous",
             "Data IMU",
             "Connexion Pixhawk",
         ]
