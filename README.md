@@ -9,10 +9,12 @@ Once you are on the correct branch, you can start working with git :
   - "git status" once again allows you to see what files changed and what branch you are on and wether you are ahead or behind.
   - "git commit -m "XXXX"" allows you to commit all the changes you made to the branch. In the XXXX, you need to add a comment saying what you changed. Ideally, you should start it with NSFWXX which is the number of the branch.
 
-To start the simulation, if it is your first time cloning the git, there are a few steps. First of all, make sure you run these three commands in the terminal you are running. 
-  - "colcon build" to build the environment
-  - "source install/setup.bash" to source the NautilusWs
-  - "source ~/ardu_ws/install/setup.bash" to source the ardu_ws
+To start the simulation, if this is your first time cloning the repository, there are a few setup steps. First, make sure to run the following commands in your terminal:
+
+```bash
+colcon build
+source install/setup.bash
+source ~/ardu_ws/install/setup.bash
 
 Now you are working in the correct environment, there is one last step before you cn start using the simulation, which is to add a line in the bashrc that specifies the path of the models for the gazebo sim. To do so, you first need to open the bashrc running this command
   - "nano ~/.bashrc"
