@@ -15,6 +15,7 @@ To start the simulation, if this is your first time cloning the repository, ther
 colcon build
 source install/setup.bash
 source ~/ardu_ws/install/setup.bash
+```
 
 Now you are working in the correct environment, there is one last step before you cn start using the simulation, which is to add a line in the bashrc that specifies the path of the models for the gazebo sim. To do so, you first need to open the bashrc running this command
   - "nano ~/.bashrc"
