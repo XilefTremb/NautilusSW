@@ -249,7 +249,7 @@ class TestWorker(QThread):
 # INTERFACE
 # ============================================================
 
-class PreDiveHMI(QWidget):
+class PreDivePage(QWidget):
 
     def __init__(self):
 
@@ -531,17 +531,3 @@ class PreDiveHMI(QWidget):
                 font-weight: bold;
             """)
 
-
-# ============================================================
-# MAIN
-# ============================================================
-
-if __name__ == "__main__":
-
-    app = QApplication(sys.argv)
-
-    window = PreDiveHMI()
-
-    window.show()
-
-    sys.exit(app.exec_())
