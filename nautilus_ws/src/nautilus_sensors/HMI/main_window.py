@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt
 from pages.dashboard import DashboardPage
 from pages.graphs import GraphsPage
 from pages.pre_tests_water import PreDivePage
-
+from pages.profiling import ProfilingPage
 
 class MainWindow(QMainWindow):
 
@@ -51,10 +51,13 @@ class MainWindow(QMainWindow):
         self.dashboard_button = QPushButton("◉   Dashboard")
         self.graph_button = QPushButton("⌁   Graphs")
         self.pre_dive_button = QPushButton("✓   Pre-Dive")
+        self.profiling_button = QPushButton("⚡   Profiling")
+
 
         side.addWidget(self.dashboard_button)
         side.addWidget(self.graph_button)
         side.addWidget(self.pre_dive_button)
+        side.addWidget(self.profiling_button)
 
         side.addStretch()
 
@@ -73,10 +76,12 @@ class MainWindow(QMainWindow):
         self.dashboard = DashboardPage(data_manager)
         self.graphs = GraphsPage(data_manager)
         self.pre_dive = PreDivePage()
+        self.profiling = ProfilingPage()
 
         self.pages.addWidget(self.dashboard)
         self.pages.addWidget(self.graphs)
         self.pages.addWidget(self.pre_dive)
+        self.pages.addWidget(self.profiling)
 
         main.addWidget(self.pages)
 
@@ -91,6 +96,8 @@ class MainWindow(QMainWindow):
         self.pre_dive_button.clicked.connect(
             lambda: self.pages.setCurrentWidget(self.pre_dive)
         )
+        
+        self.profiling_button.clicked.connect(lambda: self.pages.setCurrentWidget(self.profiling))
 
         self.apply_style()
 
@@ -107,13 +114,14 @@ class MainWindow(QMainWindow):
             self.dashboard_button.setText("◉   Dashboard")
             self.graph_button.setText("⌁   Graphs")
             self.pre_dive_button.setText("✓   Pre-Dive")
-
+            self.profiling_button.setText("⚡   Profiling")
         else:
             self.sidebar.setFixedWidth(70)
             self.toggle_button.setText("☰")
             self.dashboard_button.setText("◉")
             self.graph_button.setText("⌁")
             self.pre_dive_button.setText("✓")
+            self.profiling_button.setText("⚡")
 
     # ==========================================================
     # STYLE
@@ -228,5 +236,51 @@ class MainWindow(QMainWindow):
             border: 1px solid #253044;
             padding: 8px;
             border-radius: 5px;
+        }
+
+        #ProfilingCard {
+            background: #121925;
+            border: 1px solid #253044;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        #ProfilingCameraTitle {
+            color: #4fc3f7;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        #ProfilingStat {
+            background: #0d131d;
+            border: 1px solid #253044;
+            border-radius: 7px;
+        }
+
+        #ProfilingStatTitle {
+            color: #8391a7;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        #ProfilingStatValue {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        QTableWidget {
+            background: #0d131d;
+            alternate-background-color: #101824;
+            border: 1px solid #253044;
+            gridline-color: #253044;
+        }
+
+        QHeaderView::section {
+            background: #182131;
+            color: #8391a7;
+            border: none;
+            padding: 7px;
+            font-weight: bold;
         }
         """)
