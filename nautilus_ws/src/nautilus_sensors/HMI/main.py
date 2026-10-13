@@ -1,5 +1,6 @@
 import sys
 import random
+import threading
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QTimer
@@ -8,60 +9,131 @@ from data_manager import DataManager
 from main_window import MainWindow
 
 
-def generate_fake_data(data):
+def select_mode():
+    print("\n==============================")
+    print("       NAUTILUS HMI")
+    print("==============================")
+    print("[w] Windows - Simulation")
+    print("[l] Linux   - ROS2 Live")
+    print("==============================")
 
-    # Sous-marin
-    data.update("Depth", random.uniform(1.8, 2.5))
-    data.update("Battery Voltage", random.uniform(14.5, 16.0))
-    data.update("Battery Current", random.uniform(5, 25))
+    while True:
+        mode = input("Mode: ").strip().lower()
 
-    # IMU
-    data.update("IMU Roll", random.uniform(-5, 5))
-    data.update("IMU Pitch", random.uniform(-4, 4))
-    data.update("IMU Yaw", random.uniform(175, 185))
+        if mode in ("w", "l"):
+            return mode
 
-    data.update("IMU Accel X", random.uniform(-0.2, 0.2))
-    data.update("IMU Accel Y", random.uniform(-0.2, 0.2))
-    data.update("IMU Accel Z", random.uniform(9.6, 10.0))
+        print("Choix invalide. Entrer 'w' ou 'l'.")
 
-    # DVL
-    data.update("DVL X", random.uniform(0.3, 0.5))
-    data.update("DVL Y", random.uniform(-0.1, 0.1))
-    data.update("DVL Z", random.uniform(-0.05, 0.05))
 
-    # 8 T200
-    for i in range(1, 9):
+def start_simulation(data):
+    print("[HMI] Simulation mode")
 
-        data.update(
-            f"Motor {i} PWM",
-            random.uniform(1300, 1700)
-        )
+    timer = QTimer()
 
-        data.update(
-            f"Motor {i} Current",
-            random.uniform(0, 15)
-        )
+    def generate_fake_data():
+        # Profondeur
+        data.update("Depth", random.uniform(0, 5))
+
+        # Batterie
+        data.update("Battery Voltage", random.uniform(14.0, 16.8))
+        data.update("Battery Current", random.uniform(5, 35))
+
+        # IMU
+        data.update("IMU Roll", random.uniform(-15, 15))
+        data.update("IMU Pitch", random.uniform(-15, 15))
+        data.update("IMU Yaw", random.uniform(-180, 180))
+
+        data.update("IMU Accel X", random.uniform(-1, 1))
+        data.update("IMU Accel Y", random.uniform(-1, 1))
+        data.update("IMU Accel Z", random.uniform(9, 10))
+
+        # DVL
+        data.update("DVL X", random.uniform(-1, 1))
+        data.update("DVL Y", random.uniform(-1, 1))
+        data.update("DVL Z", random.uniform(-0.5, 0.5))
+
+        # Moteurs
+        for i in range(1, 9):
+            data.update(f"Motor {i} PWM", random.uniform(1200, 1800))
+            data.update(f"Motor {i} Current", random.uniform(0, 20))
+
+    timer.timeout.connect(generate_fake_data)
+    timer.start(100)
+
+    return timer
+
+
+def start_ros(data):
+    print("[HMI] ROS2 live mode")
+
+    try:
+        import rclpy
+        from ros_node import NautilusROSNode
+
+    except ImportError as e:
+        print("[ERROR] Impossible d'importer ROS2.")
+        print("Assure-toi d'être sur Ubuntu et d'avoir sourcé ROS2.")
+        print(e)
+        sys.exit(1)
+
+    rclpy.init()
+
+    ros_node = NautilusROSNode(data)
+
+    ros_thread = threading.Thread(
+        target=rclpy.spin,
+        args=(ros_node,),
+        daemon=True
+    )
+
+    ros_thread.start()
+
+    return rclpy, ros_node
 
 
 def main():
+    mode = select_mode()
 
     app = QApplication(sys.argv)
+    data = DataManager()
 
-    data_manager = DataManager()
+    simulation_timer = None
+    rclpy_module = None
+    ros_node = None
 
-    window = MainWindow(data_manager)
+    # =========================================
+    # WINDOWS / SIMULATION
+    # =========================================
+
+    if mode == "w":
+        simulation_timer = start_simulation(data)
+
+    # =========================================
+    # LINUX / ROS2
+    # =========================================
+
+    elif mode == "l":
+        rclpy_module, ros_node = start_ros(data)
+
+    # =========================================
+    # HMI
+    # =========================================
+
+    window = MainWindow(data)
     window.show()
 
-    # Simulation des données à 10 Hz
-    timer = QTimer()
+    exit_code = app.exec_()
 
-    timer.timeout.connect(
-        lambda: generate_fake_data(data_manager)
-    )
+    # =========================================
+    # SHUTDOWN ROS
+    # =========================================
 
-    timer.start(100)
+    if mode == "l":
+        ros_node.destroy_node()
+        rclpy_module.shutdown()
 
-    sys.exit(app.exec_())
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

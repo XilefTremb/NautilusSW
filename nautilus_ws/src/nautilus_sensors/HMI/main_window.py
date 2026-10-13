@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
         self.dashboard = DashboardPage(data_manager)
         self.graphs = GraphsPage(data_manager)
         self.pre_dive = PreDivePage()
-        self.profiling = ProfilingPage()
+        self.profiling = ProfilingPage(data_manager)
 
         self.pages.addWidget(self.dashboard)
         self.pages.addWidget(self.graphs)

@@ -1,4 +1,5 @@
-import random
+# pages/profiling.py
+
 import time
 from collections import deque
 
@@ -11,37 +12,22 @@ from PyQt5.QtGui import QColor
 
 
 PROFILING_STAGES = [
-    "camera",
-    "image_cam_interval",
-    "yolo_inference",
-    "detection_processing",
-    "angle_computation",
-    "process_total",
-    "publish",
-    "detections_forward_interval",
-    "detections_downward_interval",
-    "image_annotated_fwd_cam_interval",
-    "image_annotated_dwd_cam_interval",
-    "end_2_end",
+    "camera", "image_cam_interval", "yolo_inference", "detection_processing",
+    "angle_computation", "process_total", "publish",
+    "detections_forward_interval", "detections_downward_interval",
+    "image_annotated_fwd_cam_interval", "image_annotated_dwd_cam_interval",
+    "end_2_end"
 ]
 
 DISPLAY_STAGES = [s for s in PROFILING_STAGES if s != "camera"]
 
 CAMERA_INTERVAL_STAGES = {
     0: ["detections_forward_interval", "image_annotated_fwd_cam_interval"],
-    1: ["detections_downward_interval", "image_annotated_dwd_cam_interval"],
+    1: ["detections_downward_interval", "image_annotated_dwd_cam_interval"]
 }
 
-_ALL_INTERVAL_STAGES = [
-    s for stages in CAMERA_INTERVAL_STAGES.values()
-    for s in stages
-]
-
-CAMERA_LABELS = {
-    0: "FORWARD CAM",
-    1: "DOWNWARD CAM"
-}
-
+ALL_INTERVAL_STAGES = [s for stages in CAMERA_INTERVAL_STAGES.values() for s in stages]
+CAMERA_LABELS = {0: "FORWARD CAM", 1: "DOWNWARD CAM"}
 WINDOW = 100
 
 
@@ -49,12 +35,10 @@ def display_stages_for(camera):
     stages = []
 
     for stage in DISPLAY_STAGES:
-        if stage in _ALL_INTERVAL_STAGES:
+        if stage in ALL_INTERVAL_STAGES:
             continue
-
         if stage == "end_2_end":
             stages.extend(CAMERA_INTERVAL_STAGES.get(camera, []))
-
         stages.append(stage)
 
     return stages
@@ -75,20 +59,13 @@ class CameraProfilingWidget(QFrame):
         self.camera = camera
         self.setObjectName("ProfilingCard")
 
-        self.history = {
-            stage: deque(maxlen=WINDOW)
-            for stage in DISPLAY_STAGES
-        }
-
+        self.history = {stage: deque(maxlen=WINDOW) for stage in DISPLAY_STAGES}
         self.last_msg_time = None
         self.frame_count = 0
 
         main = QVBoxLayout(self)
 
-        # =========================================
         # HEADER
-        # =========================================
-
         header = QHBoxLayout()
 
         self.camera_name = QLabel(CAMERA_LABELS[camera])
@@ -103,10 +80,7 @@ class CameraProfilingWidget(QFrame):
 
         main.addLayout(header)
 
-        # =========================================
         # STATS
-        # =========================================
-
         stats_layout = QHBoxLayout()
 
         self.frequency = self.create_stat("FREQUENCY", "-- Hz")
@@ -114,28 +88,16 @@ class CameraProfilingWidget(QFrame):
         self.last_message = self.create_stat("LAST MESSAGE", "-- s")
         self.end_to_end = self.create_stat("END TO END", "-- ms")
 
-        stats_layout.addWidget(self.frequency)
-        stats_layout.addWidget(self.frames)
-        stats_layout.addWidget(self.last_message)
-        stats_layout.addWidget(self.end_to_end)
+        for widget in [self.frequency, self.frames, self.last_message, self.end_to_end]:
+            stats_layout.addWidget(widget)
 
         main.addLayout(stats_layout)
 
-        # =========================================
         # TABLE
-        # =========================================
-
         stages = display_stages_for(camera)
 
         self.table = QTableWidget(len(stages), 5)
-        self.table.setHorizontalHeaderLabels([
-            "STAGE",
-            "LAST (ms)",
-            "MEAN (ms)",
-            "MAX (ms)",
-            "N"
-        ])
-
+        self.table.setHorizontalHeaderLabels(["STAGE", "LAST (ms)", "MEAN (ms)", "MAX (ms)", "N"])
         self.table.verticalHeader().setVisible(False)
         self.table.setSelectionMode(QTableWidget.NoSelection)
         self.table.setFocusPolicy(Qt.NoFocus)
@@ -143,10 +105,9 @@ class CameraProfilingWidget(QFrame):
 
         header_view = self.table.horizontalHeader()
         header_view.setSectionResizeMode(0, QHeaderView.Stretch)
-        header_view.setSectionResizeMode(1, QHeaderView.ResizeToContents)
-        header_view.setSectionResizeMode(2, QHeaderView.ResizeToContents)
-        header_view.setSectionResizeMode(3, QHeaderView.ResizeToContents)
-        header_view.setSectionResizeMode(4, QHeaderView.ResizeToContents)
+
+        for column in range(1, 5):
+            header_view.setSectionResizeMode(column, QHeaderView.ResizeToContents)
 
         self.stage_rows = {}
 
@@ -198,10 +159,6 @@ class CameraProfilingWidget(QFrame):
         self.update_display()
 
     def update_display(self):
-        # =========================================
-        # CAMERA STATUS
-        # =========================================
-
         if self.last_msg_time is None:
             self.status.setText("● NO DATA")
             self.status.setStyleSheet("color: #8391a7; font-weight: bold;")
@@ -209,21 +166,15 @@ class CameraProfilingWidget(QFrame):
 
         age = time.time() - self.last_msg_time
 
-        if age > 1.0:
+        if age > 1:
             self.status.setText("● STALE")
             self.status.setStyleSheet("color: #FFC107; font-weight: bold;")
         else:
             self.status.setText("● LIVE")
             self.status.setStyleSheet("color: #00C853; font-weight: bold;")
 
-        # =========================================
-        # GLOBAL STATS
-        # =========================================
-
-        end_values = list(self.history["end_2_end"])
-        last_e2e, mean_e2e, max_e2e = stats(end_values)
-
-        hz = 1000.0 / mean_e2e if mean_e2e else 0
+        last_e2e, mean_e2e, _ = stats(list(self.history["end_2_end"]))
+        hz = 1000 / mean_e2e if mean_e2e else 0
 
         self.frequency.value_label.setText(f"{hz:.1f} Hz")
         self.frames.value_label.setText(str(self.frame_count))
@@ -232,18 +183,14 @@ class CameraProfilingWidget(QFrame):
         if last_e2e is not None:
             self.end_to_end.value_label.setText(f"{last_e2e:.1f} ms")
 
-        # =========================================
-        # TABLE
-        # =========================================
-
         for stage in display_stages_for(self.camera):
             values = list(self.history[stage])
             last, mean, maximum = stats(values)
 
-            row = self.stage_rows[stage]
-
             if last is None:
                 continue
+
+            row = self.stage_rows[stage]
 
             self.table.item(row, 1).setText(f"{last:.2f}")
             self.table.item(row, 2).setText(f"{mean:.2f}")
@@ -256,15 +203,10 @@ class CameraProfilingWidget(QFrame):
                 self.table.item(row, column).setForeground(QColor(color))
 
     def get_stage_color(self, stage, last, end_2_end_mean):
-        # Même logique que ton viewer curses
-
-        if stage == "image_cam_interval" or stage == "end_2_end":
+        if stage == "image_cam_interval" or stage == "end_2_end" or stage.endswith("_interval"):
             return "#dce6f2"
 
-        if stage.endswith("_interval"):
-            return "#dce6f2"
-
-        if end_2_end_mean and end_2_end_mean > 0:
+        if end_2_end_mean:
             share = last / end_2_end_mean
 
             if share > 0.5:
@@ -278,33 +220,29 @@ class CameraProfilingWidget(QFrame):
 
 class ProfilingPage(QWidget):
 
-    def __init__(self):
+    def __init__(self, data_manager):
         super().__init__()
+
+        self.data = data_manager
 
         main = QVBoxLayout(self)
 
-        # =========================================
         # TITLE
-        # =========================================
-
         title_layout = QHBoxLayout()
 
         title = QLabel("NAUTILUS // YOLO PROFILING")
         title.setObjectName("PageTitle")
 
-        self.topic_label = QLabel("/yolo/profiling")
-        self.topic_label.setStyleSheet("color: #8391a7;")
+        topic_label = QLabel("/yolo/profiling")
+        topic_label.setStyleSheet("color: #8391a7;")
 
         title_layout.addWidget(title)
         title_layout.addStretch()
-        title_layout.addWidget(self.topic_label)
+        title_layout.addWidget(topic_label)
 
         main.addLayout(title_layout)
 
-        # =========================================
         # CAMERAS
-        # =========================================
-
         cameras = QHBoxLayout()
 
         self.forward = CameraProfilingWidget(0)
@@ -315,57 +253,21 @@ class ProfilingPage(QWidget):
 
         main.addLayout(cameras)
 
-        # =========================================
-        # REFRESH TIMER
-        # =========================================
+        # DATA MANAGER
+        self.data.profiling_updated.connect(self.update_profiling)
 
-        self.refresh_timer = QTimer()
+        # REFRESH
+        self.refresh_timer = QTimer(self)
         self.refresh_timer.timeout.connect(self.refresh_status)
         self.refresh_timer.start(100)
 
-        # =========================================
-        # WINDOWS TEST MODE
-        # =========================================
+    def update_profiling(self, camera, values):
+        if camera == 0:
+            self.forward.add_data(values)
 
-        self.simulation_timer = QTimer()
-        self.simulation_timer.timeout.connect(self.generate_fake_data)
-        self.simulation_timer.start(100)
+        elif camera == 1:
+            self.downward.add_data(values)
 
     def refresh_status(self):
         self.forward.update_display()
         self.downward.update_display()
-
-    def generate_fake_data(self):
-        """
-        Seulement pour tester l'affichage sous Windows.
-        À enlever/désactiver lorsque ROS sera connecté.
-        """
-
-        for camera_widget in [self.forward, self.downward]:
-
-            yolo = random.uniform(35, 70)
-            detection = random.uniform(2, 8)
-            angle = random.uniform(0.5, 3)
-            publish = random.uniform(1, 5)
-
-            process_total = yolo + detection + angle
-
-            values = {
-                "image_cam_interval": random.uniform(90, 110),
-                "yolo_inference": yolo,
-                "detection_processing": detection,
-                "angle_computation": angle,
-                "process_total": process_total,
-                "publish": publish,
-                "end_2_end": random.uniform(90, 120),
-            }
-
-            if camera_widget.camera == 0:
-                values["detections_forward_interval"] = random.uniform(90, 110)
-                values["image_annotated_fwd_cam_interval"] = random.uniform(90, 110)
-
-            else:
-                values["detections_downward_interval"] = random.uniform(90, 110)
-                values["image_annotated_dwd_cam_interval"] = random.uniform(90, 110)
-
-            camera_widget.add_data(values)
