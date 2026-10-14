@@ -1,8 +1,6 @@
 # pages/dashboard.py
 
-from unicodedata import name
-
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QScrollArea)
 from widgets import DataCard, MotorCard
 
 
@@ -12,7 +10,19 @@ class DashboardPage(QWidget):
         super().__init__()
 
         self.data = data_manager
-        main = QVBoxLayout(self)
+
+        # SCROLL AREA
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+
+        content = QWidget()
+        main = QVBoxLayout(content)
+
+        scroll.setWidget(content)
+
+        page_layout = QVBoxLayout(self)
+        page_layout.setContentsMargins(0, 0, 0, 0)
+        page_layout.addWidget(scroll)
 
         # TITLE
         title = QLabel("NAUTILUS // LIVE TELEMETRY")
@@ -116,10 +126,18 @@ class DashboardPage(QWidget):
             "IMU Yaw": self.yaw,
             "DVL X": self.dvl_x,
             "DVL Y": self.dvl_y,
-            "DVL Z": self.dvl_z
+            "DVL Z": self.dvl_z,
+            "Camera Depth": self.camera_depth,
+            "Inference Mode": self.inference_mode
         }
 
         if name in mapping:
+            if name in ["Battery Current", "Battery Voltage"]:
+                value = abs(value)
+            
+            if name in ["Camera Depth"]:
+                value =value/1000.0
+
             mapping[name].set_value(value)
 
         for i, motor in enumerate(self.motors, 1):
@@ -132,7 +150,7 @@ class DashboardPage(QWidget):
             self.voltage.set_alert(value < 12.4)
 
         elif name == "Battery Current":
-            self.current.set_alert(value > 30)
+            self.current.set_alert(abs(value) > 30)
 
         elif name == "Depth":
             self.depth.set_alert(value > 5)
