@@ -33,10 +33,10 @@ def start_simulation(data):
 
     def generate_fake_data():
         # Profondeur
-        data.update("Depth", random.uniform(0, 5))
+        data.update("Depth", random.uniform(0, 10))
 
         # Batterie
-        data.update("Battery Voltage", random.uniform(14.0, 16.8))
+        data.update("Battery Voltage", random.uniform(11.0, 16.8))
         data.update("Battery Current", random.uniform(5, 35))
 
         # IMU
@@ -106,14 +106,14 @@ def main():
     # WINDOWS / SIMULATION
     # =========================================
 
-    if mode == "w":
+    if mode == "w" or mode == "W":
         simulation_timer = start_simulation(data)
 
     # =========================================
     # LINUX / ROS2
     # =========================================
 
-    elif mode == "l":
+    elif mode == "l" or mode == "L":
         rclpy_module, ros_node = start_ros(data)
 
     # =========================================
@@ -129,7 +129,7 @@ def main():
     # SHUTDOWN ROS
     # =========================================
 
-    if mode == "l":
+    if mode == "l" or mode == "L":
         ros_node.destroy_node()
         rclpy_module.shutdown()
 

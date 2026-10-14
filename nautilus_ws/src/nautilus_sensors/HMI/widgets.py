@@ -54,6 +54,12 @@ class DataCard(QFrame):
         self.value.setText(
             f"{value:.{self.decimals}f}"
         )
+
+    def set_alert(self, active):
+        self.setProperty("alert", active)
+        self.style().unpolish(self)
+        self.style().polish(self)
+        
 class PWMBar(QWidget):
 
     def __init__(self, parent=None):

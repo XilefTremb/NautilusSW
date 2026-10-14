@@ -1,5 +1,7 @@
 # pages/dashboard.py
 
+from unicodedata import name
+
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel
 from widgets import DataCard, MotorCard
 
@@ -61,10 +63,30 @@ class DashboardPage(QWidget):
         for col, widget in enumerate([self.dvl_x, self.dvl_y, self.dvl_z]):
             dvl_layout.addWidget(widget, 1, col)
 
+        # SENSORS
         sensors = QHBoxLayout()
         sensors.addWidget(imu_widget)
         sensors.addWidget(dvl_widget)
         main.addLayout(sensors)
+
+        # CAMERA
+        camera_widget = QWidget()
+        camera_layout = QGridLayout(camera_widget)
+
+        camera_title = QLabel("CAMERA")
+        camera_title.setObjectName("SectionTitle")
+
+        self.camera_depth = DataCard("CAMERA DEPTH", "m")
+        self.inference_mode = DataCard("INFERENCE MODE", "")
+        self.detection_forward = DataCard("DETECTION FORWARD", "")
+        self.detection_downward = DataCard("DETECTION DOWNWARD", "")
+
+        camera_layout.addWidget(camera_title, 0, 0, 1, 4)
+
+        for col, widget in enumerate([self.camera_depth, self.inference_mode, self.detection_forward, self.detection_downward]):
+            camera_layout.addWidget(widget, 1, col)
+            
+        main.addWidget(camera_widget)
 
         # MOTORS
         motor_title = QLabel("THRUSTERS")
@@ -105,3 +127,12 @@ class DashboardPage(QWidget):
                 motor.set_pwm(value)
             elif name == f"Motor {i} Current":
                 motor.set_current(value)
+
+        if name == "Battery Voltage":
+            self.voltage.set_alert(value < 12.4)
+
+        elif name == "Battery Current":
+            self.current.set_alert(value > 30)
+
+        elif name == "Depth":
+            self.depth.set_alert(value > 5)

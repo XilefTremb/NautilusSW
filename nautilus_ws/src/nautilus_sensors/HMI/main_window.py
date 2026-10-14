@@ -192,6 +192,11 @@ class MainWindow(QMainWindow):
             border: 1px solid #4fc3f7;
         }
 
+        #DataCard[alert="true"] {
+            background: #D50000;
+            border: 1px solid #FF5252;
+        }
+
         #CardTitle {
             color: #8391a7;
             font-size: 12px;
@@ -283,4 +288,5 @@ class MainWindow(QMainWindow):
             padding: 7px;
             font-weight: bold;
         }
+
         """)
