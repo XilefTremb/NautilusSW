@@ -59,3 +59,9 @@ class DataManager(QObject):
 
     def update_profiling(self, camera, values):
         self.profiling_updated.emit(camera, values)
+
+    def clear_history(self, name):
+        self.history[name].clear()
+
+    def get_raw_history(self, name):
+        return list(self.history[name])
