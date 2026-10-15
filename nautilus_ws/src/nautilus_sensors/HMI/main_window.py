@@ -11,6 +11,7 @@ from pages.dashboard import DashboardPage
 from pages.graphs import GraphsPage
 from pages.pre_tests_water import PreDivePage
 from pages.profiling import ProfilingPage
+from pages.leak_test import LeakTestPage
 
 class MainWindow(QMainWindow):
 
@@ -52,12 +53,16 @@ class MainWindow(QMainWindow):
         self.graph_button = QPushButton("⌁   Graphs")
         self.pre_dive_button = QPushButton("✓   Pre-Dive")
         self.profiling_button = QPushButton("⚡   Profiling")
+        self.leak_button = QPushButton("◈   Leak Test")
+        
+
 
 
         side.addWidget(self.dashboard_button)
         side.addWidget(self.graph_button)
         side.addWidget(self.pre_dive_button)
         side.addWidget(self.profiling_button)
+        side.addWidget(self.leak_button)
 
         side.addStretch()
 
@@ -77,11 +82,13 @@ class MainWindow(QMainWindow):
         self.graphs = GraphsPage(data_manager)
         self.pre_dive = PreDivePage()
         self.profiling = ProfilingPage(data_manager)
+        self.leak_test = LeakTestPage(data_manager)
 
         self.pages.addWidget(self.dashboard)
         self.pages.addWidget(self.graphs)
         self.pages.addWidget(self.pre_dive)
         self.pages.addWidget(self.profiling)
+        self.pages.addWidget(self.leak_test)
 
         main.addWidget(self.pages)
 
@@ -99,6 +106,8 @@ class MainWindow(QMainWindow):
         
         self.profiling_button.clicked.connect(lambda: self.pages.setCurrentWidget(self.profiling))
 
+        self.leak_button.clicked.connect(lambda: self.pages.setCurrentWidget(self.leak_test))
+
         self.apply_style()
 
     # ==========================================================
@@ -115,6 +124,7 @@ class MainWindow(QMainWindow):
             self.graph_button.setText("⌁   Graphs")
             self.pre_dive_button.setText("✓   Pre-Dive")
             self.profiling_button.setText("⚡   Profiling")
+            self.leak_button.setText("◈   Leak Test")
         else:
             self.sidebar.setFixedWidth(70)
             self.toggle_button.setText("☰")
@@ -122,6 +132,7 @@ class MainWindow(QMainWindow):
             self.graph_button.setText("⌁")
             self.pre_dive_button.setText("✓")
             self.profiling_button.setText("⚡")
+            self.leak_button.setText("◈")
 
     # ==========================================================
     # STYLE
