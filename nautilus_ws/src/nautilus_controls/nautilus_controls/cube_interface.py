@@ -4,7 +4,7 @@ import argparse
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int16, Int8
+from std_msgs.msg import Int16, Int8, Float32
 from nautilus_controls.auv_pymavlink import AuvPymavlink
 from nautilus_interfaces.srv import SetTargetDepth
 from std_msgs.msg import Int16MultiArray
@@ -67,6 +67,18 @@ class CubeInterface(Node):
             ),
         }
 
+        self.pressure_1_pub = self.create_publisher(
+            Float32,
+            '/sensors/scaled_pressure',
+            10
+        )
+
+        self.pressure_2_pub = self.create_publisher(
+            Float32,
+            '/sensors/scaled_pressure2',
+            10
+        )
+
         self.depth_service = self.create_service(
             SetTargetDepth,
             '/mission/set_target_depth',
@@ -74,6 +86,7 @@ class CubeInterface(Node):
         )
 
         self.timer = self.create_timer(1.0 / 200.0, self.timer_callback)
+        self.pressure_timer = self.create_timer(0.1,self.pressure_timer_callback)
 
     def startup(self, args):
         self.auv = AuvPymavlink(self)
@@ -156,6 +169,21 @@ class CubeInterface(Node):
         self.get_logger().info(
             f'Sent cmd yaw: {yaw_cmd}, forward: {forward_cmd}, lateral: {lateral_cmd}, throttle: {throttle_cmd}'
         )
+
+    def pressure_timer_callback(self):
+
+        pressure_1 = self.auv.get_scaled_pressure_cached()
+        pressure_2 = self.auv.get_scaled_pressure2_cached()
+
+        if pressure_1 is not None:
+            msg = Float32()
+            msg.data = float(pressure_1.press_abs) / 10.0
+            self.pressure_1_pub.publish(msg)
+
+        if pressure_2 is not None:
+            msg = Float32()
+            msg.data = float(pressure_2.press_abs) / 10.0
+            self.pressure_2_pub.publish(msg)
 
     def set_target_depth_callback(self, request, response):
 

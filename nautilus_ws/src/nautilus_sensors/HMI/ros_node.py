@@ -70,6 +70,9 @@ class NautilusROSNode(Node):
             10
         )
 
+        self.create_subscription(Float32, TOPICS['scaled_pressure'], self.pressure_callback,10)
+        self.create_subscription(Float32, TOPICS['scaled_pressure2'], self.pressure2_callback,10)
+
         self.get_logger().info("Nautilus HMI ROS node started.")
 
     def imu_callback(self, msg):
@@ -130,3 +133,9 @@ class NautilusROSNode(Node):
             }
 
             self.data.update_profiling(camera, values)
+
+    def pressure_callback(self, msg):
+        self.data.update("Pressure 1", msg.data)
+    
+    def pressure2_callback(self, msg):
+        self.data.update("Pressure 1", msg.data)

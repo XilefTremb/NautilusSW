@@ -10,6 +10,8 @@ TOPICS = {
     "profiling": "/yolo/profiling",
     "camera_depth": "/yolo/mean_depth_forward_cam",
     "inference_mode": "/yolo/inference_mode",
+    "scaled_pressure": "/sensors/scaled_pressure",
+    "scaled_pressure2": "/sensors/scaled_pressure2",
 }
 
 MOTOR_COUNT = 8

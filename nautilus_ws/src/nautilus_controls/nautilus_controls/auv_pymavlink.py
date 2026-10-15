@@ -54,6 +54,8 @@ class AuvPymavlink:
         self._latest_ahrs2 = None
         self._latest_attitude = None
         self._latest_heartbeat = None
+        self._latest_scaled_pressure = None
+        self._latest_scaled_pressure2 = None
 
         self._ack_cv = threading.Condition()
         self._last_ack_by_command = {}
@@ -109,10 +111,18 @@ class AuvPymavlink:
 
                     if msg_type == "AHRS2":
                         self._latest_ahrs2 = msg
+
                     elif msg_type == "ATTITUDE":
                         self._latest_attitude = msg
+
                     elif msg_type == "HEARTBEAT":
                         self._latest_heartbeat = msg
+
+                    elif msg_type == "SCALED_PRESSURE":
+                        self._latest_scaled_pressure = msg
+
+                    elif msg_type == "SCALED_PRESSURE2":
+                        self._latest_scaled_pressure2 = msg
 
                 if msg_type == "COMMAND_ACK":
                     ack = msg.to_dict()
@@ -134,6 +144,14 @@ class AuvPymavlink:
         with self._state_lock:
             return self._latest_attitude
 
+    def get_scaled_pressure_cached(self):
+        with self._state_lock:
+            return self._latest_scaled_pressure
+
+    def get_scaled_pressure2_cached(self):
+        with self._state_lock:
+            return self._latest_scaled_pressure2
+        
     def get_ahrs2(self):
         if self._rx_thread and self._rx_thread.is_alive():
             return self.get_ahrs2_cached()
@@ -151,6 +169,7 @@ class AuvPymavlink:
             type="ATTITUDE",
             blocking=True,
         )
+    
 
     def wait_for_command_ack(self, command_id: int, timeout_s: float = 3.0):
         deadline = time.time() + timeout_s
