@@ -1,6 +1,7 @@
 import sys
 import random
 import threading
+import argparse
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QTimer
@@ -10,6 +11,32 @@ from main_window import MainWindow
 
 
 def select_mode():
+    parser = argparse.ArgumentParser(
+        description="Nautilus HMI"
+    )
+
+    group = parser.add_mutually_exclusive_group()
+
+    group.add_argument(
+        "-w",
+        action="store_true",
+        help="Windows simulation mode"
+    )
+
+    group.add_argument(
+        "-l",
+        action="store_true",
+        help="Linux ROS2 live mode"
+    )
+
+    args = parser.parse_args()
+
+    if args.w:
+        return "w"
+
+    if args.l:
+        return "l"
+
     print("\n==============================")
     print("       NAUTILUS HMI")
     print("==============================")
@@ -32,10 +59,10 @@ def start_simulation(data):
     timer = QTimer()
 
     def generate_fake_data():
-        # Profondeur
+        # Depth
         data.update("Depth", random.uniform(0, 10))
 
-        # Batterie
+        # Battery
         data.update("Battery Voltage", random.uniform(11.0, 16.8))
         data.update("Battery Current", random.uniform(5, 35))
 
@@ -53,7 +80,7 @@ def start_simulation(data):
         data.update("DVL Y", random.uniform(-1, 1))
         data.update("DVL Z", random.uniform(-0.5, 0.5))
 
-        # Moteurs
+        # Motors
         for i in range(1, 9):
             data.update(f"Motor {i} PWM", random.uniform(1200, 1800))
             data.update(f"Motor {i} Current", random.uniform(0, 20))
@@ -72,8 +99,8 @@ def start_ros(data):
         from ros_node import NautilusROSNode
 
     except ImportError as e:
-        print("[ERROR] Impossible d'importer ROS2.")
-        print("Assure-toi d'être sur Ubuntu et d'avoir sourcé ROS2.")
+        print("[ERROR] Unable to import ROS2.")
+        print("Make sure you are on Ubuntu and have sourced ROS2.")
         print(e)
         sys.exit(1)
 
@@ -95,7 +122,7 @@ def start_ros(data):
 def main():
     mode = select_mode()
 
-    app = QApplication(sys.argv)
+    app = QApplication([sys.argv[0]])
     data = DataManager()
 
     simulation_timer = None
@@ -106,14 +133,14 @@ def main():
     # WINDOWS / SIMULATION
     # =========================================
 
-    if mode == "w" or mode == "W":
+    if mode == "w":
         simulation_timer = start_simulation(data)
 
     # =========================================
     # LINUX / ROS2
     # =========================================
 
-    elif mode == "l" or mode == "L":
+    elif mode == "l":
         rclpy_module, ros_node = start_ros(data)
 
     # =========================================
@@ -129,7 +156,7 @@ def main():
     # SHUTDOWN ROS
     # =========================================
 
-    if mode == "l" or mode == "L":
+    if mode == "l":
         ros_node.destroy_node()
         rclpy_module.shutdown()
 
