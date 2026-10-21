@@ -41,6 +41,13 @@ install(
   DESTINATION share/${PROJECT_NAME}/models
 )
 
+install(
+  PROGRAMS
+    nautilus_bringup/game.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME game
+)
+
 ament_python_install_package(${PROJECT_NAME})
 
 # --------------------------------------------------------------------------- #
