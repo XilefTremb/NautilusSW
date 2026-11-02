@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
+import argparse
+
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Int16MultiArray
 
 from geometry_msgs.msg import PoseStamped
 from evdev import InputDevice, ecodes
+
+from enums.ServoEnum import ServoEnum
 
 import threading
 import math
@@ -46,14 +50,21 @@ def euler_from_quat(x, y, z, w):
 
 class GameControllerInput(Node):
 
-    def __init__(self):
+    def __init__(self, irl=False):
         super().__init__('game_controller_input')
+
+        self.irl = irl
+
+        if self.irl:
+            self.get_logger().info('Game node running in IRL mode')
+        else:
+            self.get_logger().info('Game node running in SIM mode')
 
         # --------------------------------------------------
         # Controller
         # --------------------------------------------------
 
-        self.controller = InputDevice("/dev/input/event18")
+        self.controller = InputDevice("/dev/input/event16")
 
         self.get_logger().info(f"Controller detected: {self.controller.name}")
 
@@ -74,7 +85,10 @@ class GameControllerInput(Node):
         self.sub_pitch = None
         self.sub_yaw = None
 
-        self.pose_sub = self.create_subscription(PoseStamped, '/gz/tf', self.pose_callback, 1)
+        if not self.irl:
+            self.pose_sub = self.create_subscription(
+                PoseStamped, '/gz/tf', self.pose_callback, 1
+            )
 
         # --------------------------------------------------
         # Target positions
@@ -83,19 +97,20 @@ class GameControllerInput(Node):
         self.torpedo_target = TORPEDO_TARGET
         self.dropper_target = DROPPER_TARGET
 
-        self.get_logger().info(
-            f"Torpedo target: "
-            f"x={self.torpedo_target[0]}, "
-            f"y={self.torpedo_target[1]}, "
-            f"z={self.torpedo_target[2]}"
-        )
+        if not self.irl:
+            self.get_logger().info(
+                f"Torpedo target: "
+                f"x={self.torpedo_target[0]}, "
+                f"y={self.torpedo_target[1]}, "
+                f"z={self.torpedo_target[2]}"
+            )
 
-        self.get_logger().info(
-            f"Dropper target: "
-            f"x={self.dropper_target[0]}, "
-            f"y={self.dropper_target[1]}, "
-            f"z={self.dropper_target[2]}"
-        )
+            self.get_logger().info(
+                f"Dropper target: "
+                f"x={self.dropper_target[0]}, "
+                f"y={self.dropper_target[1]}, "
+                f"z={self.dropper_target[2]}"
+            )
 
         # --------------------------------------------------
         # Results publisher
@@ -114,6 +129,8 @@ class GameControllerInput(Node):
 
         # Torpedo state
         self.torpedo_active = False
+
+        self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
 
 
     # ------------------------------------------------------
@@ -167,6 +184,19 @@ class GameControllerInput(Node):
     # ------------------------------------------------------
 
     def torpedo_fired(self):
+        self.get_logger().info("TORPEDO FIRED")
+
+        if self.irl:
+            self.get_logger().info(
+                f"Launching real torpedo #1: "
+                f"servo={ServoEnum.TORPEDO_ID}, "
+                f"pwm={ServoEnum.TORPEDO_L_PWM}"
+            )
+            self.publish_servo_cmd(
+                ServoEnum.TORPEDO_ID,
+                ServoEnum.TORPEDO_L_PWM
+            )
+            return
 
         if self.torpedo_active:
             self.get_logger().warning("Torpedo already active\n")
@@ -174,10 +204,9 @@ class GameControllerInput(Node):
 
         self.torpedo_active = True
 
-        self.get_logger().info("TORPEDO FIRED")
-
         if self.sub_position is None:
             self.get_logger().warning("No Gazebo submarine pose received yet")
+            self.torpedo_active = False
             return
 
         self.launch_torpedo_visual()
@@ -199,6 +228,18 @@ class GameControllerInput(Node):
 
     def dropper_released(self):
         self.get_logger().info("DROPPER RELEASED")
+
+        if self.irl:
+            self.get_logger().info(
+                f"Launching real dropper #1: "
+                f"servo={ServoEnum.DROPPER_ID}, "
+                f"pwm={ServoEnum.DROPPER_1_PWM}"
+            )
+            self.publish_servo_cmd(
+                ServoEnum.DROPPER_ID,
+                ServoEnum.DROPPER_1_PWM
+            )
+            return
 
         if self.sub_position is None:
             self.get_logger().warning("No Gazebo submarine pose received yet")
@@ -508,12 +549,26 @@ class GameControllerInput(Node):
 
         self.torpedo_active = False
 
+    def publish_servo_cmd(self, servo: int, pwm: int):
+        msg = Int16MultiArray()
+        msg.data = [servo, pwm]
+        self.servo_cmd_pub.publish(msg)
+
 
 def main(args=None):
 
-    rclpy.init(args=args)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--irl',
+        action='store_true',
+        help='Run using the real torpedo/dropper servos instead of Gazebo'
+    )
 
-    node = GameControllerInput()
+    parsed_args, ros_args = parser.parse_known_args(args)
+
+    rclpy.init(args=ros_args)
+
+    node = GameControllerInput(irl=parsed_args.irl)
 
     rclpy.spin(node)
 
