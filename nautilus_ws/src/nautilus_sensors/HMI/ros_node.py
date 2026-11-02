@@ -138,4 +138,4 @@ class NautilusROSNode(Node):
         self.data.update("Pressure 1", msg.data)
     
     def pressure2_callback(self, msg):
-        self.data.update("Pressure 1", msg.data)
+        self.data.update("Pressure 2", msg.data)
