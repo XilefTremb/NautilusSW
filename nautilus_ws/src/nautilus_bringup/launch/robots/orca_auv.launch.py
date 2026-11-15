@@ -98,7 +98,7 @@ def launch_state_pub_with_bridge(context):
 
     #xacroPath = os.path.join(pkg_project_bringup, "nautilus_auv", "BlueRov2.urdf.xacro")
     #urdfPath = os.path.join(pkg_project_bringup,'nautilus_auv','BlueRov2.urdf')
-    sdfPath = os.path.join(pkg_project_bringup, "models","bluerov2","model.sdf")
+    sdfPath = os.path.join(pkg_project_bringup, "models", "nautilus", "model.sdf")
     # sdfPath = os.path.join(pkg_project_bringup, "models","bluerov2","model.sdf")
 
 
@@ -179,7 +179,7 @@ def generate_launch_arguments():
         ),
         DeclareLaunchArgument(
             "name",
-            default_value="AUV",
+            default_value="nautilus",
             description="Name for the model instance.",
         ),
         DeclareLaunchArgument(
