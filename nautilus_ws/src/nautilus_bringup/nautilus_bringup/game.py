@@ -7,7 +7,7 @@ from rclpy.node import Node
 from std_msgs.msg import Bool, Int16MultiArray
 
 from geometry_msgs.msg import PoseStamped
-from evdev import InputDevice, ecodes
+from evdev import InputDevice, ecodes, list_devices
 
 from enums.ServoEnum import ServoEnum
 
@@ -64,7 +64,7 @@ class GameControllerInput(Node):
         # Controller
         # --------------------------------------------------
 
-        self.controller = InputDevice("/dev/input/event16")
+        self.controller = self.find_controller()
 
         self.get_logger().info(f"Controller detected: {self.controller.name}")
 
@@ -553,6 +553,28 @@ class GameControllerInput(Node):
         msg = Int16MultiArray()
         msg.data = [servo, pwm]
         self.servo_cmd_pub.publish(msg)
+
+    def find_controller(self):
+        for path in list_devices():
+            device = InputDevice(path)
+
+            # Identify Xbox controllers by name
+            if "xbox" not in device.name.lower():
+                device.close()
+                continue
+
+            # Verify that the device supports our buttons
+            buttons = device.capabilities().get(ecodes.EV_KEY, [])
+
+            if TORPEDO_BUTTON in buttons and DROPPER_BUTTON in buttons:
+                self.get_logger().info(
+                    f"Xbox controller found: {device.name} ({device.path})"
+                )
+                return device
+
+            device.close()
+
+        raise RuntimeError("No compatible Xbox controller found!")
 
 
 def main(args=None):
