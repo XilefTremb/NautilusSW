@@ -22,6 +22,7 @@ class StateMachine:
 
     def __init__(self, node: Node, detection_store: DetectionStore, use_sim: bool, mission_offset_timer: float = 0.0):
         self.node = node
+        self.use_sim = use_sim
         self.detection_store = detection_store
         self.mission_offset_timer = mission_offset_timer
 
@@ -353,7 +354,9 @@ class StateMachine:
 
         if self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
             if not self.current_objective.action.fired:
-                if self.current_objective.name == "torpedoFiringPositioning1":
+                if self.use_sim:
+                    self.node.publish_sim_torpedo_trigger()
+                elif self.current_objective.name == "torpedoFiringPositioning1":
                     self.node.get_logger().info('Launching torpedo no 1!')
                     self.node.publish_servo_cmd(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_L_PWM)
 
@@ -459,10 +462,11 @@ class StateMachine:
             if self.state_lifespan <= self.current_objective.action.min_lifespan_s:
                 return False
 
-            self.node.publish_servo_cmd(
-                ServoEnum.TORPEDO_ID,
-                ServoEnum.TORPEDO_INIT_PWM
-            )
+            if not self.use_sim:
+                self.node.publish_servo_cmd(
+                    ServoEnum.TORPEDO_ID,
+                    ServoEnum.TORPEDO_INIT_PWM
+                )
 
             return True
         

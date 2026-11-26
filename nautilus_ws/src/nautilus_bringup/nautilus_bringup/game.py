@@ -4,7 +4,7 @@ import argparse
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Bool, Int16MultiArray
+from std_msgs.msg import Bool, Int16MultiArray, Empty
 
 from geometry_msgs.msg import PoseStamped
 from evdev import InputDevice, ecodes, list_devices
@@ -64,18 +64,6 @@ class GameControllerInput(Node):
         # Controller
         # --------------------------------------------------
 
-        self.controller = self.find_controller()
-
-        self.get_logger().info(f"Controller detected: {self.controller.name}")
-
-        self.controller_thread = threading.Thread(
-            target=self.read_controller,
-            daemon=True
-        )
-
-        self.controller_thread.start()
-
-
         # --------------------------------------------------
         # Gazebo submarine pose
         # --------------------------------------------------
@@ -132,6 +120,25 @@ class GameControllerInput(Node):
 
         self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
 
+
+        if not self.irl:
+            self.fire_sub = self.create_subscription(
+                Empty, '/game/fire_torpedo', self.on_fire_trigger, 10
+            )
+
+        try:
+            self.controller = self.find_controller()
+        except (RuntimeError, OSError) as exc:
+            if self.irl:
+                raise
+            self.get_logger().warning(f'Controller unavailable: {exc}; ROS triggers remain enabled')
+        else:
+            self.get_logger().info(f'Controller detected: {self.controller.name}')
+            self.controller_thread = threading.Thread(target=self.read_controller, daemon=True)
+            self.controller_thread.start()
+
+    def on_fire_trigger(self, msg):
+        self.torpedo_fired()
 
     # ------------------------------------------------------
     # Gazebo
