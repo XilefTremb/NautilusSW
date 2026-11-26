@@ -17,7 +17,7 @@ if systemctl --user is-active --quiet nautilus-sim.scope; then
     echo "Previous simulation still running. Run nautilus_sim_stop.sh first."
     exit 1
 fi
-world="${1:-basic_comp_pool.world}"
+world="${1:-compact_comp_pool.world}"
 case "$world" in basic_comp_pool.world|compact_comp_pool.world) ;; *) echo "Unknown world: $world"; exit 1;; esac
 build
 # A dedicated tmux server ensures all panes and their descendants inherit the scope.
