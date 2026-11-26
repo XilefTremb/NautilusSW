@@ -140,7 +140,7 @@
         <collision name='pool_floor_collision'>
           <geometry>
             <box>
-              <size>14 10 0.1</size>
+              <size>15.4 11 0.1</size>
             </box>
           </geometry>
           <pose>0 0 -2.18 0 0 0</pose>
@@ -161,7 +161,7 @@
         <visual name='pool_floor_visual'>
           <geometry>
             <box>
-              <size>14 10 0.1</size>
+              <size>15.4 11 0.1</size>
             </box>
           </geometry>
           <pose>0 0 -2.18 0 0 0</pose>
@@ -179,12 +179,12 @@
     <!-- Wall North -->
     <model name='wall_north'>
       <static>1</static>
-      <pose>-3.5 8.5 -1.065 0 0 0</pose>
+      <pose>-3.5 9 -1.065 0 0 0</pose>
       <link name='wall_north_link'>
         <collision name='wall_north_collision'>
           <geometry>
             <box>
-              <size>14 0.3 2.13</size>
+              <size>15.4 0.3 2.13</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -204,7 +204,7 @@
         <visual name='wall_north_visual'>
           <geometry>
             <box>
-              <size>14 0.3 2.13</size>
+              <size>15.4 0.3 2.13</size>
             </box>
           </geometry>
           <material>
@@ -221,12 +221,12 @@
     <!-- Wall South -->
     <model name='wall_south'>
       <static>1</static>
-      <pose>-3.5 -1.5 -1.065 0 0 0</pose>
+      <pose>-3.5 -2 -1.065 0 0 0</pose>
       <link name='wall_south_link'>
         <collision name='wall_south_collision'>
           <geometry>
             <box>
-              <size>14 0.3 2.13</size>
+              <size>15.4 0.3 2.13</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -246,7 +246,7 @@
         <visual name='wall_south_visual'>
           <geometry>
             <box>
-              <size>14 0.3 2.13</size>
+              <size>15.4 0.3 2.13</size>
             </box>
           </geometry>
           <material>
@@ -263,12 +263,12 @@
     <!-- Wall West -->
     <model name='wall_west'>
       <static>1</static>
-      <pose>-10.5 3.5 -1.065 0 0 0</pose>
+      <pose>-11.2 3.5 -1.065 0 0 0</pose>
       <link name='wall_west_link'>
         <collision name='wall_west_collision'>
           <geometry>
             <box>
-              <size>0.3 10 2.13</size>
+              <size>0.3 11 2.13</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -288,7 +288,7 @@
         <visual name='wall_west_visual'>
           <geometry>
             <box>
-              <size>0.3 10 2.13</size>
+              <size>0.3 11 2.13</size>
             </box>
           </geometry>
           <material>
@@ -305,12 +305,12 @@
     <!-- Wall East -->
     <model name='wall_east'>
       <static>1</static>
-      <pose>3.5 3.5 -1.065 0 0 0</pose>
+      <pose>4.2 3.5 -1.065 0 0 0</pose>
       <link name='wall_east_link'>
         <collision name='wall_east_collision'>
           <geometry>
             <box>
-              <size>0.3 10 2.13</size>
+              <size>0.3 11 2.13</size>
             </box>
           </geometry>
           <max_contacts>10</max_contacts>
@@ -330,7 +330,7 @@
         <visual name='wall_east_visual'>
           <geometry>
             <box>
-              <size>0.3 10 2.13</size>
+              <size>0.3 11 2.13</size>
             </box>
           </geometry>
           <material>
@@ -351,7 +351,7 @@
         <visual name='lane_marker_1_visual'>
           <geometry>
             <box>
-              <size>13.4 0.2 0.01</size>
+              <size>14.8 0.2 0.01</size>
             </box>
           </geometry>
           <material>
@@ -372,7 +372,7 @@
         <visual name='lane_marker_2_visual'>
           <geometry>
             <box>
-              <size>13.4 0.2 0.01</size>
+              <size>14.8 0.2 0.01</size>
             </box>
           </geometry>
           <material>
@@ -393,7 +393,7 @@
         <visual name='lane_marker_3_visual'>
           <geometry>
             <box>
-              <size>13.4 0.2 0.01</size>
+              <size>14.8 0.2 0.01</size>
             </box>
           </geometry>
           <material>
@@ -425,7 +425,7 @@
     <include>
       <uri>model://robosub_torpedo</uri>
       <name>robosub_torpedo_1</name>
-      <pose>-0.5 1.75 -2 1.57 0 2.94159</pose>
+      <pose>-1.4 2.2 -2 1.57 0 2.94159</pose>
     </include>
 
 
@@ -433,7 +433,7 @@
     <include>
       <uri>model://robosub_bin</uri>
       <name>robosub_bin_1</name>
-      <pose>-0.5 6.0 -1.9 1.57 0 0</pose>
+      <pose>-1.4 5.6 -1.9 1.57 0 0</pose>
     </include>
 
 
@@ -453,7 +453,7 @@
     
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose>-3.5 11 10 0 0.93 -1.5708</pose>
+        <pose>-3.5 11.75 11 0 0.93 -1.5708</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
