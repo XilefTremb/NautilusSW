@@ -28,6 +28,8 @@ t split-window -v -t AUV:bringup.1
 t send-keys -t AUV:bringup.0 "ros2 run rqt_image_view rqt_image_view & ros2 launch nautilus_bringup orca_comp.launch.py world:=$world" C-m
 t send-keys -t AUV:bringup.1 "ros2 run nautilus_sensors yolo_pipeline --sim --bbox" C-m
 t send-keys -t AUV:bringup.2 "ros2 launch nautilus_robot_localization ekf.launch.py fake_dvl:='true'" C-m
+game_pane=$(t split-window -v -t AUV:bringup.0 -P -F '#{pane_id}')
+t send-keys -t "$game_pane" "ros2 run nautilus_bringup game" C-m
 t select-layout -t AUV:bringup tiled
 t new-window -t AUV -n mission
 right_pane=$(t split-window -h -t AUV:mission.0 -P -F '#{pane_id}')
