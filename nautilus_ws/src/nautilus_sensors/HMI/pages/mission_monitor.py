@@ -3,6 +3,7 @@ import time
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QColor
+from .state_graph import StateGraph
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
     QProgressBar, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
@@ -44,6 +45,8 @@ class MissionMonitorPage(QWidget):
         right.addWidget(self.current)
         self.timing = QLabel('—')
         right.addWidget(self.timing)
+        self.graph = StateGraph()
+        right.addWidget(self.graph, 3)
         right.addWidget(QLabel('ACTIVE CONFIGURATION AND RUNTIME'))
         self.parameters = QTableWidget(0, 2)
         self.parameters.setHorizontalHeaderLabels(['Parameter', 'Value'])
@@ -51,7 +54,7 @@ class MissionMonitorPage(QWidget):
         self.parameters.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.parameters.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.parameters.setAlternatingRowColors(True)
-        right.addWidget(self.parameters)
+        right.addWidget(self.parameters, 2)
         layout.addWidget(QLabel('RECENT STATE TRANSITIONS'))
         self.events = QListWidget()
         layout.addWidget(self.events, 1)
@@ -66,6 +69,7 @@ class MissionMonitorPage(QWidget):
         if self.last_received is not None and time.monotonic() - self.last_received > 3:
             self.connection.setText('STALE — last received values shown; mission status unknown')
             self.connection.setStyleSheet('color: #ffb74d;')
+            self.graph.set_stale(True)
 
     @staticmethod
     def flatten(values, prefix=''):
@@ -119,6 +123,7 @@ class MissionMonitorPage(QWidget):
                 elif item.text() != text:
                     item.setText(text)
         events = status.get('events', [])
+        self.graph.set_status(state, events[-1] if events else None, status.get('state_elapsed_s', 0))
         if events != previous.get('events'):
             self.events.clear()
             for event in reversed(events):
