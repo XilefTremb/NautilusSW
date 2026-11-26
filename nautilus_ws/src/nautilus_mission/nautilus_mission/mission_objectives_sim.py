@@ -330,7 +330,7 @@ torpedo_firing_positioning_1 = Objective(
     target_ids=None,
     center=CenterConfig(
         full_centering=False,
-        x_center_tolerance_fov=0.02,
+        x_center_tolerance_fov=0.03,
     ),
     action=FireTorpedoAction(
         min_lifespan_s=1.0,
@@ -345,10 +345,10 @@ torpedo_firing_positioning_2 = Objective(
     target_ids=None,
     center=CenterConfig(
         full_centering=False,
-        x_center_tolerance_fov=0.02,
+        x_center_tolerance_fov=0.03,
     ),
     action=FireTorpedoAction(
-        min_lifespan_s=1.0,
+        min_lifespan_s=7.0,
     ),
 )
 
@@ -424,6 +424,6 @@ torpedo_list = [coarse_approach_torpedo, torpedo_firing_positioning_1, torpedo_f
 octogon_list = [approach_table, center_over_table, surface_octagon]
 hail_mary = [skip_slalom_objective, slalom2, slalom3]
 
-mission_list = gate_list + torpedo_list + octogon_list
+mission_list = gate_list + torpedo_list
 # mission_list = [torpedo_firing_positioning_1,torpedo_firing_positioning_2, launch_dropper]
 # mission_list = [test_objective]
