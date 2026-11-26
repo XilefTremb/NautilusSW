@@ -25,6 +25,8 @@ class StateMachine:
         self.detection_store = detection_store
         self.mission_offset_timer = mission_offset_timer
 
+        self.use_sim = use_sim
+
         if use_sim:
             from .mission_objectives_sim import mission_list, Objective, ActionType, role_choice
         else:
@@ -255,7 +257,10 @@ class StateMachine:
 
         elif self.current_objective.action.type == self.ActionType.FIRE_TORPEDO:
 
-            if self.current_objective.name == "torpedoFiringPositioning1":
+            if self.use_sim:
+                self.target_ids=[ObjectID.TORPEDO]
+
+            elif self.current_objective.name == "torpedoFiringPositioning1":
                 self.target_ids = ([ObjectID.BLOOD] if self.role_choice == ObjectID.SOS_SAFETY
                     else [ObjectID.FIRE] )
 

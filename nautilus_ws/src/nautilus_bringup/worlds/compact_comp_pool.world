@@ -415,7 +415,7 @@
     <include>
       <uri>model://robosub_gate</uri>
       <name>robosub_gate_1</name>
-      <pose>-6 4 -1.5 0 0 0.4</pose>
+      <pose>-7 4 -1.5 0 0 0.4</pose>
     </include>
 
 
@@ -425,7 +425,7 @@
     <include>
       <uri>model://robosub_torpedo</uri>
       <name>robosub_torpedo_1</name>
-      <pose>-1.4 2.2 -2 1.57 0 2.94159</pose>
+      <pose>-2.4 2.2 -2 1.57 0 2.94159</pose>
     </include>
 
 
@@ -433,7 +433,7 @@
     <include>
       <uri>model://robosub_bin</uri>
       <name>robosub_bin_1</name>
-      <pose>-1.4 5.6 -1.9 1.57 0 0</pose>
+      <pose>-2.4 7.6 -1.9 1.57 0 0</pose>
     </include>
 
 

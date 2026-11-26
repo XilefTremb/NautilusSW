@@ -118,7 +118,7 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "rviz", default_value="true", description="Open RViz."
             ),
-            DeclareLaunchArgument("world", default_value="basic_comp_pool.world", description="World filename in bringup worlds directory"),
+            DeclareLaunchArgument("world", default_value="compact_comp_pool.world", description="World filename in bringup worlds directory"),
             gz_sim_server,
             gz_sim_gui,
             TimerAction(period=5.0, actions=[auv]),

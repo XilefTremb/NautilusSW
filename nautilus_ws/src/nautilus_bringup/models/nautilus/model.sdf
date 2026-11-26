@@ -46,18 +46,18 @@
       <kDotP>0</kDotP>
       <mDotQ>0</mDotQ>
       <nDotR>0</nDotR>
-      <xU>0</xU>
-      <yV>0</yV>
-      <zW>0</zW>
-      <kP>0</kP>
-      <mQ>0</mQ>
-      <nR>0</nR>
-      <xUabsU>-67.183000</xUabsU>
-      <yVabsV>-63.407550</yVabsV>
-      <zWabsW>-143.540700</zWabsW>
-      <kPabsP>-4.600000</kPabsP>
-      <mQabsQ>-4.600000</mQabsQ>
-      <nRabsR>-4.600000</nRabsR>
+      <xU>-20</xU>
+      <yV>-20</yV>
+      <zW>-30</zW>
+      <kP>-3</kP>
+      <mQ>-3</mQ>
+      <nR>-3</nR>
+      <xUabsU>-100.7745</xUabsU>
+      <yVabsV>-95.1113</yVabsV>
+      <zWabsW>-215.3111</zWabsW>
+      <kPabsP>-6.9</kPabsP>
+      <mQabsQ>-6.9</mQabsQ>
+      <nRabsR>-6.9</nRabsR>
     </plugin>
     <link name="thruster1">
       <pose>0.305 -0.205 0.0346 -1.571 1.571 -0.785</pose>
