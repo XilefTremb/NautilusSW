@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!--
+  Nautilus torpedo (Torpedo_Myring_large_fins_CFDV2), PETG, density 1.20 g/cm^3.
+
+  Link frame  = SolidWorks coordinate system "CM": origin at the centre of mass,
+                +X along the body from nose to tail, +Y towards the logo / NAUTILUS side.
+  Visual mesh = nautilus_torpedo.dae. Its own frame is the SolidWorks part frame (origin at
+                the nose tip) rotated 90 deg about X by the Blender STEP import, so the visual
+                origin moves the nose tip 74.68 mm ahead of the CM and rotates the mesh back
+                by -90 deg about X.
+  Inertial    = SolidWorks mass properties "taken at the centre of mass and aligned with the
+                output coordinate system", converted g*mm^2 -> kg*m^2 (x 1e-9).
+                Products of inertia are negated: SolidWorks "positive tensor notation" gives
+                +integral(xy dm), URDF expects the tensor element -integral(xy dm).
+-->
+<robot name="nautilus_torpedo">
+
+  <link name="torpedo_link">
+
+    <inertial>
+      <!-- true CM relative to the CM coordinate system (SolidWorks: X 0.00000585, Y -0.04334728, Z 0.00054189 mm) -->
+      <origin xyz="5.85e-09 -4.334728e-05 5.4189e-07" rpy="0 0 0"/>
+      <mass value="0.07557701388"/>
+      <inertia ixx="6.09383300215e-06"  ixy="-4.940675075e-08" ixz="8.9804409e-10"
+               iyy="1.1327102134894e-04" iyz="-5.3954128e-10"
+               izz="1.1323470730373e-04"/>
+    </inertial>
+
+    <visual>
+      <origin xyz="-0.07468 0 0" rpy="-1.5707963267949 0 0"/>
+      <geometry>
+        <!-- change the package name to the one that holds your meshes -->
+        <mesh filename="package://nautilus_description/meshes/nautilus_torpedo.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <!-- simple body cylinder: 25 mm diameter, 147 mm long, fins ignored.
+           Cylinder axis is Z by default, so it is turned onto X. -->
+      <origin xyz="-0.00118 0 0" rpy="0 1.5707963267949 0"/>
+      <geometry>
+        <cylinder radius="0.0125" length="0.147"/>
+      </geometry>
+    </collision>
+
+  </link>
+
+</robot>

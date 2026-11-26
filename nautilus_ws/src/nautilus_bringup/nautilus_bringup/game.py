@@ -7,7 +7,7 @@ from rclpy.node import Node
 from std_msgs.msg import Bool, Int16MultiArray
 
 from geometry_msgs.msg import PoseStamped
-from evdev import InputDevice, ecodes
+from evdev import InputDevice, ecodes, list_devices
 
 from enums.ServoEnum import ServoEnum
 
@@ -31,14 +31,14 @@ YAW_TOLERANCE = math.radians(10.0)
 
 # Torpedo model important constants
 TORPEDO_MODEL_NAME = "test_torpedo_world"
-TORPEDO_LAUNCH_OFFSET = 0.1   # m in front of AUV
+TORPEDO_LAUNCH_OFFSET = 0.4   # m in front of AUV
 TORPEDO_FORCE = 10.0          # N
-TORPEDO_THRUST_TIME = 0.45     # seconds
+TORPEDO_THRUST_TIME = 0.2     # seconds
 
 TORPEDO_HIDE_X = -100.0
 TORPEDO_HIDE_Y = -100.0
 TORPEDO_HIDE_Z = -0.5
-TORPEDO_RESET_TIME = 3.0  # seconds after firing
+TORPEDO_RESET_TIME = 1.5  # seconds after firing
 
 def euler_from_quat(x, y, z, w):
     roll = math.atan2(2 * (w*x + y*z), 1 - 2 * (x*x + y*y))
@@ -64,7 +64,7 @@ class GameControllerInput(Node):
         # Controller
         # --------------------------------------------------
 
-        self.controller = InputDevice("/dev/input/event16")
+        self.controller = self.find_controller()
 
         self.get_logger().info(f"Controller detected: {self.controller.name}")
 
@@ -457,7 +457,7 @@ class GameControllerInput(Node):
         # Spawn position slightly in front of the submarine
         torpedo_x = x + TORPEDO_LAUNCH_OFFSET * math.cos(yaw)
         torpedo_y = y + TORPEDO_LAUNCH_OFFSET * math.sin(yaw)
-        torpedo_z = z
+        torpedo_z = z + 0.20
 
         # Torpedo model was originally rotated +90° around Y
         # so its local +Z axis becomes its forward direction.
@@ -553,6 +553,28 @@ class GameControllerInput(Node):
         msg = Int16MultiArray()
         msg.data = [servo, pwm]
         self.servo_cmd_pub.publish(msg)
+
+    def find_controller(self):
+        for path in list_devices():
+            device = InputDevice(path)
+
+            # Identify Xbox controllers by name
+            if "xbox" not in device.name.lower():
+                device.close()
+                continue
+
+            # Verify that the device supports our buttons
+            buttons = device.capabilities().get(ecodes.EV_KEY, [])
+
+            if TORPEDO_BUTTON in buttons and DROPPER_BUTTON in buttons:
+                self.get_logger().info(
+                    f"Xbox controller found: {device.name} ({device.path})"
+                )
+                return device
+
+            device.close()
+
+        raise RuntimeError("No compatible Xbox controller found!")
 
 
 def main(args=None):

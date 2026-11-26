@@ -41,7 +41,7 @@
       <link name="link">
 
         <inertial>
-          <mass>0.216</mass>
+          <mass>0.2165</mass>
           <inertia>
             <ixx>0.0003</ixx>
             <iyy>0.0003</iyy>
@@ -58,100 +58,14 @@
           </geometry>
         </collision>
 
-        <!-- Main torpedo body -->
-        <visual name="body">
+        <visual name="torpedo_visual">
+          <pose>0 0 0.07468 -1.5707963267949 1.5707963267949 0</pose>
           <geometry>
-            <cylinder>
-              <radius>0.015</radius>
-              <length>0.24</length>
-            </cylinder>
+            <mesh>
+              <uri>model://robosub_torpedo/meshes/nautilus_torpedo.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
           </geometry>
-
-          <material>
-            <ambient>0.8 0.8 0.8 1</ambient>
-            <diffuse>0.8 0.8 0.8 1</diffuse>
-          </material>
-        </visual>
-
-        <!-- Nose cone -->
-        <visual name="nose">
-          <pose>0 0 0.14 0 0 0</pose>
-
-          <geometry>
-            <cone>
-              <radius>0.015</radius>
-              <length>0.04</length>
-            </cone>
-          </geometry>
-
-          <material>
-            <ambient>1 0 0 1</ambient>
-            <diffuse>1 0 0 1</diffuse>
-          </material>
-        </visual>
-
-        <!-- Rear fin: +X -->
-        <visual name="fin_x_pos">
-          <pose>0.025 0 -0.095 0 0 0</pose>
-
-          <geometry>
-            <box>
-              <size>0.035 0.004 0.055</size>
-            </box>
-          </geometry>
-
-          <material>
-            <ambient>0.25 0.25 0.25 1</ambient>
-            <diffuse>0.25 0.25 0.25 1</diffuse>
-          </material>
-        </visual>
-
-        <!-- Rear fin: -X -->
-        <visual name="fin_x_neg">
-          <pose>-0.025 0 -0.095 0 0 0</pose>
-
-          <geometry>
-            <box>
-              <size>0.035 0.004 0.055</size>
-            </box>
-          </geometry>
-
-          <material>
-            <ambient>0.25 0.25 0.25 1</ambient>
-            <diffuse>0.25 0.25 0.25 1</diffuse>
-          </material>
-        </visual>
-
-        <!-- Rear fin: +Y -->
-        <visual name="fin_y_pos">
-          <pose>0 0.025 -0.095 0 0 0</pose>
-
-          <geometry>
-            <box>
-              <size>0.004 0.035 0.055</size>
-            </box>
-          </geometry>
-
-          <material>
-            <ambient>0.25 0.25 0.25 1</ambient>
-            <diffuse>0.25 0.25 0.25 1</diffuse>
-          </material>
-        </visual>
-
-        <!-- Rear fin: -Y -->
-        <visual name="fin_y_neg">
-          <pose>0 -0.025 -0.095 0 0 0</pose>
-
-          <geometry>
-            <box>
-              <size>0.004 0.035 0.055</size>
-            </box>
-          </geometry>
-
-          <material>
-            <ambient>0.25 0.25 0.25 1</ambient>
-            <diffuse>0.25 0.25 0.25 1</diffuse>
-          </material>
         </visual>
 
       </link>
@@ -169,8 +83,8 @@
         <yV>-0.5</yV>
         <yVabsV>-1.0</yVabsV>
 
-        <zW>-0.5</zW>
-        <zWabsW>-1.0</zWabsW>
+        <zW>-0.1</zW>
+        <zWabsW>-0.2</zWabsW>
 
         <kP>-0.05</kP>
         <mQ>-0.05</mQ>
