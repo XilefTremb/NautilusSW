@@ -415,7 +415,7 @@
     <include>
       <uri>model://robosub_gate</uri>
       <name>robosub_gate_1</name>
-      <pose>-5 4 -1.5 0 0 0.4</pose>
+      <pose>-6 4 -1.5 0 0 0.4</pose>
     </include>
 
 
