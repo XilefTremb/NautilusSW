@@ -1,9 +1,10 @@
 # ros_node.py
 
 import math
+import json
 from rclpy.node import Node
 from geometry_msgs.msg import Vector3Stamped, PoseStamped, TwistWithCovarianceStamped
-from std_msgs.msg import Float32, Float32MultiArray, Int32, UInt8
+from std_msgs.msg import Float32, Float32MultiArray, Int32, UInt8, String
 from sensor_msgs.msg import Imu, BatteryState
 from rclpy.qos import qos_profile_sensor_data
 from ardupilot_msgs.msg import Rc
@@ -32,6 +33,8 @@ class NautilusROSNode(Node):
         super().__init__("nautilus_hmi")
 
         self.data = data_manager
+
+        self.create_subscription(String, '/mission/status', self.mission_callback, 10)
 
         # SENSORS
         self.create_subscription(Imu, TOPICS["imu"], self.imu_callback, 10)
@@ -139,3 +142,11 @@ class NautilusROSNode(Node):
     
     def pressure2_callback(self, msg):
         self.data.update("Pressure 2", msg.data)
+
+    def mission_callback(self, msg):
+        try:
+            status = json.loads(msg.data)
+            if isinstance(status, dict) and status.get('version') == 1:
+                self.data.update_mission(status)
+        except (ValueError, TypeError):
+            self.get_logger().warning('Invalid mission status message')

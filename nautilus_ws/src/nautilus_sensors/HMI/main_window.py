@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtCore import Qt
 
+from pages.mission_monitor import MissionMonitorPage
 from pages.dashboard import DashboardPage
 from pages.graphs import GraphsPage
 from pages.pre_tests_water import PreDivePage
@@ -60,7 +61,9 @@ class MainWindow(QMainWindow):
 
 
         
+        self.mission_button = QPushButton("◎   Mission Monitor")
         side.addWidget(self.dashboard_button)
+        side.addWidget(self.mission_button)
         side.addWidget(self.graph_button)
         side.addWidget(self.pre_dive_button)
         side.addWidget(self.profiling_button)
@@ -89,7 +92,9 @@ class MainWindow(QMainWindow):
 
         self.leak_test = LeakTestPage(data_manager)
 
+        self.mission_monitor = MissionMonitorPage(data_manager)
         self.pages.addWidget(self.dashboard)
+        self.pages.addWidget(self.mission_monitor)
         self.pages.addWidget(self.graphs)
         self.pages.addWidget(self.pre_dive)
         self.pages.addWidget(self.profiling)
@@ -116,6 +121,7 @@ class MainWindow(QMainWindow):
         
         self.leak_button.clicked.connect(lambda: self.pages.setCurrentWidget(self.leak_test))
 
+        self.mission_button.clicked.connect(lambda: self.pages.setCurrentWidget(self.mission_monitor))
         self.apply_style()
 
     # ==========================================================
@@ -129,6 +135,7 @@ class MainWindow(QMainWindow):
             self.sidebar.setFixedWidth(220)
             self.toggle_button.setText("☰   MENU")
             self.dashboard_button.setText("◉   Dashboard")
+            self.mission_button.setText("◎   Mission Monitor")
             self.graph_button.setText("⌁   Graphs")
             self.pre_dive_button.setText("✓   Pre-Dive")
             self.profiling_button.setText("⚡   Profiling")
@@ -138,6 +145,7 @@ class MainWindow(QMainWindow):
             self.sidebar.setFixedWidth(70)
             self.toggle_button.setText("☰")
             self.dashboard_button.setText("◉")
+            self.mission_button.setText("◎")
             self.graph_button.setText("⌁")
             self.pre_dive_button.setText("✓")
             self.profiling_button.setText("⚡")

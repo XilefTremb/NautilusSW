@@ -7,6 +7,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 class DataManager(QObject):
 
     data_updated = pyqtSignal(str, float)
+    mission_updated = pyqtSignal(object)
     profiling_updated = pyqtSignal(int, object)
 
     def __init__(self, history_seconds=60, max_frequency=100):
@@ -14,6 +15,7 @@ class DataManager(QObject):
 
         max_samples = history_seconds * max_frequency
 
+        self.mission_status = None
         self.values = {}
         self.history = defaultdict(lambda: deque(maxlen=max_samples))
 
@@ -65,3 +67,7 @@ class DataManager(QObject):
 
     def get_raw_history(self, name):
         return list(self.history[name])
+
+    def update_mission(self, status):
+        self.mission_status = status
+        self.mission_updated.emit(status)

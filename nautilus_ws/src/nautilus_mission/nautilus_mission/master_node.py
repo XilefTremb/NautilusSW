@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
+from dataclasses import asdict, is_dataclass
+from enum import Enum
 import rclpy
 import time
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 
-from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray, UInt8
+from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray, UInt8, String
 from nav_msgs.msg import Odometry
 
 from nautilus_mission.detection_store import DetectionStore
@@ -76,6 +79,9 @@ class MasterNode(Node):
             # "lateral_width": self.create_client(Trigger, "/pid_width_lateral/reset_pid"),
         }
 
+        self.mission_status_pub = self.create_publisher(String, '/mission/status', 10)
+        self.mission_status_timer = self.create_timer(0.2, self.publish_mission_status)
+
         # Timer
         self.timer = self.create_timer(1 / 20, self.pipeline_tick)
 
@@ -91,6 +97,48 @@ class MasterNode(Node):
         self.fsm.start_mission()
 
         self.get_logger().info('Master mission + vision node started.')
+
+    def publish_mission_status(self):
+        fsm = self.fsm
+        now = time.monotonic()
+        active = fsm.state not in ('IDLE', 'LOAD_OBJECTIVE', 'MISSION_COMPLETE')
+        objective = fsm.current_objective if active else None
+
+        def encode(value):
+            if isinstance(value, Enum):
+                return value.name
+            if is_dataclass(value):
+                return asdict(value)
+            raise TypeError(type(value).__name__)
+
+        status = {
+            'version': 1,
+            'state': fsm.state,
+            'current_index': fsm.objective_index if active else None,
+            'objectives': [
+                {'name': item.name, 'status': fsm.monitor_outcomes.get(i,
+                    'ACTIVE' if active and i == fsm.objective_index else 'PENDING')}
+                for i, item in enumerate(fsm.objectives)
+            ],
+            'mission_elapsed_s': (fsm.monitor_finished or now) - fsm.monitor_started if fsm.monitor_started is not None else 0,
+            'state_elapsed_s': (fsm.monitor_finished or now) - fsm.state_start_time,
+            'objective_elapsed_s': now - fsm.current_objective_start_time_s if active else None,
+            'parameters': asdict(objective) if objective is not None else {},
+            'runtime': {
+                'target_ids': [item.name for item in fsm.target_ids or []],
+                'vision_action': fsm.vision_action.name,
+                'role_choice': fsm.role_choice.name,
+                'success_frames': fsm.current_success_frame_count,
+                'missing_frames': fsm.target_missing_count,
+                'forward_position_m': fsm.forward_position,
+                'lateral_position_m': fsm.lateral_position,
+                'camera_mean_depth_mm': fsm.mean_depth_forward_cam,
+            } if active else {},
+            'events': fsm.monitor_events,
+        }
+        msg = String()
+        msg.data = json.dumps(status, default=encode)
+        self.mission_status_pub.publish(msg)
 
     def fwd_detection_callback(self, msg: Float32MultiArray):
         if not self.detection_store.update_from_msg(msg):

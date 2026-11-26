@@ -43,6 +43,10 @@ class StateMachine:
             self.dropper_choice = ObjectID.FIRE
             self.second_dropper_choice = ObjectID.BLOOD
 
+        self.monitor_outcomes = {}
+        self.monitor_events = []
+        self.monitor_started = None
+        self.monitor_finished = None
         self.objective_index = 0
         self.current_objective: Optional[Objective] = None
         self.target_ids: Optional[list[ObjectID]] = None
@@ -551,6 +555,22 @@ class StateMachine:
 
     def state_changed(self, event):
         self.state_start_time = time.monotonic()
+        trigger = event.event.name
+        if trigger == 'start_mission':
+            self.monitor_started = self.state_start_time
+        elif trigger == 'action_done':
+            self.monitor_outcomes[self.objective_index - 1] = 'COMPLETED'
+        elif trigger == 'skip_to_next_objective':
+            self.monitor_outcomes[self.objective_index - 1] = 'SKIPPED'
+        if self.state == 'MISSION_COMPLETE':
+            self.monitor_finished = self.state_start_time
+        self.monitor_events.append({
+            'elapsed_s': self.state_start_time - (self.monitor_started or self.state_start_time),
+            'objective': self.current_objective.name if self.current_objective else '',
+            'transition': f'{event.transition.source} → {event.transition.dest}',
+            'trigger': trigger,
+        })
+        self.monitor_events = self.monitor_events[-30:]
         self.node.get_logger().info('\n')
         self.node.get_logger().info(f'Entered state {self.state}')
         self.node.get_logger().info(f'Transition: {event.transition.source} -> {event.transition.dest}, current state: {self.state}')
