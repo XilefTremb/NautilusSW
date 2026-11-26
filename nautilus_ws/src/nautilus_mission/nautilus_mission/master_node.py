@@ -9,7 +9,7 @@ import time
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, HistoryPolicy, ReliabilityPolicy
 
-from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray, UInt8, String
+from std_msgs.msg import Float32MultiArray, Int8, Float32, Int16, Int16MultiArray, UInt8, String, Empty
 from nav_msgs.msg import Odometry
 
 from nautilus_mission.detection_store import DetectionStore
@@ -60,6 +60,7 @@ class MasterNode(Node):
         self.throttle_cmd_pub = self.create_publisher(Int16, '/control/cmd/throttle', 10)
 
         self.detections_depth_filter_mm_pub = self.create_publisher(Int16, '/yolo/detections_depth_filter_mm', 10)
+        self.sim_torpedo_pub = self.create_publisher(Empty, '/game/fire_torpedo', 10)
         self.servo_cmd_pub = self.create_publisher(Int16MultiArray, '/control/cmd/servo', 10)
 
         # Inference mode is republished at a fixed rate (see inference_mode_timer)
@@ -221,6 +222,9 @@ class MasterNode(Node):
         msg = UInt8()
         msg.data = int(self.current_inference_mode)
         self.inference_mode_pub.publish(msg)
+
+    def publish_sim_torpedo_trigger(self):
+        self.sim_torpedo_pub.publish(Empty())
 
     def publish_servo_cmd(self, servo: int, pwm: int):
         msg = Int16MultiArray()
