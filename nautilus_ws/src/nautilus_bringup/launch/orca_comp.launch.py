@@ -91,8 +91,7 @@ def generate_launch_description():
             f'{Path(pkg_ros_gz_sim) / "launch" / "gz_sim.launch.py"}'
         ),
         launch_arguments={
-            "gz_args": "-v4 -s -r "
-            + f'{Path(pkg_project_bringup) / "worlds" / "basic_comp_pool.world"}'
+            "gz_args": ["-v4 -s -r ", str(Path(pkg_project_bringup) / "worlds") + "/", LaunchConfiguration("world")]
         }.items(),
     )
 
@@ -119,6 +118,7 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "rviz", default_value="true", description="Open RViz."
             ),
+            DeclareLaunchArgument("world", default_value="basic_comp_pool.world", description="World filename in bringup worlds directory"),
             gz_sim_server,
             gz_sim_gui,
             TimerAction(period=5.0, actions=[auv]),

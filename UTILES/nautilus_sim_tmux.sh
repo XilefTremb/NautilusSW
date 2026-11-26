@@ -17,13 +17,15 @@ if systemctl --user is-active --quiet nautilus-sim.scope; then
     echo "Previous simulation still running. Run nautilus_sim_stop.sh first."
     exit 1
 fi
+world="${1:-basic_comp_pool.world}"
+case "$world" in basic_comp_pool.world|compact_comp_pool.world) ;; *) echo "Unknown world: $world"; exit 1;; esac
 build
 # A dedicated tmux server ensures all panes and their descendants inherit the scope.
 systemd-run --user --scope --unit=nautilus-sim --property=TimeoutStopSec=10s tmux -L nautilus-sim new-session -d -s AUV -n bringup
 trap 'bash "$DIR/nautilus_sim_stop.sh"' ERR
 t split-window -h -t AUV:bringup.0
 t split-window -v -t AUV:bringup.1
-t send-keys -t AUV:bringup.0 "ros2 run rqt_image_view rqt_image_view & ros2 launch nautilus_bringup orca_comp.launch.py" C-m
+t send-keys -t AUV:bringup.0 "ros2 run rqt_image_view rqt_image_view & ros2 launch nautilus_bringup orca_comp.launch.py world:=$world" C-m
 t send-keys -t AUV:bringup.1 "ros2 run nautilus_sensors yolo_pipeline --sim --bbox" C-m
 t send-keys -t AUV:bringup.2 "ros2 launch nautilus_robot_localization ekf.launch.py fake_dvl:='true'" C-m
 t select-layout -t AUV:bringup tiled
