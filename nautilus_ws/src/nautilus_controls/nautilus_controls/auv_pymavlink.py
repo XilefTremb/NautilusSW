@@ -51,6 +51,7 @@ class AuvPymavlink:
         self._rx_stop = threading.Event()
         self._state_lock = threading.Lock()
 
+        self._motor_pwm_callback = None
         self._latest_ahrs2 = None
         self._latest_attitude = None
         self._latest_heartbeat = None
@@ -124,6 +125,14 @@ class AuvPymavlink:
                     elif msg_type == "SCALED_PRESSURE2":
                         self._latest_scaled_pressure2 = msg
 
+                if (msg_type == "SERVO_OUTPUT_RAW" and msg.port == 0
+                        and msg.get_srcSystem() == self.the_connection.target_system
+                        and msg.get_srcComponent() == self.the_connection.target_component
+                        and self._motor_pwm_callback is not None):
+                    self._motor_pwm_callback([
+                        getattr(msg, f"servo{i}_raw") for i in range(1, 9)
+                    ])
+
                 if msg_type == "COMMAND_ACK":
                     ack = msg.to_dict()
                     command = ack.get("command")
@@ -135,6 +144,19 @@ class AuvPymavlink:
 
             except Exception as exc:
                 self.node.get_logger().error(f"[RX] Exception: {exc}")
+
+    def enable_motor_pwm_telemetry(self, callback, rate_hz=20):
+        self._motor_pwm_callback = callback
+        with self._send_lock:
+            self.the_connection.mav.command_long_send(
+                self.the_connection.target_system,
+                self.the_connection.target_component,
+                mavutil.mavlink.MAV_CMD_SET_MESSAGE_INTERVAL,
+                0,
+                mavutil.mavlink.MAVLINK_MSG_ID_SERVO_OUTPUT_RAW,
+                int(1_000_000 / rate_hz),
+                0, 0, 0, 0, 0,
+            )
 
     def get_ahrs2_cached(self):
         with self._state_lock:
