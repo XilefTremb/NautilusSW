@@ -7,7 +7,7 @@ from rclpy.node import Node
 from std_msgs.msg import Int16, Int8, Float32
 from nautilus_controls.auv_pymavlink import AuvPymavlink
 from nautilus_interfaces.srv import SetTargetDepth
-from std_msgs.msg import Int16MultiArray
+from std_msgs.msg import Int16MultiArray, UInt16MultiArray
 import time
 from enums.ServoEnum import ServoEnum
 
@@ -47,6 +47,7 @@ class CubeInterface(Node):
         self.last_throttle_cmd = None
         self.last_throttle_cmd_time = None
 
+        self.motor_pwm_pub = self.create_publisher(UInt16MultiArray, '/motors/pwm', 10)
         self.startup(args)
 
         self.subs = {
@@ -99,12 +100,18 @@ class CubeInterface(Node):
 
         self.auv.apply_param_profile(profile)
         self.auv.start_receiver()
+        self.auv.enable_motor_pwm_telemetry(self.publish_motor_pwm)
 
         # self.auv.change_mode("ALT_HOLD")
         # self.auv.arm()
     
         self.auv.set_servo(ServoEnum.DROPPER_ID, ServoEnum.DROPPER_INIT_PWM)
         self.auv.set_servo(ServoEnum.TORPEDO_ID, ServoEnum.TORPEDO_INIT_PWM)
+
+    def publish_motor_pwm(self, values):
+        msg = UInt16MultiArray()
+        msg.data = values
+        self.motor_pwm_pub.publish(msg)
 
     def servo_cmd_callback(self, msg):
         if len(msg.data) < 2:
