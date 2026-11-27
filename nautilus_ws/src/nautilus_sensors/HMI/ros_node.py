@@ -4,10 +4,9 @@ import math
 import json
 from rclpy.node import Node
 from geometry_msgs.msg import Vector3Stamped, PoseStamped, TwistWithCovarianceStamped
-from std_msgs.msg import Float32, Float32MultiArray, Int32, UInt8, String
+from std_msgs.msg import Float32, Float32MultiArray, Int32, UInt8, String, UInt16MultiArray
 from sensor_msgs.msg import Imu, BatteryState
 from rclpy.qos import qos_profile_sensor_data
-from ardupilot_msgs.msg import Rc
 
 from config import TOPICS
 
@@ -62,7 +61,7 @@ class NautilusROSNode(Node):
         self.create_subscription(UInt8, TOPICS["inference_mode"], self.inference_mode_callback, 10)
         
         # MOTORS
-        self.create_subscription(Rc, TOPICS["motor_pwm"], self.pwm_callback, qos_profile_sensor_data)
+        self.create_subscription(UInt16MultiArray, TOPICS["motor_pwm"], self.pwm_callback, qos_profile_sensor_data)
         self.create_subscription(Float32MultiArray, TOPICS["motor_current"], self.current_callback, 10)
 
          # PROFILING
@@ -104,7 +103,7 @@ class NautilusROSNode(Node):
         self.data.update("DVL Z", velocity.z)
 
     def pwm_callback(self, msg):
-        for i, value in enumerate(msg.channels[:8]):
+        for i, value in enumerate(msg.data[:8]):
             self.data.update(f"Motor {i+1} PWM", value)
     
     def current_callback(self, msg):
