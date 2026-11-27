@@ -133,7 +133,7 @@ class MotorCard(QFrame):
         layout.addWidget(title)
 
         # Valeur PWM
-        self.pwm = QLabel("PWM: 1500")
+        self.pwm = QLabel("PWM: --")
         self.pwm.setAlignment(Qt.AlignCenter)
         self.pwm.setStyleSheet("font-size: 16px; font-weight: bold;")
         layout.addWidget(self.pwm)
@@ -141,6 +141,7 @@ class MotorCard(QFrame):
         # Barre PWM personnalisée
         self.pwm_bar = PWMBar()
         self.pwm_bar.setMinimumHeight(35)
+        self.pwm_bar.setVisible(False)
         layout.addWidget(self.pwm_bar)
 
         # Courant
@@ -151,7 +152,9 @@ class MotorCard(QFrame):
     def set_pwm(self, value):
         self.pwm_value = value
         self.pwm.setText(f"PWM: {value:.0f}")
-        self.pwm_bar.set_pwm(value)
+        self.pwm_bar.setVisible(value > 0)
+        if value > 0:
+            self.pwm_bar.set_pwm(value)
 
     def set_current(self, value):
         self.current.setText(f"Current: {value:.2f} A")
