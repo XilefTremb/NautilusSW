@@ -52,6 +52,8 @@ class AuvPymavlink:
         self._state_lock = threading.Lock()
 
         self._motor_pwm_callback = None
+        self._motor_pwm_seen = False
+        self._motor_pwm_rx_seen = False
         self._latest_ahrs2 = None
         self._latest_attitude = None
         self._latest_heartbeat = None
@@ -125,13 +127,20 @@ class AuvPymavlink:
                     elif msg_type == "SCALED_PRESSURE2":
                         self._latest_scaled_pressure2 = msg
 
-                if (msg_type == "SERVO_OUTPUT_RAW" and msg.port == 0
-                        and msg.get_srcSystem() == self.the_connection.target_system
-                        and msg.get_srcComponent() == self.the_connection.target_component
-                        and self._motor_pwm_callback is not None):
-                    self._motor_pwm_callback([
-                        getattr(msg, f"servo{i}_raw") for i in range(1, 9)
-                    ])
+                if msg_type == "SERVO_OUTPUT_RAW" and self._motor_pwm_callback is not None:
+                    if not self._motor_pwm_rx_seen:
+                        self._motor_pwm_rx_seen = True
+                        self.node.get_logger().info(
+                            f"SERVO_OUTPUT_RAW received: sys={msg.get_srcSystem()}, "
+                            f"comp={msg.get_srcComponent()}, port={msg.port}, "
+                            f"target_sys={self.the_connection.target_system}"
+                        )
+                    if msg.port == 0 and msg.get_srcSystem() == self._motor_pwm_system:
+                        values = [getattr(msg, f"servo{i}_raw") for i in range(1, 9)]
+                        self._motor_pwm_callback(values)
+                        if not self._motor_pwm_seen:
+                            self._motor_pwm_seen = True
+                            self.node.get_logger().info(f"Motor PWM published: {values}")
 
                 if msg_type == "COMMAND_ACK":
                     ack = msg.to_dict()
@@ -146,7 +155,9 @@ class AuvPymavlink:
                 self.node.get_logger().error(f"[RX] Exception: {exc}")
 
     def enable_motor_pwm_telemetry(self, callback, rate_hz=20):
+        self._motor_pwm_system = self.the_connection.target_system
         self._motor_pwm_callback = callback
+        self.node.get_logger().info(f'Requesting SERVO_OUTPUT_RAW at {rate_hz} Hz')
         with self._send_lock:
             self.the_connection.mav.command_long_send(
                 self.the_connection.target_system,
